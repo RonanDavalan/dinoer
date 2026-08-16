@@ -1,5 +1,9 @@
 # Dinoer — Sovereign, Local-First Web Research for LLM Agents
 
+[![CI](https://github.com/RonanDavalan/dinoer/actions/workflows/ci.yml/badge.svg)](https://github.com/RonanDavalan/dinoer/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/RonanDavalan/dinoer)](https://github.com/RonanDavalan/dinoer/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 > **For the human operator:** Dinoer runs on your own machine, delegates search
 > and collection to primitives you can read line by line, and hands you a
 > sourced, dated Markdown report — not a black-box answer.
