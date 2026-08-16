@@ -56,7 +56,8 @@ and the only one that evaluates scenario assertions and supports
 **campagne.py**
 : Orchestrates a deep-research campaign from a JSON manifest: per-source
 pagination, vector-cache de-duplication, targeted extraction without
-synthesis. Reads its configuration from **dinoer.conf**.
+synthesis. Reads a hard-coded `/opt/dinoer/dinoer.conf` for its own
+`campagnes_dir` key only — never `DINOER_CONF`, see FILES below.
 
 **journal.py**
 : Reads the append-only operation log at **/var/log/dinoer/operations.jsonl**.
@@ -131,10 +132,13 @@ divergence. The reference is written by **--sauver-verifier-reference**.
 # FILES
 
 **/etc/dinoer/dinoer.conf**
-: Configuration read by **campagne.py** and the credential resolver.
-Created by the operator, never generated automatically. The **DINOER_CONF**
-environment variable overrides this path. `secrets_dir` inside it points at
-the mounted credentials directory.
+: Configuration read by the credential resolver (`shot.py`, `rpa.py`, via
+**DINOER_CONF**, which overrides this path). Created by the operator, never
+generated automatically. `secrets_dir` inside it points at the mounted
+credentials directory. **campagne.py does not read this file** — corrected
+15/08/2026: it reads a hard-coded `/opt/dinoer/dinoer.conf` for its own
+`campagnes_dir` key only (`campagne.py::_CONF_PATH`), never `DINOER_CONF`,
+so on the `.deb` channel it will not see this file even if present.
 
 **/opt/dinoer/**
 : Application code, the Python virtual environment, and the documentation
@@ -178,12 +182,12 @@ or inspect the credentials file if the message names a checksum mismatch.
 Capture a page with the accessibility tree:
 
     /opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
-        --url https://example.com --a11y --guide-version 1.3
+        --url https://example.com --a11y --guide-version 1.6
 
 Read only the state of a page, without executing any action:
 
     /opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
-        --url https://example.com --guide-version 1.3
+        --url https://example.com --guide-version 1.6
 
 Reach an administration panel that refreshes statistics continuously:
 

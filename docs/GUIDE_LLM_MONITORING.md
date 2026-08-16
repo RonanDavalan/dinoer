@@ -1,8 +1,11 @@
 # Dinoer — Monitoring guide (journal, state verdict, replay verifier, long ops)
 
-<!-- notice-version: 1.3 -->
-Version 1.3 — August 2026. This number counts revisions of this notice, not
-releases of Dinoer. Notable in the current text: full rewrite for the public
+<!-- notice-version: 1.4 -->
+Version 1.4 — August 2026. Counts revisions of this notice, not releases of
+Dinoer. Changed: absorbed the extraction recipe and synthesis-relevance
+sections moved here from `GUIDE_LLM.md` to keep the index under budget.
+
+Version 1.3 — August 2026. Notable in that text: full rewrite for the public
 repo — the previous image-based monitoring surface (visual diffs, periodic
 image captures, capture timeouts) was removed; replaced by the real
 text/verdict surface (`respect`, `etat`, `erreurs_js`/`erreurs_console`,
@@ -278,7 +281,7 @@ hoc crontab line:
 
 ```bash
 bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
-  --scenario /opt/dinoer/scenarios/sillage_login.json \
+  --scenario /opt/dinoer/scenarios/example_login.json \
   --reference /tmp/ref_sillage.json \
   --ntfy-topic dinoer-monitoring
 ```
@@ -288,18 +291,17 @@ Regression detected → ntfy notification (exit 1, same as `rpa.py
 --replay-verifier`). **Repetition is your job, by design** — cron or a
 systemd timer, not the script.
 
-**Known debt (v1.23.0) — `--no-capture`:** the script invokes
-`rpa.py --no-capture --replay-verifier`, but `--no-capture` is no longer an
-`rpa.py` flag (rejected by argparse). Recorded here as a defect to fix
-upstream; do not rely on it as-is until corrected. Dinoer has no
-image-capture pathway by default, so the flag is semantically redundant for
-the intended composition.
+**Fixed 16/08/2026 — `--no-capture`:** the script used to invoke
+`rpa.py --no-capture --replay-verifier`, but `--no-capture` was no longer an
+`rpa.py` flag — every real invocation was rejected by argparse. The dead
+flag has been removed; Dinoer has no image-capture pathway by default, so
+dropping it changes nothing else.
 
 **First run — create the reference** (same as `--replay-verifier` above):
 ```bash
 /opt/dinoer/venv/bin/python /opt/dinoer/rpa.py \
-  --scenario /opt/dinoer/scenarios/sillage_login.json \
-  --sauver-verifier-reference /opt/dinoer/references/sillage_login.ref.json
+  --scenario /opt/dinoer/scenarios/example_login.json \
+  --sauver-verifier-reference /opt/dinoer/references/example_login.ref.json
 ```
 
 **Guide-read lock nuance:** if invoked under a distinct OS user (e.g. a
@@ -320,14 +322,20 @@ Logrotate handles `.1`, `.2.gz`, …
 tail -n 10 /var/log/dinoer/operations.jsonl | python3 -m json.tool --no-ensure-ascii
 ```
 
-**Fields in each log entry:** `ts`, `version`, `mode` (`"shot"` or `"rpa"`),
-`url`, `scenario`, `source_scenario` (file name only, no path — lets
+**Fields in each log entry** (corrected 15/08/2026 against `lib/journal.py`
+directly, not assumed — see `docs/MANUEL.md` section 9 for the full,
+current table): `ts`, `operation_id`, `outil` (`"shot.py"` or `"campagne.py"`
+only — `rpa.py` never journals itself, it runs through `shot.py`'s dispatch;
+corrected same day, `"rpa.py"` never appears here), `version`, `cible_url`, `resultat` (`"succes"` or
+`"echec"`), `mutatif`, `source_scenario` (file name only, no path — lets
 `dernier_diagnostic_host` identify a `diagnostic_dom.json` run without
 parsing contents), `chainage` (list of `{scenario, profondeur, action_debut,
 action_fin}`, present only when the scenario used `declencher_scenario`),
-`intention`, `succes`/`resultat`, `respect`, `evaluations` (sanitised
-`{script, valeur_retournee}`), `duree_ms`, `erreur`. Secrets and sensitive
-`evaluer` values are neutralised before writing.
+`intention`, `respect`, `evaluations` (sanitised `{script,
+valeur_retournee}`), `erreur`. No `duree_ms` field exists — per-action
+timing lives in a run's own JSON output (`latences_actions`), not in the
+journal. Secrets and sensitive `evaluer` values are neutralised before
+writing.
 
 **When to read it:** after a failure in cron mode (no terminal output), to
 audit intent/actions of a run, or to inspect the navigation ledger.
@@ -396,3 +404,57 @@ previous render. Use `delai_initial_ms` to let the new DOM state register:
   `--secrets` file — not a shell-visible environment.
 - Each `monitor-verifier.sh` invocation is an isolated process — caps reset
   cleanly per run, no memory leak from a long-running daemon.
+
+## Extraction recipe — open question beats narrow trove/valeur/url
+
+Moved here from `GUIDE_LLM.md` (15/08/2026) to keep the index under its
+250-line budget — content unchanged, only relocated.
+
+`--extraire-cible "<demande>"` accepts any natural-language request — it is
+not limited to a single fact lookup. On the reference campaign
+(`spectacles-sud-finistere-2026-08-11-20`), a narrow question (trouve/valeur/url
+for one specific fact) surfaced fewer, thinner results than an open question
+that let the delegated model judge for itself whether it was reading a
+one-off fact or a multi-day event (17/47 positive extractions, richer
+content, vs. a narrower baseline — see
+`_CADRE/SPECIFICATIONS/CARACTERISATION_DINOER.md` §7 for the full
+comparison). Prefer an open, descriptive `<demande>` over a strict
+fact-lookup phrasing when the source might describe a structured event
+rather than a single fact.
+
+For multiple positive extractions describing the same real event across
+different pages, `lib/extraction.py::fusionner_evenements()` groups them —
+call it on the filtered positive results before writing a final report,
+rather than consolidating by hand. A single source can legitimately describe
+several distinct events (an agenda page listing a concert, a workshop, a
+guided tour on different dates) — the same source index is then cited in
+each matching group, never treated as an error. Free-form reasoning before
+the model's final JSON answer measurably improves grouping quality on this
+task; forcing an immediate JSON-only answer produced short, under-reasoned
+output on a real corpus (verified 13/08/2026).
+
+## Synthesis relevance — two optional manifest fields, both reorder-only
+
+The automatic report (`construire_contexte()`/`rediger_rapport()`, no
+`--extraire-cible` involved) concatenates the collected corpus in file-write
+order, truncated at 60000 chars — with no relevance ranking by default, the
+most useful pages can fall outside that budget on a large corpus. Two
+independent, optional manifest fields fix this, both reorder pages before
+truncation, never exclude them outright:
+
+- `"motifs_annee": ["2026"]`, `"motifs_mois": ["août", "aout", "/08", "-08-"]`
+  — coarse pass, zero model call: pages that clearly don't mention the
+  requested window are pushed to the end (include numeric date forms, not
+  just the month name — some agenda widgets never spell it out).
+- `"sujet_synthese": "<a sentence describing what the report is about>"` —
+  fine pass, one grouped Ollama embedding call (`lib/vector.py::embed()`,
+  a few seconds, nothing persisted to disk): pages are ranked by cosine
+  similarity to this sentence. **Needed in addition to the coarse pass, not
+  instead of it** — on the reference campaign, the coarse pass alone let a
+  real event PDF pass as "probable" but still leave it ranked 27th of 29
+  probable pages (still truncated out); the semantic pass alone correctly
+  ranked it inside the budget. Measured, not assumed — see session 3 of
+  `_CADRE/SPECIFICATIONS/PROCEDURES_LLM/TACHE_fiabilisation_synthese_campagne.md`.
+
+Both default to absent — an existing manifest with neither field keeps the
+exact pre-13/08/2026 behaviour.

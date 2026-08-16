@@ -53,9 +53,12 @@ no element numbering, no coordinates, no image analysis.**
 | `extraire_texte` | — | | cleaned text under `extraction_texte` |
 | `cliquer_iframe` / `remplir_iframe` | `selecteur` (+`valeur`), `iframe_selecteur` or `iframe_chemin` | `force`, `secret_cle` | cross-origin, see iframes |
 
-RPA-only (validated by `rpa.py`, accepted but inert in `shot.py`): the
-`evaluer` assertion keys `attendu`/`contient`/`motif`, and
-`declencher_scenario`.
+RPA-only: the `evaluer` assertion keys `attendu`/`contient`/`motif` are
+accepted but inert in `shot.py` (read only by `rpa.py`'s validation layer).
+`declencher_scenario` is different — corrected 15/08/2026, verified against
+`shot.py`: it has no dispatch branch there at all, so `shot.py` rejects it
+with `Type d'action inconnu` rather than silently ignoring it. Only `rpa.py`
+handles it (flattened before dispatch, `rpa.py:168-191`).
 
 ---
 
@@ -332,7 +335,7 @@ cleanly with exit 1. No extra code needed.
 
 | Verb | Waits for | Notes |
 |---|---|---|
-| `attendre` | selector present in DOM (`state=attached`) | `wait_for_selector` without `state=visible` |
+| `attendre` | selector visible (`state=visible`, Playwright's default) | corrected 15/08/2026: `wait_for_selector` is called without a `state` argument, which defaults to `visible`, not `attached` — behaves identically to `attendre_selecteur_present` below |
 | `attendre_navigation` | `networkidle` | use after a click that navigates |
 | `attendre_selecteur_present` | selector visible (`state=visible`) | preferred over `pause` |
 | `attendre_absence` | selector `state=detached` | `delai_initial_ms` to skip a flash that would loop |

@@ -227,7 +227,9 @@
       "properties": {
         "type":  { "const": "attendre_url" },
         "motif": { "type": "string", "minLength": 1,
-                   "description": "Sub-string to match in the current URL (wrapped in ** glob pattern)" }
+                   "description": "Sub-string to match in the current URL (wrapped in ** glob pattern)" },
+        "attendre_changement": { "type": "boolean",
+                   "description": "FR-55 pitfall: attendre_url uses partial matching, so a pattern already present in the current URL (e.g. '/control/' matching '/control/login/') would return immediately. When true, first waits for a real navigation away from the current URL before checking motif. Default: false." }
       }
     },
 

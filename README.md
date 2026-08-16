@@ -72,6 +72,8 @@ campagne.py (orchestration)
   ├─ lib/fetch_leger.py     → requests + BeautifulSoup, robots.txt-aware
   ├─ rpa.py / shot.py       → Playwright, only for pages the light tier
   │                           marked "insufficient" (JS-only shells)
+  ├─ lib/selection_candidats.py → best-match pick among several fetched
+  │                           candidates, "produit" targets only
   ├─ lib/extraction.py      → targeted fact extraction, trouve/valeur/url
   ├─ lib/tables_reference.py→ persistent, sourced table of reference sites
   ├─ lib/cache_recherche.py → ChromaDB-backed search cache
@@ -110,7 +112,8 @@ resolution) — none of its perception layer.
 
 ## Report quality: automatic draft vs. supervised research
 
-`campagne.py`'s own end-of-run report (`lib/synthese.py::rediger_rapport()`)
+`campagne.py`'s own end-of-run report (`lib/synthese.py::construire_contexte()`
+builds and truncates the corpus, `rediger_rapport()` then drafts the text)
 is a **working draft**, not the polished deliverable: it concatenates the
 collected corpus in file order, truncated at 4000 characters/page and 60,000
 total — no relevance ranking. On a large, noisy corpus this reliably admits
@@ -180,8 +183,13 @@ deploys the code to `/opt/dinoer/`, and runs a smoke test
 (`shot.py --a11y` against a real URL).
 
 Configuration lives in `/etc/dinoer/dinoer.conf` (`.deb` channel) or
-`/opt/dinoer/dinoer.conf` (git-clone channel); a commented sample is installed
-next to it as `dinoer-sample.conf`.
+`/opt/dinoer/dinoer.conf` (git-clone channel); a sample is installed next to
+it as `dinoer-sample.conf` — plain JSON, not commented (corrected 15/08/2026:
+JSON has no comment syntax, the file never was). Exception: `campagne.py`
+never reads `DINOER_CONF` or the git-clone path above — it reads
+`/opt/dinoer/dinoer.conf` hardcoded and resolves its own paths via dedicated
+env vars (`DINOER_CAMPAGNES_DIR`, `DINOER_SEARXNG_URL`,
+`DINOER_TABLES_REFERENCE`, `DINOER_JOURNAL`).
 
 ### Uninstallation
 
@@ -221,7 +229,7 @@ Credentials are stored in JSON files, one per domain, **never in code or
 scenario files**:
 
 ```
-~/Vaults/Dinoer/
+~/Vaults/__PROJET__/Dinoer/
 ├── my-source.example.json   → {"password": "...", "username": "admin"}
 └── other-service.com.json   → {"password": "...", "api_key": "..."}
 ```
@@ -233,10 +241,12 @@ directory.
 The path is configurable via `/opt/dinoer/dinoer.conf` or the
 `DINOER_SECRETS_DIR` environment variable.
 
-**Recommendation:** protect `~/Vaults/Dinoer/` with `chmod 700` and encrypt
+**Recommendation:** protect `~/Vaults/__PROJET__/Dinoer/` with `chmod 700` and encrypt
 it with `gocryptfs` (see `scripts/configurer-repertoire-chiffre.sh
---gocryptfs`). If the encrypted directory is initialised but not mounted,
-Dinoer returns a structured `SecretsFermesError` (exit code 42) instead of
+--gocryptfs` — git-clone channel only, not shipped by the `.deb`; on that
+channel, set up `gocryptfs` yourself and point `secrets_dir` at the mounted
+path). If the encrypted directory is initialised but not mounted, Dinoer
+returns a structured `SecretsFermesError` (exit code 42) instead of
 silently failing.
 
 ---
@@ -253,11 +263,11 @@ sources.
 ### Credentials directory
 
 The credentials directory — wherever you pointed `secrets_dir`, for example
-`~/Vaults/Dinoer/` — contains credentials in plaintext JSON when unmounted.
+`~/Vaults/__PROJET__/Dinoer/` — contains credentials in plaintext JSON when unmounted.
 Protect it:
 
 ```bash
-chmod 700 ~/Vaults/Dinoer/
+chmod 700 ~/Vaults/__PROJET__/Dinoer/
 ```
 
 See `~/git/Dinoer/Dinoer/SECURITY.md` for the vulnerability disclosure
@@ -270,7 +280,7 @@ policy.
 This is the English source. [`docs/fr/README.md`](docs/fr/README.md),
 [`docs/de/README.md`](docs/de/README.md) and
 [`docs/es/README.md`](docs/es/README.md) are translations derived from it
-(resynchronised 12/08/2026), together with `docs/MANUEL.md`, `docs/GUIDE.md`,
+(resynchronised 15/08/2026), together with `docs/MANUEL.md`, `docs/GUIDE.md`,
 `docs/CHEAT_SHEET.md` and the `dinoer.1` man page in each language.
 `docs/GUIDE_LLM.md` and its three notices exist in English only and are
 never translated — locked path, guide-lock mechanism.
@@ -297,9 +307,9 @@ testing. All architectural decisions are validated by him.
 
 **Systems Engineer & Lead Developer:** Claude Code (Anthropic)
 Fork of Diwall's ReAct core, the research pipeline (`campagne.py` and
-`lib/searxng.py`, `lib/fetch_leger.py`, `lib/extraction.py`,
-`lib/tables_reference.py`, `lib/cache_recherche.py`), removal of the
-perception layer. Principal author of the source code.
+`lib/searxng.py`, `lib/fetch_leger.py`, `lib/selection_candidats.py`,
+`lib/extraction.py`, `lib/tables_reference.py`, `lib/cache_recherche.py`),
+removal of the perception layer. Principal author of the source code.
 
 **Synthesizer & Strategic Advisor:** Gemini (Google)
 Independent architectural analysis, logical conflict resolution, workflow

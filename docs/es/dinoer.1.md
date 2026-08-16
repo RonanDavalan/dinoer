@@ -30,9 +30,7 @@ de ejecución ReAct, con un árbol de accesibilidad (**--a11y**) como los ojos
 cuando el agente lee el estado. Cada comando imprime un único objeto JSON en
 la salida estándar, diseñado para ser leído por un programa y no por un humano.
 
-Dinoer se distribuye como un clon git instalado por **scripts/install.sh**
-bajo **/opt/dinoer/**. Deliberadamente aún no se ofrece un paquete `.deb`.
-Los puntos de entrada de Python se ejecutan a través del entorno virtual:
+Dinoer se distribuye de dos maneras: este paquete [`.deb`] o una clonación de Git instalada por **scripts/install.sh** bajo **/opt/dinoer/** para aquellos que deseen modificar el código. Los puntos de entrada de Python se ejecutan dentro del entorno virtual:
 
     /opt/dinoer/venv/bin/python /opt/dinoer/shot.py ...
 
@@ -57,7 +55,9 @@ aserciones del escenario y admite **--replay-verifier**.
 **campagne.py**
 : Orquesta una campaña de investigación profunda a partir de un manifiesto
 JSON: paginación por fuente, deduplicación mediante caché vectorial,
-extracción dirigida sin síntesis. Lee su configuración desde **dinoer.conf**.
+extracción dirigida sin síntesis. Lee `/opt/dinoer/dinoer.conf` de forma
+fija, solo para su clave `campagnes_dir` — nunca `DINOER_CONF`, ver
+ARCHIVOS más abajo.
 
 **journal.py**
 : Lee el registro de operaciones de solo añadido en
@@ -141,10 +141,13 @@ código distinto de cero si hay divergencias. La referencia se escribe con
 # ARCHIVOS
 
 **/etc/dinoer/dinoer.conf**
-: Configuración leída por **campagne.py** y el resolutor de credenciales.
-Creada por el operador, nunca generada automáticamente. La variable de
-entorno **DINOER_CONF** anula esta ruta. `secrets_dir`, dentro de ella,
-apunta al directorio de credenciales montado.
+: Configuración leída por el resolvedor de credenciales (`shot.py`, `rpa.py`, a través de
+**DINOER_CONF**, que sobrescribe esta ruta). Creado por el operador, nunca
+generado automáticamente. `secrets_dir` dentro de él apunta al directorio de
+credenciales montado. **campagne.py no lee este archivo** — corregido
+15/08/2026: lee un valor codificado `/opt/dinoer/dinoer.conf` para su propia
+clave `campagnes_dir` únicamente (`campagne.py::_CONF_PATH`), nunca `DINOER_CONF`,
+por lo tanto, en el canal `.deb` no verá este archivo incluso si está presente.
 
 **/opt/dinoer/**
 : Código de la aplicación, el entorno virtual de Python y la documentación
@@ -191,12 +194,12 @@ credenciales si el mensaje indica un checksum inválido.
 Capturar una página con el árbol de accesibilidad:
 
     /opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
-        --url https://example.com --a11y --guide-version 1.3
+        --url https://example.com --a11y --guide-version 1.6
 
 Leer solo el estado de una página, sin ejecutar ninguna acción:
 
     /opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
-        --url https://example.com --guide-version 1.3
+        --url https://example.com --guide-version 1.6
 
 Acceder a un panel de administración que actualiza estadísticas continuamente:
 

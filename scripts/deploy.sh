@@ -47,6 +47,7 @@ CODE_FILES=(
 DIRS_CODE=(
     "$DEST/lib"
     "$DEST/scenarios"
+    "$DEST/dinoer.conf.d"
 )
 
 # Répertoires de données générées à l'exécution — mode 770 (groupe dinoer en écriture)
@@ -141,6 +142,26 @@ for f in "$REPO"/skills/*.json "$REPO"/skills/*.md; do
     else
         sudo cp "$f" "$dst"
         echo "  Déployé : skills/$base"
+        changed=$((changed + 1))
+    fi
+done
+
+# ── Déployer dinoer.conf.d/ (gabarit de profil opérateur) ────────────────────
+# Corrigé le 16/08/2026 : lib/profil_operateur.py lit $DEST/dinoer.conf.d/
+# (résolu relativement à son propre emplacement), mais ni ce script ni
+# debian/dinoer.install ne l'avaient jamais copié — un opérateur n'avait
+# aucun gabarit à disposition sur la machine déployée pour créer son profil
+# operateur.$(whoami).yaml. Seul operateur.exemple.yaml est déployé ; les
+# profils nominaux restent locaux à chaque machine (.gitignore).
+for f in "$REPO"/dinoer.conf.d/*.yaml; do
+    [ -f "$f" ] || continue
+    base="$(basename "$f")"
+    dst="$DEST/dinoer.conf.d/$base"
+    if diff -q "$f" "$dst" > /dev/null 2>&1; then
+        echo "  Inchangé: dinoer.conf.d/$base"
+    else
+        sudo cp "$f" "$dst"
+        echo "  Déployé : dinoer.conf.d/$base"
         changed=$((changed + 1))
     fi
 done
@@ -261,6 +282,7 @@ sudo chown root:"$GROUPE" "$DEST"/*.py "$DEST"/lib/*.py "$DEST"/scripts/*.sh \
      "$DEST"/dinoer-sample.conf "$DEST"/dinoer.conf 2>/dev/null || true
 sudo chown root:"$GROUPE" "$DEST"/scenarios/*.json "$DEST"/scenarios/*.yaml \
      2>/dev/null || true
+sudo chown root:"$GROUPE" "$DEST"/dinoer.conf.d/*.yaml 2>/dev/null || true
 sudo chown root:"$GROUPE" "$DEST"/skills/*.json "$DEST"/skills/*.md \
      2>/dev/null || true
 sudo chown root:"$GROUPE" "$DEST"/docs/*.md 2>/dev/null || true
@@ -275,6 +297,8 @@ sudo chmod 644 "$DEST"/*.py "$DEST"/lib/*.py "$DEST"/dinoer-sample.conf 2>/dev/n
 sudo chmod 640 "$DEST"/dinoer.conf 2>/dev/null || true
 # scenarios/ et skills/ : données d'instance (cibles, séquences d'identifiants) → 640
 sudo chmod 640 "$DEST"/scenarios/*.json "$DEST"/scenarios/*.yaml 2>/dev/null || true
+# dinoer.conf.d/*.exemple.yaml : gabarit public, aucun secret → 644
+sudo chmod 644 "$DEST"/dinoer.conf.d/*.yaml 2>/dev/null || true
 sudo chmod 640 "$DEST"/skills/*.json "$DEST"/skills/*.md 2>/dev/null || true
 sudo chmod 644 "$DEST"/docs/*.md 2>/dev/null || true
 sudo chmod 644 "$DEST"/docs/images/* 2>/dev/null || true

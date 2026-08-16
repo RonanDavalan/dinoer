@@ -41,7 +41,7 @@ No architectural descriptions. Commands that work.
 ```bash
 # Full test in one command (~3 s)
 /opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
-  --url https://example.com --a11y --guide-version 1.3
+  --url https://example.com --a11y --guide-version 1.6
 ```
 
 Expected result: JSON on stdout with `"succes": true`.
@@ -88,8 +88,9 @@ sudo apt install ./dinoer_1.0.0-1_all.deb
 
 Package, sources and checksums are published on
 [dinoer.davalan.fr](https://dinoer.davalan.fr/en/guides/downloads/).
-Configuration lives at `/etc/dinoer/dinoer.conf` (JSON, commented sample
-installed beside it as `dinoer-sample.conf`).
+Configuration lives at `/etc/dinoer/dinoer.conf` (JSON; a sample is installed
+beside it as `dinoer-sample.conf` — plain JSON, not commented, JSON has no
+comment syntax).
 
 **Git clone** — if you intend to modify Dinoer's own code:
 
@@ -333,7 +334,10 @@ Credentials file format:
 ```
 
 The file name = `urlparse(url).hostname`. For `https://app.example.com/login/`, create `app.example.com.json`.
-The directory is resolved from `DINOER_CONF` → `~/.dinoer.conf` → `/opt/dinoer/dinoer.conf`, key `secrets_dir`.
+The directory comes from key `secrets_dir` in the conf file named by
+`DINOER_CONF` (default `/opt/dinoer/dinoer.conf`) — corrected 15/08/2026:
+`~/.dinoer.conf` is a naming convention for where `DINOER_CONF` commonly
+points, not a separate automatic fallback step.
 
 ### 4b. Filling a form — the absolute rule
 
@@ -407,11 +411,16 @@ from `DINOER_NTFY_URL` (env) or the `ntfy.url` key of `dinoer.conf`.
 To protect a credentials file against silent FUSE corruption, add a `checksum` field:
 
 ```bash
-# Generate the checksum
+# Generate the checksum — corrected 15/08/2026, verified against
+# lib/repertoire_chiffre.py:32 (_CHAMPS_CHECKSUM): the hash covers whichever
+# of these four fields are present, not just username/password. Hashing a
+# fixed username/password-only subset produces a checksum the code rejects
+# as soon as the file also has totp_cle or origines_autorisees.
 /opt/dinoer/venv/bin/python -c "
 import json, hashlib
 creds = json.load(open('my_credentials.json'))
-fields = {k: creds[k] for k in sorted(['username','password']) if k in creds}
+champs = ('username', 'password', 'totp_cle', 'origines_autorisees')
+fields = {k: creds[k] for k in sorted(champs) if k in creds}
 print('sha256:' + hashlib.sha256(json.dumps(fields, sort_keys=True).encode()).hexdigest())
 "
 ```
@@ -650,8 +659,10 @@ If the guard fails: rpa.py stops before the deletion is executed.
   --reprendre-session /tmp/dinoer/session.json
 ```
 
-**Session drift signal:** if the session has expired, `boussole.session_derive: true` in the JSON.
-In that case: restart the full login without `--reprendre-session`.
+**Session drift signal:** if the session has expired, `boussole.session_derive`
+appears in the JSON — an object (`{url_sauvegardee, url_reprise}`), not a
+boolean; its presence is the signal. In that case: restart the full login
+without `--reprendre-session`.
 
 ### 5h. Structural non-regression — `--replay-verifier` (v1.17.0)
 
@@ -746,7 +757,7 @@ iframe, keep using `iframe_selecteur` (section 5j).
 | `evaluer` | `script` | `attendu`, `contient`, `motif` | JS executed in the browser. Assertions for rpa.py only |
 | `defiler` | `px` or `selecteur` | — | Vertical scroll in pixels (`px`) or scroll to element (`selecteur`) |
 | `pause` | `ms` | — | Fixed delay in ms. Prefer `attendre_selecteur_present` for DOM signals |
-| `attendre` | `selecteur` | — | Waits for the CSS selector to be present in the DOM (`state=attached`) |
+| `attendre` | `selecteur` | — | Waits for the CSS selector to become visible (`state=visible`, Playwright's default — corrected 16/08/2026, identical to `attendre_selecteur_present`) |
 | `attendre_navigation` | — | — | Waits for `networkidle` (end of network requests) |
 | `attendre_url` | `motif` | `attendre_changement` (bool) | URL substring match. `attendre_changement: true` waits for a real navigation first (see the FR-55 pitfall) |
 | `attendre_selecteur_present` | `selecteur` | — | Waits for element to be visible (`state=visible`) |
@@ -910,14 +921,17 @@ zero LLM call, built on `--replay-verifier` (section 5h).
 ```bash
 # First run — create the structural reference
 /opt/dinoer/venv/bin/python /opt/dinoer/rpa.py \
-  --scenario /opt/dinoer/scenarios/sillage_login.json \
-  --sauver-verifier-reference /opt/dinoer/references/sillage_login.ref.json
+  --scenario /opt/dinoer/scenarios/example_login.json \
+  --sauver-verifier-reference /opt/dinoer/references/example_login.ref.json
 
 # One check-and-alert pass — not a daemon, run it repeatedly via cron.
-# scripts/*.sh is never deployed to /opt/dinoer/, so it runs from the git
-# source, as your own user.
+# On the git-clone channel, scripts/*.sh is never deployed to /opt/dinoer/,
+# so it runs from the git source, as your own user. On the .deb channel,
+# the three wrapped scripts (monter/demonter-repertoire-chiffre,
+# monitor-verifier) ARE installed under /opt/dinoer/scripts/ — corrected
+# 15/08/2026, this comment predates that channel's real construction.
 bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
-  --scenario /opt/dinoer/scenarios/sillage_login.json \
+  --scenario /opt/dinoer/scenarios/example_login.json \
   --reference /tmp/ref_sillage.json \
   --ntfy-topic dinoer-monitoring
 ```
@@ -925,8 +939,8 @@ bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
 ```bash
 # crontab -e (your own crontab)
 */15 * * * * bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
-  --scenario /opt/dinoer/scenarios/sillage_login.json \
-  --reference /opt/dinoer/references/sillage_login.ref.json \
+  --scenario /opt/dinoer/scenarios/example_login.json \
+  --reference /opt/dinoer/references/example_login.ref.json \
   --ntfy-topic dinoer-monitoring \
   >> /var/log/dinoer/cron-structural.jsonl 2>&1
 ```
@@ -935,10 +949,10 @@ Stable → silence. Regression → one `ntfy` notification with the diff. Each
 invocation is an isolated process — no daemon, no memory-leak risk, and
 Respectful Navigation caps reset cleanly on every pass.
 
-**Known debt (v1.23.0):** the script calls `rpa.py --no-capture
---replay-verifier`, but `--no-capture` is no longer an `rpa.py` flag. It is
-semantically redundant (Dinoer has no image path), but it currently makes the
-script fail at argparse. Do not rely on it as-is until corrected.
+**Fixed 16/08/2026:** the script used to call `rpa.py --no-capture
+--replay-verifier`, but `--no-capture` was no longer an `rpa.py` flag —
+every real invocation failed at argparse. The dead flag has been removed
+(Dinoer has no image path by default, so dropping it changes nothing else).
 
 **Guide-read lock nuance:** if invoked under a distinct OS user (e.g. a
 system service account), that user needs `--guide-version` validated once
@@ -979,17 +993,26 @@ Fields in each entry:
 | Field | Meaning |
 |---|---|
 | `ts` | ISO 8601 timestamp |
+| `operation_id` | Unique run identifier (v1.16.0), names the evidence directory `preuves/<AAAA-MM>/<id>/` when captures are archived |
+| `outil` | `"shot.py"` or `"campagne.py"` only — `rpa.py` never journals itself, it runs through `shot.py`'s dispatch (corrected 15/08/2026 twice: first from a `mode` field the code never wrote, then to remove `"rpa.py"` as a possible value, itself never written) |
 | `version` | Dinoer version |
-| `mode` | `shot.py` or `rpa.py` |
 | `cible_url` | Target URL |
-| `scenario` | Scenario file path (RPA mode) |
-| `source_scenario` | Scenario file name only, no path (v1.18.0) |
 | `resultat` | `"succes"` or `"echec"` |
 | `mutatif` | `true` if at least one write action |
-| `respect` | The run's navigation ledger |
-| `evaluations` | Sanitised `{script, valeur_retournee}` values |
-| `duree_ms` | Duration in ms |
-| `intention` | Label passed via `--intention` or scenario `intention` field |
+| `hostname_executant` / `utilisateur_executant` / `profil_actif` | Execution boussole (host, OS user, active operator profile) |
+| `intention` | Label passed via `--intention` or scenario `intention` field — present only if set |
+| `source_scenario` | Scenario file name only, no path (v1.18.0) — present only in RPA mode. Corrected 15/08/2026: previously the table also listed a `scenario` field (full path); the code never wrote one |
+| `chainage` | List of `{scenario, profondeur, action_debut, action_fin}` — present only when `declencher_scenario` was used |
+| `actions` | Summarised action list — present when the run had actions |
+| `actions_raw` | Neutralised full action list — present only on a successful run with actions |
+| `captures` | Reference(s) to structural captures — present only when the run produced any |
+| `erreur` | Present only on failure |
+| `respect` | The run's navigation ledger — present only when set |
+| `evaluations` | Sanitised `{script, valeur_retournee}` values — present only if `evaluer` actions ran |
+
+No `duree_ms` field exists in the journal — corrected 15/08/2026, this table
+previously listed one the code never wrote. Per-action timing is
+`latences_actions` in the JSON output of a run, not in the journal entry.
 
 ### 9a. Log rotation (G-36)
 
@@ -1078,7 +1101,9 @@ Propagates all relevant shot.py flags, plus:
 |---|---|
 | `--manifeste FILE` | Campaign manifest (JSON) — requires `id_campagne` + `cibles` |
 | `--id-campagne ID` | Campaign identifier (used in the manifest and extraction) |
-| `--extraire-cible DEMANDE` | Targeted extraction on an already-collected corpus, without synthesis |
+| `--extraire-cible DEMANDE` | Targeted extraction on an already-collected corpus, without synthesis. Requires `--id-campagne` or `--corpus` |
+| `--corpus FILE` | Direct path to a `collecte.jsonl` — alternative to `--id-campagne` for `--extraire-cible` |
+| `--format-extraction {json,markdown,html}` | Output format for `--extraire-cible` (default: `json`) — added 15/08/2026, missing from this table |
 | `--desactiver-cache` | Bypass the search cache |
 | `--purger-cache` | Purge the whole search cache |
 | `--purger-cache-avant-jours N` | Purge cache entries older than N days |
@@ -1157,9 +1182,12 @@ Artefacts: the shared `/var/log/dinoer/operations.jsonl` + a per-campaign
 ```
 
 `operation_id` (v1.16.0) is always present and identifies this run uniquely —
-it names the isolation directory under `/tmp/dinoer/<operation_id>/` and
-matches the `operation_id` field of this run's entry in the operations log
-(section 9). `etat` (v1.16.0) is present on the success path only.
+it matches the `operation_id` field of this run's entry in the operations
+log (section 9), and names the evidence directory `preuves/<AAAA-MM>/<operation_id>/`
+when captures are archived (corrected 15/08/2026, verified against
+`lib/journal.py`: no `/tmp/dinoer/<operation_id>/` directory exists anywhere
+in the code — `/tmp/dinoer/` only ever holds the operations-log fallback
+file). `etat` (v1.16.0) is present on the success path only.
 `latences_actions` (v1.20.0) is always present (empty list if no actions),
 one entry per action that actually dispatched — see `GUIDE_LLM_MONITORING.md`
 for how it complements `respect.duree_totale_ms`.
@@ -1200,7 +1228,8 @@ table.
 | `/opt/dinoer/scenarios/` | RPA scenarios (including `diagnostic_dom.json`) |
 | `/opt/dinoer/docs/` | Documentation |
 | `/opt/dinoer/references/` | `--sauver-verifier-reference` / replay references |
-| `/tmp/dinoer/<operation_id>/` | Temporary session data for one run, isolated by `operation_id` (v1.16.0, cleared on reboot) |
+| `/tmp/dinoer/` | Session files (`--sauver-session`/`--reprendre-session`) and the operations-log fallback file — corrected 15/08/2026: no per-`operation_id` subdirectory exists here, see the next row |
+| `/var/log/dinoer/preuves/<AAAA-MM>/<operation_id>/` | Evidence directory for one run, isolated by `operation_id` (v1.16.0), created only when captures are archived |
 | `~/Vaults/__PROJET__/Dinoer/` | Credentials + log (gocryptfs volume) |
 | `~/git/Dinoer/Dinoer/` | Git sources (edit here, then `deploy.sh`) |
 | `/var/log/dinoer/operations.jsonl` | Persistent operation log (`journal.py`) |

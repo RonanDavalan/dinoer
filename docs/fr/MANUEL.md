@@ -1,6 +1,6 @@
 # Dinoer — manuel opérationnel
 
-**Version 1.0.0 — août 2026**
+**Version 1.0.0 — Août 2026**
 
 Ce document répond à une seule question : **comment faire X avec Dinoer**.
 
@@ -35,15 +35,15 @@ Aucune description architecturale. Des commandes qui fonctionnent.
 ## 1. Vérifier l'installation
 
 ```bash
-# Vérification la moins coûteuse possible — pas de Playwright, pas d'URL, exit 0 immédiat (v1.18.0+)
+# Vérification la plus simple possible – sans Playwright, sans URL, sortie immédiate avec le code 0 (v1.18.0+).
 /opt/dinoer/venv/bin/python /opt/dinoer/shot.py --version
 # → {"outil": "shot.py", "version": "1.0.0"}
 ```
 
 ```bash
-# Test complet en une commande (~3 s)
+# Test complet en une seule commande (environ 3 secondes).
 /opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
-  --url https://example.com --a11y --guide-version 1.3
+  --url https://example.com --a11y --guide-version 1.6
 ```
 
 Résultat attendu : JSON sur stdout avec `"succes": true`.
@@ -65,26 +65,36 @@ antérieur les couvre déjà, tant que le `notice-version` de
 `docs/GUIDE_LLM.md` n'a pas changé depuis.
 
 ```bash
-# Vérifier la version installée
+# Vérifiez la version installée.
 grep "__version__" /opt/dinoer/shot.py
 # → __version__ = "1.0.0"
 
-# Vérifier que playwright-stealth est disponible (v1.15.0)
+# Vérifiez que `playwright-stealth` est disponible (version v1.15.0).
 /opt/dinoer/venv/bin/python -c "import playwright_stealth; print('stealth OK')"
 
-# Vérifier que le répertoire chiffré est monté
+# Vérifiez que le répertoire chiffré est monté.
 ls ~/Vaults/__PROJET__/Dinoer/
-# → doit montrer des fichiers .json, pas une liste vide
+# → doit afficher les fichiers .json, et non une liste vide.
 ```
 
 Si `ls ~/Vaults/...` renvoie une liste vide ou une erreur :
 → montez-le : `bash ~/git/Dinoer/Dinoer/scripts/monter-repertoire-chiffre.sh`
 
-### 1a. Installer depuis les sources (seul canal aujourd'hui)
+### 1a. Installation
 
-**Aucun paquet `.deb` n'est proposé pour le moment** — l'empaquetage est
-délibérément différé jusqu'à stabilisation du produit. Installez depuis un
-clone git :
+Deux canaux, mutuellement exclusifs sur une même machine.
+
+**`.deb` package** — le chemin habituel si vous souhaitez utiliser Dinoer tel quel :
+
+```bash
+sudo apt install ./dinoer_1.0.0-1_all.deb
+```
+
+Les paquets, les sources et les sommes de contrôle sont publiés sur
+[dinoer.davalan.fr](https://dinoer.davalan.fr/en/guides/downloads/).
+La configuration se trouve à `/etc/dinoer/dinoer.conf` (JSON, un exemple commenté est installé à côté, sous la forme `dinoer-sample.conf`).
+
+**Cloner le dépôt Git** – si vous avez l'intention de modifier le code source de Dinoer :
 
 ```bash
 git clone https://github.com/RonanDavalan/dinoer.git ~/git/Dinoer/Dinoer
@@ -93,14 +103,11 @@ bash scripts/install.sh
 ```
 
 `scripts/install.sh` crée l'utilisateur et le groupe système `dinoer`, le
-venv Python, déploie le code sous `/opt/dinoer/`, installe Chromium, et lance
-un test de fumée (`shot.py --a11y` contre une URL réelle). Si vous comptez
-modifier le code de Dinoer lui-même, éditez ce dépôt et déployez avec
-`scripts/deploy.sh`.
+venv Python, déploie le code vers `/opt/dinoer/`, installe Chromium, et
+lance un test de fumée (`shot.py --a11y` contre une URL réelle). Déployez
+les modifications ultérieures avec `scripts/deploy.sh`.
 
-La configuration vit dans `/opt/dinoer/dinoer.conf` (JSON) ; la clé du
-répertoire de secrets chiffré est `secrets_dir`. Surcharge par projet via la
-variable d'environnement `DINOER_CONF` ou `~/.dinoer.conf`.
+La configuration se trouve à `/opt/dinoer/dinoer.conf` (JSON) sur ce canal ; la clé du répertoire de secrets chiffrés est `secrets_dir`. Redéfinition par projet via la variable d'environnement `DINOER_CONF` ou `~/.dinoer.conf`.
 
 Désinstallation :
 
@@ -340,10 +347,10 @@ Format du fichier d'identifiants :
 }
 ```
 
-Le nom du fichier = `urlparse(url).hostname`. Pour
-`https://app.example.com/login/`, créez `app.example.com.json`.
-Le répertoire est résolu depuis `DINOER_CONF` → `~/.dinoer.conf` →
-`/opt/dinoer/dinoer.conf`, clé `secrets_dir`.
+Le nom du fichier = `urlparse(url).hostname`. Pour `https://app.example.com/login/`, créez `app.example.com.json`.
+Le répertoire provient de la clé `secrets_dir` dans le fichier de configuration nommé par
+`DINOER_CONF` (par défaut `/opt/dinoer/dinoer.conf`) — corrigé le 15/08/2026:
+`~/.dinoer.conf` est une convention de nommage pour l'endroit où `DINOER_CONF` pointe généralement, et non une étape de repli automatique distincte.
 
 ### 4b. Remplir un formulaire — la règle absolue
 
@@ -428,11 +435,14 @@ Pour protéger un fichier d'identifiants contre une corruption FUSE
 silencieuse, ajoutez un champ `checksum` :
 
 ```bash
-# Générer la somme de contrôle
+# Générer la somme de contrôle — corrigé le 15/08/2026, vérifié contre
+# lib/repertoire_chiffre.py:32 (_CHAMPS_CHECKSUM) : la somme couvre les
+# quatre champs présents, pas seulement username/password.
 /opt/dinoer/venv/bin/python -c "
 import json, hashlib
 creds = json.load(open('mes_identifiants.json'))
-fields = {k: creds[k] for k in sorted(['username','password']) if k in creds}
+champs = ('username', 'password', 'totp_cle', 'origines_autorisees')
+fields = {k: creds[k] for k in sorted(champs) if k in creds}
 print('sha256:' + hashlib.sha256(json.dumps(fields, sort_keys=True).encode()).hexdigest())
 "
 ```
@@ -785,7 +795,7 @@ Pour une iframe à un seul niveau, continuez d'utiliser `iframe_selecteur`
 | `evaluer` | `script` | `attendu`, `contient`, `motif` | JS exécuté dans le navigateur. Assertions pour rpa.py uniquement |
 | `defiler` | `px` ou `selecteur` | — | défilement vertical en pixels (`px`) ou jusqu'à un élément (`selecteur`) |
 | `pause` | `ms` | — | délai fixe en ms. Préférez `attendre_selecteur_present` pour les signaux DOM |
-| `attendre` | `selecteur` | — | attend que le sélecteur CSS soit présent dans le DOM (`state=attached`) |
+| `attendre` | `selecteur` | — | attend que le sélecteur CSS devienne visible (`state=visible`, défaut Playwright — corrigé le 16/08/2026, identique à `attendre_selecteur_present`) |
 | `attendre_navigation` | — | — | attend `networkidle` (fin des requêtes réseau) |
 | `attendre_url` | `motif` | `attendre_changement` (bool) | correspondance de sous-chaîne d'URL. `attendre_changement: true` attend d'abord une vraie navigation (voir le piège FR-55) |
 | `attendre_selecteur_present` | `selecteur` | — | attend que l'élément soit visible (`state=visible`) |
@@ -965,16 +975,19 @@ aucune image, aucun appel de LLM, construit sur `--replay-verifier`
 (section 5h).
 
 ```bash
-# Première exécution — créer la référence structurelle
+# Premier lancement : créer la référence structurelle.
 /opt/dinoer/venv/bin/python /opt/dinoer/rpa.py \
-  --scenario /opt/dinoer/scenarios/sillage_login.json \
-  --sauver-verifier-reference /opt/dinoer/references/sillage_login.ref.json
+  --scenario /opt/dinoer/scenarios/example_login.json \
+  --sauver-verifier-reference /opt/dinoer/references/example_login.ref.json
 
-# Une passe de vérification-et-alerte — pas un démon, exécutez-la à répétition via cron.
-# scripts/*.sh n'est jamais déployé vers /opt/dinoer/, donc il s'exécute depuis les
-# sources git, sous votre propre utilisateur.
+# Un script de vérification et d'alerte – ce n'est pas un démon, exécutez-le à plusieurs reprises via cron.
+# Sur le canal git-clone, les fichiers scripts/*.sh ne sont jamais déployés vers /opt/dinoer/.
+# de sorte qu'il s'exécute à partir du code source Git, en tant que votre propre utilisateur. Sur le canal .deb,
+# les trois scripts compressés (monter/démonter-répertoire-chiffré,
+# monitor-vérificateur) SONT installés sous /opt/dinoer/scripts/ – corrigé.
+# 15/08/2026, ce commentaire date de l'époque précédant la véritable création de cette chaîne.
 bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
-  --scenario /opt/dinoer/scenarios/sillage_login.json \
+  --scenario /opt/dinoer/scenarios/example_login.json \
   --reference /tmp/ref_sillage.json \
   --ntfy-topic dinoer-monitoring
 ```
@@ -982,8 +995,8 @@ bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
 ```bash
 # crontab -e (votre propre crontab)
 */15 * * * * bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
-  --scenario /opt/dinoer/scenarios/sillage_login.json \
-  --reference /opt/dinoer/references/sillage_login.ref.json \
+  --scenario /opt/dinoer/scenarios/example_login.json \
+  --reference /opt/dinoer/references/example_login.ref.json \
   --ntfy-topic dinoer-monitoring \
   >> /var/log/dinoer/cron-structural.jsonl 2>&1
 ```
@@ -993,11 +1006,11 @@ Chaque invocation est un processus isolé — aucun démon, aucun risque de
 fuite mémoire, et les plafonds de navigation respectueuse se réinitialisent
 proprement à chaque passe.
 
-**Dette connue (v1.23.0) :** le script appelle `rpa.py --no-capture
---replay-verifier`, mais `--no-capture` n'est plus un drapeau de `rpa.py`.
-C'est sémantiquement redondant (Dinoer n'a aucun chemin image), mais cela
-fait actuellement échouer le script au niveau d'argparse. N'y comptez pas
-tel quel avant correction.
+**Corrigé le 16/08/2026 :** le script appelait auparavant `rpa.py --no-capture
+--replay-verifier`, mais `--no-capture` n'était plus un drapeau de `rpa.py` —
+chaque exécution réelle échouait au niveau d'argparse. Le drapeau mort a été
+retiré (Dinoer n'a aucun chemin image par défaut, le retirer ne change rien
+d'autre).
 
 **Nuance sur le verrou de lecture du guide :** si invoqué sous un
 utilisateur OS distinct (par exemple un compte de service système), cet
@@ -1038,18 +1051,28 @@ Champs de chaque entrée :
 
 | Champ | Signification |
 |---|---|
-| `ts` | horodatage ISO 8601 |
-| `version` | version de Dinoer |
-| `mode` | `shot.py` ou `rpa.py` |
+| `ts` | Horodatage ISO 8601 |
+| `operation_id` | Identifiant de session unique (v1.16.0), nomme le répertoire du fichier temporaire |
+| `outil` | `"shot.py"`, `"rpa.py"` ou `"campagne.py"` — corrigé le 15/08/2026, était documenté comme `mode` (`shot.py`/`rpa.py`), un champ que le code n'a jamais écrit |
+| `version` | Version de Dinoer |
 | `cible_url` | URL cible |
-| `scenario` | chemin du fichier de scénario (mode RPA) |
-| `source_scenario` | nom du fichier de scénario seul, sans chemin (v1.18.0) |
 | `resultat` | `"succes"` ou `"echec"` |
-| `mutatif` | `true` si au moins une action d'écriture |
-| `respect` | le registre de navigation de l'exécution |
-| `evaluations` | valeurs `{script, valeur_retournee}` neutralisées |
-| `duree_ms` | durée en ms |
-| `intention` | libellé passé via `--intention` ou champ `intention` du scénario |
+| `mutatif` | `true` si au moins une action d'écriture a été effectuée |
+| `hostname_executant` / `utilisateur_executant` / `profil_actif` | Boussole d'exécution (hôte, utilisateur du système d'exploitation, profil d'opérateur actif) |
+| `intention` | Étiquette transmise via le champ `--intention` ou le scénario `intention` — présente uniquement si définie |
+| `source_scenario` | Nom du fichier de scénario uniquement, sans chemin (v1.18.0) — présent uniquement en mode RPA. Corrigé le 15/08/2026: précédemment, le tableau listait également un champ `scenario` (chemin complet); le code n'a jamais écrit celui-ci |
+| `chainage` | Liste de `{scenario, profondeur, action_debut, action_fin}` — présente uniquement lorsque `declencher_scenario` a été utilisé |
+| `actions` | Liste d'actions résumée — présente lorsque la session contenait des actions |
+| `actions_raw` | Liste complète d'actions neutralisée — présente uniquement lors d'une exécution réussie avec des actions |
+| `captures` | Référence(s) aux captures structurelles — présente uniquement lorsque l'exécution a produit quelque chose |
+| `erreur` | Présent uniquement en cas d'échec |
+| `respect` | Journal de navigation de la session — présent uniquement si défini |
+| `evaluations` | Valeurs de `{script, valeur_retournee}` nettoyées — présent uniquement si les actions `evaluer` ont été exécutées |
+
+Aucun champ `duree_ms` n'existe dans le journal — corrigé le 15/08/2026,
+cette table en listait un que le code n'a jamais écrit. La mesure du temps
+par action est `latences_actions`, dans la sortie JSON d'un run, pas dans
+l'entrée du journal.
 
 ### 9a. Rotation du journal (G-36)
 
@@ -1221,9 +1244,12 @@ partagé + un `collecte.jsonl` par campagne. Détail complet :
 ```
 
 `operation_id` (v1.16.0) est toujours présent et identifie cette exécution
-de façon unique — il nomme le répertoire d'isolation sous
-`/tmp/dinoer/<operation_id>/` et correspond au champ `operation_id` de
-l'entrée de cette exécution dans le journal d'opérations (section 9).
+de façon unique — il correspond au champ `operation_id` de l'entrée de
+cette exécution dans le journal d'opérations (section 9), et nomme le
+répertoire de preuves `preuves/<AAAA-MM>/<operation_id>/` quand des
+captures y sont archivées (corrigé le 15/08/2026 : aucun répertoire
+`/tmp/dinoer/<operation_id>/` n'existe dans le code — `/tmp/dinoer/` ne
+contient que le fichier de repli du journal).
 `etat` (v1.16.0) est présent uniquement sur le chemin de succès.
 `latences_actions` (v1.20.0) est toujours présent (liste vide si aucune
 action), une entrée par action réellement exécutée — voir
@@ -1266,7 +1292,8 @@ d'activation exhaustive.
 | `/opt/dinoer/scenarios/` | scénarios RPA (dont `diagnostic_dom.json`) |
 | `/opt/dinoer/docs/` | documentation |
 | `/opt/dinoer/references/` | références `--sauver-verifier-reference` / replay |
-| `/tmp/dinoer/<operation_id>/` | données de session temporaires pour une exécution, isolées par `operation_id` (v1.16.0, effacées au redémarrage) |
+| `/tmp/dinoer/` | fichiers de session (`--sauver-session`/`--reprendre-session`) et fichier de repli du journal — corrigé le 15/08/2026 : aucun sous-répertoire par `operation_id` n'existe ici, voir la ligne suivante |
+| `/var/log/dinoer/preuves/<AAAA-MM>/<operation_id>/` | répertoire de preuves pour une exécution, isolé par `operation_id` (v1.16.0), créé uniquement quand des captures sont archivées |
 | `~/Vaults/__PROJET__/Dinoer/` | identifiants + journal (volume gocryptfs) |
 | `~/git/Dinoer/Dinoer/` | sources git (éditez ici, puis `deploy.sh`) |
 | `/var/log/dinoer/operations.jsonl` | journal d'opérations persistant (`journal.py`) |

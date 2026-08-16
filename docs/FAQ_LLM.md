@@ -26,7 +26,7 @@ incident that motivated it.
 ```bash
 cat /opt/dinoer/docs/GUIDE_LLM.md
 # read it, find "<!-- notice-version: X.Y -->" near the top, then:
-/opt/dinoer/venv/bin/python /opt/dinoer/shot.py --url <url> --guide-version 1.3
+/opt/dinoer/venv/bin/python /opt/dinoer/shot.py --url <url> --guide-version 1.6
 ```
 
 You will not be asked again on this machine, as this OS user, until
@@ -83,7 +83,9 @@ Conditional keys appear only when the corresponding mechanism is active:
 
 `titre_page` is always present but may be empty (`""`) on `about:blank` or if Playwright
 cannot read the title before closing. `operation_id` (v1.16.0) uniquely identifies the
-run and names its temporary-file directory under `/tmp/dinoer/<operation_id>/`.
+run and names the evidence directory `preuves/<AAAA-MM>/<operation_id>/` when captures
+are archived (corrected 15/08/2026 — no `/tmp/dinoer/<operation_id>/` directory exists
+in the code).
 
 The JSON root also carries a deterministic `etat` object (`pret_a_agir`,
 `niveau_confiance`, `raisons`, v1.16.0) synthesizing these signals into one
@@ -198,8 +200,10 @@ runs a single continuous session. The credentials and journal are managed by the
 - Sub-scenario resolved via: `scenarios/<name>{.json,.yaml,.yml}` or absolute path.
 - Recursion depth capped at 5 levels. Circular references produce a structured
   `profondeur_max_chainages` error.
-- Schema validation runs on the **full flattened action list** (parent + all sub-scenarios
-  inlined) before any Playwright call.
+- Corrected 15/08/2026: schema validation runs on the **parent scenario
+  only**, before flattening (`rpa.py`: `_valider_schema()` then
+  `_aplatir_actions()`, in that order) — a sub-scenario is parsed when
+  inlined but never itself checked against `scenarios/schema.json`.
 
 ---
 

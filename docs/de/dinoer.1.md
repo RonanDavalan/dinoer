@@ -31,10 +31,7 @@ wenn der Agent den Zustand liest. Jeder Befehl gibt ein einzelnes
 JSON-Objekt auf der Standardausgabe aus, das dafür gedacht ist, von einem
 Programm gelesen zu werden, nicht von einem Menschen.
 
-Dinoer wird als Git-Clone ausgeliefert, installiert durch
-**scripts/install.sh** unter **/opt/dinoer/**. Ein `.deb`-Paket wird
-bewusst noch nicht angeboten. Die Python-Einstiegspunkte laufen über die
-virtuelle Umgebung:
+Dinoer wird auf zwei Arten ausgeliefert: entweder in diesem `.deb` Paket oder als Git-Klon, der von **scripts/install.sh** unter Verwendung von **/opt/dinoer/** für alle installiert wird, die den Code ändern möchten. Die Python-Einstiegspunkte werden innerhalb der virtuellen Umgebung ausgeführt:
 
     /opt/dinoer/venv/bin/python /opt/dinoer/shot.py ...
 
@@ -60,7 +57,9 @@ und **--replay-verifier** unterstützt.
 **campagne.py**
 : Orchestriert eine Tiefenrecherche-Kampagne aus einem JSON-Manifest:
 Paginierung pro Quelle, Deduplizierung über den Vektor-Cache, gezielte
-Extraktion ohne Synthese. Liest seine Konfiguration aus **dinoer.conf**.
+Extraktion ohne Synthese. Liest fest `/opt/dinoer/dinoer.conf`, nur für
+seinen `campagnes_dir`-Schlüssel — niemals `DINOER_CONF`, siehe DATEIEN
+unten.
 
 **journal.py**
 : Liest das Append-only-Vorgangsprotokoll unter
@@ -145,11 +144,12 @@ Referenz wird von **--sauver-verifier-reference** geschrieben. Nur
 # DATEIEN
 
 **/etc/dinoer/dinoer.conf**
-: Konfiguration, gelesen von **campagne.py** und dem
-Credential-Resolver. Vom Betreiber erstellt, nie automatisch generiert.
-Die Umgebungsvariable **DINOER_CONF** überschreibt diesen Pfad. Der
-Schlüssel `secrets_dir` darin verweist auf das gemountete
-Credentials-Verzeichnis.
+: Konfiguration, die vom Credential Resolver (`shot.py`, `rpa.py`) über
+**DINOER_CONF** gelesen wird, was diesen Pfad überschreibt). Erstellt vom Administrator und niemals automatisch generiert.  `secrets_dir` darin verweist auf das gemountete
+Verzeichnis mit den Anmeldeinformationen. **campagne.py liest diese Datei nicht** — korrigiert
+15/08/2026: es liest einen fest codierten `/opt/dinoer/dinoer.conf` für seinen eigenen
+`campagnes_dir` Schlüssel (nur [`campagne.py::_CONF_PATH`]), niemals `DINOER_CONF`,
+und somit wird diese Datei auf dem `.deb` Kanal nicht angezeigt, selbst wenn sie vorhanden ist.
 
 **/opt/dinoer/**
 : Anwendungscode, die Python-Virtualisierungsumgebung und die
@@ -198,12 +198,12 @@ prüfen, wenn die Meldung eine ungültige Prüfsumme nennt.
 Eine Seite mit dem Accessibility-Baum erfassen:
 
     /opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
-        --url https://example.com --a11y --guide-version 1.3
+        --url https://example.com --a11y --guide-version 1.6
 
 Nur den Zustand einer Seite lesen, ohne eine Aktion auszuführen:
 
     /opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
-        --url https://example.com --guide-version 1.3
+        --url https://example.com --guide-version 1.6
 
 Ein Administrationspanel erreichen, das Statistiken kontinuierlich
 aktualisiert:

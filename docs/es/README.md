@@ -40,19 +40,29 @@ completa.
 
 ---
 
+## Posicionamiento: en qué compite Dinoer y en qué no.
+
+Dinoer no compite con los asistentes de búsqueda de uso general (Perplexity y similares) en cuanto a la amplitud, el volumen o el precio de las búsquedas. Una prueba real (14 de agosto de 2026, investigación de reputación sobre un tema real) midió esto directamente en lugar de asumirlo: de las 28 páginas recopiladas por el propio sistema de descubrimiento impulsado por SearXNG de Dinoer, tres fuentes que una consulta simple y no preparada de Perplexity mostró inmediatamente (un perfil de LinkedIn, una página de proyecto, un crédito de foto de archivo) estaban completamente ausentes; esto se rastreó hasta consultas de SearXNG dirigidas al tipo incorrecto de búsqueda (directorios de empresas, en lugar de los términos que habrían mostrado esas páginas), y no a un defecto de clasificación o truncamiento posterior. Un motor de búsqueda generalista con motores autenticados y respaldados por cookies tiene un alcance estructural que una instancia local de SearXNG sin autenticación no posee.
+
+Lo que la misma prueba verificó, en el mismo conjunto de datos, midió más que lo que se asumió: **una síntesis trazable y reproducible de un conjunto de datos específico.** Cada afirmación en un informe de Dinoer es atribuible a una página realmente recopilada en disco (`collecte.jsonl`/`operations.jsonl`) — sin ninguna dependencia de lo que haya hecho un motor de búsqueda externo al producir la respuesta. Una verificación directa del flujo completo de eventos del modelo delegado durante la síntesis (no solo su texto final) confirmó que no se realizaron llamadas externas `websearch`/`webfetch` al conjunto de datos durante la generación del informe. Esa es la verdadera propuesta de valor: saber precisamente de dónde proviene una respuesta, y no simplemente obtener resultados como lo haría una herramienta generalista.
+
+---
+
 ## Arquitectura
 
 ```
-campagne.py (orquestación)
-  ├─ lib/searxng.py         → API JSON de SearXNG (solo HTTP, sin navegador)
-  ├─ lib/fetch_leger.py     → requests + BeautifulSoup, respeta robots.txt
-  ├─ rpa.py / shot.py       → Playwright, solo para páginas que el nivel ligero
-  │                           marcó como «insuficientes» (shells solo-JS)
-  ├─ lib/extraction.py      → extracción de hechos dirigida, trouve/valeur/url
-  ├─ lib/tables_reference.py→ tabla persistente y con fuentes de sitios de referencia
-  ├─ lib/cache_recherche.py → caché de búsqueda respaldada por ChromaDB
-  └─ lib/synthese.py + lib/modeles.py → LLM delegado (OpenCode/Ollama),
-                                        redacta el informe final
+campagne.py (orchestration)
+  ├─ lib/searxng.py         → SearXNG JSON API (HTTP only, no browser)
+  ├─ lib/fetch_leger.py     → requests + BeautifulSoup, robots.txt-aware
+  ├─ rpa.py / shot.py       → Playwright, only for pages the light tier
+  │                           marked "insufficient" (JS-only shells)
+  ├─ lib/selection_candidats.py → best-match pick among several fetched
+  │                           candidates, "produit" targets only
+  ├─ lib/extraction.py      → targeted fact extraction, trouve/valeur/url
+  ├─ lib/tables_reference.py→ persistent, sourced table of reference sites
+  ├─ lib/cache_recherche.py → ChromaDB-backed search cache
+  └─ lib/synthese.py + lib/modeles.py → delegated LLM (OpenCode/Ollama),
+                                        writes the final report
 ```
 
 `shot.py`/`rpa.py` conservan el núcleo de ejecución ReAct de Diwall
@@ -84,28 +94,18 @@ resolución de credenciales) — nada de su capa de percepción.
 
 ---
 
-## Calidad del informe: borrador automático vs. investigación supervisada
+## Calidad del informe: borrador automático frente a investigación supervisada.
 
-El informe de fin de ejecución de `campagne.py` (`lib/synthese.py::rediger_rapport()`)
-es un **borrador de trabajo**, no el resultado final: concatena el corpus
-recopilado en el orden del archivo, truncado a 4000 caracteres/página y 60 000
-en total — sin priorización por relevancia. En un corpus grande y ruidoso, eso
-deja pasar páginas genéricas o fuera de tema antes que las fuentes reales, y
-puede descartar silenciosamente las páginas más relevantes tras el umbral de
-truncado.
+El informe de finalización del proceso propio de `campagne.py`
+(`lib/synthese.py::construire_contexte()` construye y trunca el corpus,
+`rediger_rapport()` redacta después el texto)
+es un **borrador**, no el producto final pulido: concatena
+el corpus recopilado en orden de archivo, truncado a 4000 caracteres/página y 60.000
+en total, sin clasificación por relevancia. En un corpus grande y ruidoso, esto permite de forma fiable que páginas genéricas o fuera de tema aparezcan antes de las fuentes reales, y puede eliminar silenciosamente los elementos más relevantes después del punto de truncamiento.
 
-El informe que ha demostrado superar a una herramienta de búsqueda generalista
-(Perplexity) en una tarea de investigación real **no** se produjo con una sola
-ejecución de `campagne.py`. Vino de un operador que repitió `campagne.py
---extraire-cible` — decenas de llamadas de extracción individuales y abiertas
-contra el mismo corpus recopilado, cada una dejando que el modelo delegado
-juzgara por sí mismo si leía un hecho puntual o un evento de varios días —
-seguidas de una consolidación manual de los resultados. Véase
-[`docs/GUIDE_LLM.md`](../GUIDE_LLM.md) para el patrón de extracción exacto.
+En una tarea de investigación real (un listado de eventos locales, ver "Posicionamiento" arriba para una tarea donde el resultado fue diferente), la calidad del informe superó notablemente a una herramienta de búsqueda de propósito general (Perplexity); sin embargo, ese informe **no** fue generado por una única ejecución de `campagne.py`.  Proviene de un operador que itera sobre `campagne.py --extraire-cible` — docenas de llamadas individuales y abiertas para extraer información del mismo corpus recopilado, donde cada llamada permitía al modelo delegado juzgar por sí mismo si estaba leyendo un hecho aislado o un evento de varios días; seguido de una consolidación manual de los resultados. Consulte [`docs/GUIDE_LLM.md`](../GUIDE_LLM.md) para el patrón exacto de extracción.
 
-Para un resumen rápido y no crítico, el informe automático basta como punto de
-partida. Para un informe fiable sin supervisión, use en su lugar el patrón de
-extracción dirigida en bucle.
+Si necesita un resumen rápido y no crítico, el informe automático es adecuado como punto de partida. Si necesita un informe en el que pueda confiar sin supervisión, utilice el patrón de extracción específico y cíclico en su lugar.
 
 ---
 
@@ -127,8 +127,17 @@ No se necesita GPU. El objetivo de referencia es una Raspberry Pi 5 con 8 GB de 
 
 ## Instalación
 
-Solo canal de clonado git. **Aún no se ofrece un paquete `.deb`** — el
-empaquetado se posterga deliberadamente hasta que el producto se estabilice.
+Dos canales, mutuamente excluyentes en una misma máquina.
+
+**`.deb` package** — el camino habitual si desea usar Dinoer tal cual:
+
+```bash
+sudo apt install ./dinoer_1.0.0-1_all.deb
+```
+
+Instala el usuario y grupo del sistema `dinoer`, un entorno virtual de Python aislado, Chromium, los seis comandos `dinoer-*` y sus páginas de manual en cuatro idiomas. Los paquetes, el código fuente y las sumas de comprobación se publican en [dinoer.davalan.fr](https://dinoer.davalan.fr) -- consulta la página de [Descargas](https://dinoer.davalan.fr/en/guides/downloads/) para obtener más detalles, incluyendo qué significa ese aviso de "sandbox" `apt`.
+
+**Clonar el repositorio Git** — si tiene la intención de modificar el código:
 
 ```bash
 git clone https://github.com/RonanDavalan/dinoer.git
@@ -140,9 +149,13 @@ Esto crea el usuario y grupo de sistema `dinoer`, el entorno virtual,
 despliega el código en `/opt/dinoer/` y ejecuta una prueba de humo
 (`shot.py --a11y` contra una URL real).
 
-La configuración vive en `/etc/dinoer/dinoer.conf` (o `/opt/dinoer/dinoer.conf`
-según tu destino de `deploy.sh`); junto a él se instala un ejemplo comentado
-como `dinoer-sample.conf`.
+La configuración se encuentra en `/etc/dinoer/dinoer.conf` (canal [`.deb`]) o
+`/opt/dinoer/dinoer.conf` (canal git-clone); una muestra se instala junto a
+ella como `dinoer-sample.conf`— JSON sin formato, no con comentarios (corregido el 15/08/2026:
+JSON no tiene sintaxis de comentario, el archivo nunca lo tuvo). Excepción: `campagne.py`
+nunca lee `DINOER_CONF` ni la ruta git-clone mencionada anteriormente; lee
+`/opt/dinoer/dinoer.conf` codificado y resuelve sus propias rutas a través de variables de entorno dedicadas (`DINOER_CAMPAGNES_DIR`, `DINOER_SEARXNG_URL`,
+`DINOER_TABLES_REFERENCE`, `DINOER_JOURNAL`).
 
 ### Desinstalación
 
@@ -194,11 +207,12 @@ directorio de credenciales.
 La ruta es configurable vía `/opt/dinoer/dinoer.conf` o la variable de
 entorno `DINOER_SECRETS_DIR`.
 
-**Recomendación:** protege `~/Vaults/Dinoer/` con `chmod 700` y cífralo con
-`gocryptfs` (consulta `scripts/configurer-repertoire-chiffre.sh
---gocryptfs`). Si el directorio cifrado está inicializado pero no montado,
-Dinoer devuelve un `SecretsFermesError` estructurado (código de salida 42)
-en lugar de fallar silenciosamente.
+**Recomendación:** proteja `~/Vaults/Dinoer/` con `chmod 700` y encripte
+esto con `gocryptfs` (consulte `scripts/configurer-repertoire-chiffre.sh
+--gocryptfs` — git-clone channel only, not shipped by the `.deb`; en ese
+canal, configure `gocryptfs` usted mismo y dirija `secrets_dir` a la ruta montada). Si el directorio encriptado se inicializa pero no está montado, Dinoer
+devuelve una estructura `SecretsFermesError` (código de salida 42) en lugar de
+fallar silenciosamente.
 
 ---
 
@@ -257,11 +271,11 @@ Visión de producto, requisitos de seguridad, dirección del proyecto,
 validación y pruebas. Todas las decisiones arquitectónicas son validadas
 por él.
 
-**Ingeniero de sistemas y desarrollador principal:** Claude Code (Anthropic)
-Bifurcación del núcleo ReAct de Diwall, el pipeline de investigación
-(`campagne.py` y `lib/searxng.py`, `lib/fetch_leger.py`, `lib/extraction.py`,
-`lib/tables_reference.py`, `lib/cache_recherche.py`), retirada de la capa de
-percepción. Autor principal del código fuente.
+**Ingeniero de Sistemas y Desarrollador Principal:** Claude Code (Anthropic)
+Derivación del núcleo ReAct de Diwall, la canalización de investigación (`campagne.py` y
+`lib/searxng.py`, `lib/fetch_leger.py`, `lib/selection_candidats.py`,
+`lib/extraction.py`, `lib/tables_reference.py`, `lib/cache_recherche.py`),
+eliminación de la capa de percepción. Autor principal del código fuente.
 
 **Sintetizador y asesor estratégico:** Gemini (Google)
 Análisis arquitectónico independiente, resolución de conflictos lógicos,

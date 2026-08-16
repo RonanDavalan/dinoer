@@ -1,6 +1,6 @@
 {
   "nom": "sondage_fast",
-  "description": "Sonde rapide sans capture PNG — lecture du titre de la page via evaluer. Modèle canonique pour --mode fast (equivalent --no-capture --a11y).",
+  "description": "Sonde rapide — lecture du titre de la page via evaluer, sans passer --a11y (arbre d'accessibilité non nécessaire pour ce cas). Corrigé le 16/08/2026 : --mode fast et --no-capture n'existent pas dans l'argparse de rpa.py/shot.py, retirés de la description.",
   "url": "https://example.com",
   "actions": [
     {"type": "attendre_selecteur_present", "selecteur": "body"},

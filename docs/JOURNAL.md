@@ -4,6 +4,96 @@ History of decisions and discoveries by session, in reverse chronological order.
 
 ---
 
+## 2026-08-15/16 — Download page redesign, package version fixed, eight rounds of cross-model audit
+
+Direct continuation of Lot D/the 1.0.0 packaging work (previous entries).
+Three threads, in the order they actually happened.
+
+**1. Download page rebuilt, several times, on direct feedback.** The
+header's version link pointed at a checksums page instead of a real
+download page (`guides/checksums/`, `translationKey: "checksums"`) — moved
+to a dedicated root page per language (`/telechargements/`, `/downloads/`,
+`/descargas/`, `translationKey: "download-page"`), generated fresh by
+`deploy-site.sh` from the actually-published artifacts, never hand-edited.
+Went through several corrections on direct signal from Ronan, each one a
+real fix, not polish for its own sake: redundant "Paquet"/"Sources"
+sub-headings dropped (the logo already says it), a paragraph removed then
+restored after Ronan pointed out nothing had been asked to be deleted,
+checksums collapsed into `<details>` instead of one dominant code block, a
+genuine CSS bug found from a screenshot (Debian logo rendering at its raw
+108×144 intrinsic size, the same `height="32"`-ignored-by-global-CSS defect
+already fixed once for the header but never replicated here), and finally
+a duplicate "Verification" card removed once Ronan pointed out it repeated
+the guide's own card verbatim. A note was written in Diwall's own
+`_CADRE/MEMOIRE/` so the same design, once Ronan is satisfied with it, can
+be ported there without re-deriving it from scratch.
+
+**2. `shot.py`/`rpa.py`/`journal.py` `__version__` reset 1.23.0 → 1.0.0.**
+Same principle already applied to the package version itself: a version
+number is a factual claim about release history, and `1.23.0` was Diwall's
+number, inherited literally, asserting 22 Dinoer releases that never
+happened. `campagne.py` stayed at `0.1.0` — a real, honest number for
+genuinely new code, not a stale inheritance, confirmed explicitly by Ronan
+when a later audit re-raised it.
+
+**3. Eight rounds of independent LLM audits (DeepSeek, GLM 5.2, OpenCode,
+across several passes each), every finding checked against the real code
+or site before acting — several were false positives (a prior audit's
+claim about `mutatif` being undocumented was wrong when checked; tonight,
+"broken" links in the fr/de/es journal pages turned out to be unlinked
+prose, not dead hrefs).** What survived verification, roughly by severity:
+
+- `scripts/verifier-coherence.sh` — the tool meant to catch exactly this
+  class of drift — had never actually been ported from Diwall: `../Diwall`
+  path, `DIWALL_*` env vars, a version regex anchored on `^diwall (`,
+  `watch.py` in three iteration lists. It silently checked nothing real.
+  Ported for real; running it now correctly (and only) flags
+  `GUIDE_LLM.md`'s real line-budget overflow and `GUIDE.md`'s stale version
+  header — both fixed. `GUIDE_LLM.md` trimmed from 376 to exactly 250
+  lines: version history collapsed to the current entry, the
+  `campagne.py`-specific extraction-recipe/synthesis-relevance sections
+  moved to `GUIDE_LLM_MONITORING.md` where the routing table already said
+  they lived, prose tightened elsewhere without cutting any safety fact.
+- `scripts/monitor-verifier.sh` called `rpa.py --no-capture` — confirmed by
+  direct run that this crashed every real invocation
+  (`unrecognized arguments: --no-capture`) — already flagged as "known
+  debt" in two docs but never fixed in the script itself, until now.
+- `dinoer.conf.d/` — read by `lib/profil_operateur.py` for the
+  operator-profile mechanism — was never deployed by either channel
+  (`deploy.sh` nor `debian/dinoer.install`). Wired into both, verified with
+  a real package rebuild and a real upgrade-in-place on `ada`.
+- Several docs described removed/nonexistent capabilities as if current:
+  `--mode`, `--so`m, `watch.py --comparer-pixel`/`--sauver-reference`, a
+  `sillage_login.json` example file that doesn't exist (real files:
+  `example_login.json`), `state=attached` for `attendre` where the real
+  Playwright default is `visible`, `boussole.session_derive` documented as
+  a boolean where the code emits an object, `a11y_tree`/`evaluations`
+  claimed always-present where both are conditional, journal `outil`
+  claimed to include `"rpa.py"` where only `shot.py`/`campagne.py` ever
+  write it, a checksum recipe hashing only two of the four real
+  `_CHAMPS_CHECKSUM` fields, `/tmp/dinoer/<operation_id>/` claimed as the
+  evidence directory where the real path is
+  `preuves/<AAAA-MM>/<operation_id>/`.
+- The site itself asserted "Git clone only, no `.deb` yet" in four places
+  written before the first real `.deb` release the same week
+  (`guides/_index.md` in all four languages, `static/instructions.md` —
+  the machine entry point, `static/llms.txt`, an `.htaccess` comment) —
+  all stale, none resynced when the package shipped. Also removed: a
+  leftover `index.html` at the site repo root, the original single-page
+  Diwall prototype, dead since the Hugo rebuild.
+- Translation debt: `docs/{fr,de,es}/README.md` still described a
+  Git-clone-only install path, were missing the entire "Positioning"
+  section, and omitted `lib/selection_candidats.py` from the architecture
+  diagram — resynced through the real local pipeline (`traduire.py`,
+  Ollama), not by hand, with the couple of pipeline-rejected segments
+  hand-corrected as the declared last step only.
+
+Nine to eleven commits total across `Dinoer/Dinoer` and
+`dinoer.davalan.fr` this session — see
+`_CADRE/MEMOIRE/ADDENDUM_2026_08_15.md` for the exact hash-by-hash record.
+
+---
+
 ## 2026-08-14 (very late) — Lot D: the public site rebuilt for what Dinoer actually is
 
 Ronan green-lit Lot D directly ("no QCM, no planning, go all the way"),
@@ -674,9 +764,10 @@ note in `CLAUDE.md`).
 ## Lot G — git history rewrite (Diwall pre-fork history squashed)
 
 Following the `docs/JOURNAL.md` truncation (Lot F, previous entry), the
-repository's actual git history still carried all 274 commits inherited
-from Diwall, plus 47 Diwall version tags (`v1.0.0`..`v1.23.0`) — the
-git-level equivalent of the same problem Lot F fixed at the doc level.
+repository's actual git history still carried all 228 commits inherited
+from Diwall (corrected 15/08/2026, `git log 302bd7f | wc -l`, was documented
+as 274), plus 47 Diwall version tags (`v1.0.0`..`v1.23.0`) — the git-level
+equivalent of the same problem Lot F fixed at the doc level.
 
 Executed as a dedicated, non-interactive rewrite (no `git rebase -i`,
 which needs interactive input): a synthetic provenance commit was built

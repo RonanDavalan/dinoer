@@ -31,10 +31,7 @@ lorsque l'agent lit l'état. Chaque commande affiche un seul objet JSON sur
 la sortie standard, conçu pour être lu par un programme plutôt que par un
 humain.
 
-Dinoer s'installe par un clone git déployé par **scripts/install.sh** sous
-**/opt/dinoer/**. Un paquet `.deb` n'est délibérément pas encore proposé.
-Les points d'entrée Python s'exécutent au travers de l'environnement
-virtuel :
+Dinoer propose deux méthodes de distribution : ce paquetage `.deb`, ou un clonage Git installé par **scripts/install.sh** sous **/opt/dinoer/** pour ceux qui souhaitent modifier le code. Les points d'entrée Python s'exécutent dans l'environnement virtuel :
 
     /opt/dinoer/venv/bin/python /opt/dinoer/shot.py ...
 
@@ -58,7 +55,8 @@ charge **--replay-verifier**.
 **campagne.py**
 : Orchestre une campagne de recherche profonde depuis un manifeste JSON :
 pagination par source, déduplication par cache vectoriel, extraction ciblée
-sans synthèse. Lit sa configuration depuis **dinoer.conf**.
+sans synthèse. Lit `/opt/dinoer/dinoer.conf` en dur, uniquement pour sa clé
+`campagnes_dir` — jamais `DINOER_CONF`, voir FICHIERS ci-dessous.
 
 **journal.py**
 : Lit le journal d'opérations en ajout seul à
@@ -139,10 +137,13 @@ avec un code non nul en cas de divergence. La référence est écrite par
 # FICHIERS
 
 **/etc/dinoer/dinoer.conf**
-: Configuration lue par **campagne.py** et le résolveur d'identifiants.
-Créée par l'opérateur, jamais générée automatiquement. La variable
-d'environnement **DINOER_CONF** remplace ce chemin. `secrets_dir` à
-l'intérieur pointe vers le répertoire d'identifiants monté.
+: Configuration lue par le résolveur d'identifiants (`shot.py`, `rpa.py`, via
+**DINOER_CONF**, qui écrase ce chemin). Créée par l'administrateur, jamais
+générée automatiquement. `secrets_dir` à l'intérieur pointe vers le répertoire
+des identifiants montés. **campagne.py ne lit pas ce fichier** — corrigé
+le 15/08/2026: il lit une valeur codée en dur `/opt/dinoer/dinoer.conf` pour sa propre
+clé `campagnes_dir` uniquement (`campagne.py::_CONF_PATH`), jamais `DINOER_CONF`,
+donc sur le canal `.deb`, il ne verra pas ce fichier même s'il est présent.
 
 **/opt/dinoer/**
 : Code applicatif, environnement virtuel Python, et documentation à
@@ -187,12 +188,12 @@ d'identifiants si le message signale une somme de contrôle invalide.
 Capturer une page avec l'arbre d'accessibilité :
 
     /opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
-        --url https://example.com --a11y --guide-version 1.3
+        --url https://example.com --a11y --guide-version 1.6
 
 Lire seulement l'état d'une page, sans exécuter aucune action :
 
     /opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
-        --url https://example.com --guide-version 1.3
+        --url https://example.com --guide-version 1.6
 
 Atteindre un panneau d'administration qui rafraîchit ses statistiques en
 continu :

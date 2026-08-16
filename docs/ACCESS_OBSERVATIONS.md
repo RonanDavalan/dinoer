@@ -88,7 +88,8 @@ When a real run produces a genuine access observation (not a synthetic
 re-test), append a dated section above the "Adding an entry" heading:
 
 - Date, target (public name, no internal codenames), Dinoer version and
-  flags used (`--stealth`, `--mode`, etc.)
+  flags used (`--stealth`, `--wait-until`, etc. — corrected 15/08/2026,
+  `--mode` doesn't exist, it never existed in Dinoer)
 - Outcome: accessible / blocked (403, timeout, other) — cite the actual
   `http_status` or symptom from the JSON output
 - No qualification of the target beyond the observed outcome

@@ -5,10 +5,9 @@ heavy-tier escalation path, drives a real browser session. A vulnerability
 here has a real cost for whoever runs it — this policy exists so it gets
 reported before it gets exploited.
 
-**Not yet applicable in practice (11/08/2026) :** no public release of
-Dinoer exists yet — this policy is written ahead of the first release, per
-`SECURITE_DIVULGATION_RESPONSABLE.md` doctrine (declare before the first
-incident, not after).
+This policy was written ahead of the first release — declare before the
+first incident, not after — since 15/08/2026, a real `.deb 1.0.0-1` release
+exists, so it now applies in practice, not just in principle.
 
 ## Supported versions
 

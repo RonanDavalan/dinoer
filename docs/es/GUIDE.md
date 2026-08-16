@@ -1,6 +1,6 @@
 # Dinoer — guía del operador
 
-Versión 1.11 — agosto de 2026 (v1.23.0) — superficie realineada con la
+Versión 1.11 — agosto de 2026 (v1.0.0) — superficie realineada con la
 reconstrucción de Dinoer: sin captura de pantalla, sin Set-of-Mark, sin
 `watch.py`; el agente lee el árbol de accesibilidad y controla las acciones
 de Playwright mediante selectores CSS.
@@ -96,9 +96,6 @@ sentido contra tu propia máquina de desarrollo/producción. Ponlo a `0` en tu
 | Eliminación o mutación masiva | ✗ No — mejor una llamada directa a la API |
 | Flujo de trabajo que requiere deshacer (rollback) | ✗ No — Dinoer no puede deshacer |
 
-Para los casos desaconsejados, consulta `docs/GUIDE_LLM.md` sección «When NOT
-to use Dinoer» (fricciones FR-59 y FR-60 documentadas).
-
 ---
 
 **Este documento está escrito para la persona que opera Dinoer.**
@@ -129,7 +126,7 @@ contra una referencia capturada antes de la regresión. Ejecútalo directamente:
 ```bash
 /opt/dinoer/venv/bin/python /opt/dinoer/rpa.py \
   --scenario /opt/dinoer/scenarios/exemples/depannage_local.json \
-  --guide-version 1.3
+  --guide-version 1.6
 ```
 
 ### Caso 2 — comparar componentes de hardware entre tiendas
@@ -445,12 +442,16 @@ bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
   --ntfy-topic dinoer-monitoring
 ```
 
-Silencioso cuando es estable, un push `ntfy` cuando se detecta una
-regresión. Prográmalo tú mismo con cron — el script hace un solo pase y
-termina, no ejecuta un bucle. `scripts/*.sh` nunca se despliega en
-`/opt/dinoer/`, así que la entrada de cron se ejecuta desde el origen git,
-como tu propio usuario (no la cuenta de servicio `dinoer`, que no puede
-acceder a `~/git/Dinoer/Dinoer/`):
+Silencioso cuando todo está estable, un envío `ntfy` cuando se detecta una
+regresión. Prográmalo tú mismo con cron — el script hace una sola pasada y
+termina, no repite en bucle. En el canal git-clone, `scripts/*.sh` nunca se
+despliega a `/opt/dinoer/`, así que la entrada de cron de abajo se ejecuta
+desde el código fuente de git, como tu propio usuario (no como la cuenta de
+servicio `dinoer`, que no puede acceder a `~/git/Dinoer/Dinoer/`). En el
+canal `.deb`, los tres scripts empaquetados se instalan en
+`/opt/dinoer/scripts/` y son accesibles vía los comandos `dinoer-*` en su
+lugar — corregido el 15/08/2026, esta sección era anterior a la
+construcción real de ese canal:
 
 ```bash
 # crontab -e (tu propio crontab)

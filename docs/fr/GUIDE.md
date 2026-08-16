@@ -1,6 +1,6 @@
 # Dinoer — guide de l'opérateur
 
-Version 1.11 — août 2026 (v1.23.0) — surface réalignée sur la reconstruction
+Version 1.11 — août 2026 (v1.0.0) — surface réalignée sur la reconstruction
 Dinoer : aucune capture d'écran, aucun Set-of-Mark, aucun `watch.py` ;
 l'agent lit l'arbre d'accessibilité et pilote les actions Playwright sur des
 sélecteurs CSS.
@@ -102,9 +102,6 @@ le débogage local ; voir `docs/MANUEL.md` section 3b.
 | Suppression ou mutation en masse | ✗ non — préférez un appel API direct |
 | Flux nécessitant un retour arrière | ✗ non — Dinoer ne peut pas annuler |
 
-Pour les cas déconseillés, voir `docs/GUIDE_LLM.md` section « When NOT to use
-Dinoer » (frictions FR-59 et FR-60 documentées).
-
 ---
 
 **Ce document est rédigé pour la personne qui opère Dinoer.**
@@ -136,7 +133,7 @@ Exécutez-le directement :
 ```bash
 /opt/dinoer/venv/bin/python /opt/dinoer/rpa.py \
   --scenario /opt/dinoer/scenarios/exemples/depannage_local.json \
-  --guide-version 1.3
+  --guide-version 1.6
 ```
 
 ### Cas 2 — comparer des composants matériels entre boutiques
@@ -456,12 +453,11 @@ bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
   --ntfy-topic dinoer-monitoring
 ```
 
-Silencieux quand stable, une notification `ntfy` quand une régression est
-détectée. Planifiez-le vous-même avec cron — le script fait une passe et
-quitte, il ne boucle pas. `scripts/*.sh` n'est jamais déployé vers
-`/opt/dinoer/`, donc l'entrée cron s'exécute depuis les sources git, sous
-votre propre utilisateur (pas le compte de service `dinoer`, qui ne peut pas
-atteindre `~/git/Dinoer/Dinoer/`) :
+Silencieux lorsqu'il est stable, il s'active avec une seule exécution `ntfy` lorsqu'une régression est détectée. Planifiez-le vous-même avec cron — le script effectue un seul passage et se termine, il ne boucle pas.
+Sur la branche git-clone, `scripts/*.sh` n'est jamais déployé vers `/opt/dinoer/`,
+donc l'entrée cron ci-dessous s'exécute à partir du code source Git, en tant que votre propre utilisateur (et non le compte de service `dinoer`, qui ne peut pas accéder à `~/git/Dinoer/Dinoer/` ). Sur la
+branche `.deb`, les trois scripts sont installés sous
+`/opt/dinoer/scripts/` et accessibles via les commandes `dinoer-*` — corrigé le 15/08/2026], cette section date de la création réelle de cette branche :
 
 ```bash
 # crontab -e (votre propre crontab)

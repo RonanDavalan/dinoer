@@ -1,6 +1,6 @@
 # Dinoer — pense-bête
 
-Version 1.23.0 — août 2026
+Version 1.0.0 — août 2026
 
 Tout sur une page. Référence complète : `docs/MANUEL.md`.
 

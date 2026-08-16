@@ -1,6 +1,6 @@
 # Dinoer — Operator guide
 
-Version 1.11 — August 2026 (v1.23.0) — surface realigned to the Dinoer
+Version 1.11 — August 2026 (v1.0.0) — surface realigned to the Dinoer
 reconstruction: no screenshot, no Set-of-Mark, no `watch.py`; the agent
 reads the accessibility tree and drives Playwright actions on CSS selectors.
 
@@ -90,8 +90,6 @@ against your own development/production machine. Set it to `0` in your local
 | Bulk deletion or mutation | ✗ No — prefer a direct API call |
 | Workflow requiring rollback | ✗ No — Dinoer cannot undo |
 
-For discouraged cases, see `docs/GUIDE_LLM.md` section "When NOT to use Dinoer"
-(frictions FR-59 and FR-60 documented).
 
 ---
 
@@ -122,7 +120,7 @@ captured before the regression. Run it directly:
 ```bash
 /opt/dinoer/venv/bin/python /opt/dinoer/rpa.py \
   --scenario /opt/dinoer/scenarios/exemples/depannage_local.json \
-  --guide-version 1.3
+  --guide-version 1.6
 ```
 
 ### Case 2 — comparing hardware components across shops
@@ -255,7 +253,7 @@ FR-77 documents the same pattern at panel scale (39% immediate block rate).
 # → must return {"succes": true, ...}
 
 # 2. Verify the encrypted directory is mounted (if gocryptfs)
-ls ~/Vaults/Dinoer/
+ls ~/Vaults/__PROJET__/Dinoer/
 # → must show .json files, not encrypted content
 
 # 3. Verify credentials for a domain
@@ -422,9 +420,13 @@ bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
 
 Silent when stable, one `ntfy` push when a regression is detected. Schedule
 it yourself with cron — the script does one pass and exits, it does not loop.
-`scripts/*.sh` is never deployed to `/opt/dinoer/`, so the cron entry runs
-from the git source, as your own user (not the `dinoer` service account,
-which cannot reach `~/git/Dinoer/Dinoer/`):
+On the git-clone channel, `scripts/*.sh` is never deployed to `/opt/dinoer/`,
+so the cron entry below runs from the git source, as your own user (not the
+`dinoer` service account, which cannot reach `~/git/Dinoer/Dinoer/`). On the
+`.deb` channel, the three wrapped scripts are installed under
+`/opt/dinoer/scripts/` and reachable via the `dinoer-*` commands instead —
+corrected 15/08/2026, this section predates that channel's real
+construction:
 
 ```bash
 # crontab -e (your own crontab)

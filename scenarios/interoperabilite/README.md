@@ -70,7 +70,7 @@ EOF
 # 3. Lancer le scénario
 cd /opt/dinoer
 venv/bin/python rpa.py --scenario scenarios/interoperabilite/scenario_basicauth.json \
-  --secrets ~/Vaults/<REPERTOIRE_MONTE>/dinoer_fixture_identifiants.json --guide-version 1.3
+  --secrets ~/Vaults/<REPERTOIRE_MONTE>/dinoer_fixture_identifiants.json --guide-version 1.6
 
 # Vérifications attendues dans la sortie JSON :
 #   succes: true

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # monitor-verifier.sh — v1.18.0 : un passage de monitoring structurel, sans
-# image ni appel LLM, encapsulant rpa.py --no-capture --replay-verifier.
+# image ni appel LLM, encapsulant rpa.py --replay-verifier.
 #
 # Pas une boucle interne — un seul passage par exécution. La répétition dans
 # le temps est déléguée à cron/systemd-timer (voir docs/GUIDE.md, docs/
@@ -50,7 +50,7 @@ SORTIE_ERR=$(mktemp)
 trap 'rm -f "$SORTIE_ERR"' EXIT
 
 set +e
-"$PYTHON" "$RPA" --scenario "$SCENARIO" --no-capture --replay-verifier "$REFERENCE" \
+"$PYTHON" "$RPA" --scenario "$SCENARIO" --replay-verifier "$REFERENCE" \
     1>/dev/null 2>"$SORTIE_ERR"
 CODE=$?
 set -e

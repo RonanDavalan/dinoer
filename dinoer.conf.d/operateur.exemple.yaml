@@ -19,7 +19,9 @@ nom_profil: exemple
 #
 # Noms reconnus :
 #   - ecriture_capture_tmp
-#   - montage_coffre_visuel        (Phase 7bis)
+#   - montage_repertoire_visuel    (Phase 7bis) — corrigé 15/08/2026, était
+#     documenté "montage_coffre_visuel", nom absent du code réel
+#     (lib/profil_operateur.py::LISTE_BLANCHE_AUTO_CONFIRMER)
 #   - lecture_reference_chiffree   (Phase 7bis)
 #   - ecriture_journal_dinoer
 #   - invocation_ollama_locale

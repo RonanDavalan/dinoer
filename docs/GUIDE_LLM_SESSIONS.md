@@ -55,8 +55,12 @@ Credentials live in a JSON file inside an encrypted directory (a gocryptfs
 volume, mounted by the operator). `lib/repertoire_chiffre.py` reads the
 mounted file; it never exposes values in the shell.
 
-The encrypted directory is configured by `secrets_dir`: resolved from
-`DINOER_CONF` → `~/.dinoer.conf` → `/opt/dinoer/dinoer.conf` (JSON).
+The encrypted directory is configured by `secrets_dir`, read from a JSON
+conf file. Corrected 15/08/2026 — not a three-step fallback: `DINOER_CONF`
+(if set) names that file directly, whatever its path — `~/.dinoer.conf` is
+only a naming convention for where operators commonly point it, never an
+automatic second step. Unset, it defaults to `/opt/dinoer/dinoer.conf`
+(`lib/repertoire_chiffre.py::_chemin_secrets`).
 You never need to know the exact path — pass `--secrets` when you need a
 specific file, otherwise the default directory is used.
 
@@ -178,24 +182,30 @@ assertions. **stdout is a single JSON line** — pipe freely.
 calls. Add `--sauver-session` only to refresh the on-disk session state.
 
 **Warning — session drift signal:** if the session has expired or the app
-redirected you to the login page, `boussole.session_derive: true` appears in
-the JSON output. Check it after every `--reprendre-session` call.
+redirected you to the login page, `boussole.session_derive` appears in the
+JSON output. Corrected 15/08/2026, verified against `shot.py:1530-1537`: it
+is an **object** (`{url_sauvegardee, url_reprise, ...}`), never the boolean
+`true` — presence of the key is the signal, not its value. Check it after
+every `--reprendre-session` call.
 
 ```json
 "boussole": {
-  "session_derive": true,
+  "session_derive": {
+    "url_sauvegardee": "https://target.local/dashboard",
+    "url_reprise": "https://target.local/login"
+  },
   "url_courante": "https://target.local/login",
   "dernier_code_http": 302
 }
 ```
 
-If `session_derive` is true: run the full login flow again without
+If `session_derive` is present: run the full login flow again without
 `--reprendre-session`.
 
 **`dernier_code_http`, always present, disambiguates the cause:** a real
 expired session and a masked server-side error (e.g. `display_errors=0`
-hiding a 500) both redirect to the same login page — `session_derive: true`
-looks identical either way. Compare `dernier_code_http`: `302`/`200` on the
+hiding a 500) both redirect to the same login page — `session_derive` looks
+identical either way. Compare `dernier_code_http`: `302`/`200` on the
 redirect points to a real session expiry, `500`/`4xx` points to an
 application error, not your session. **Nuance:** on a run with several
 navigations, it reflects the *last* one only — not necessarily the one that
@@ -335,9 +345,11 @@ Text-only reads are the default, not an explicit option.
   --url https://target.local/api/status --a11y
 ```
 
-`a11y_tree` and `evaluations` are always present on a successful read; the
-`boussole` describes the state honestly (including `a11y_redaction_echouee`
-if the tree could not be built).
+`a11y_tree` and `evaluations` are conditional (corrected 15/08/2026, verified
+against `shot.py:1509-1516`): `a11y_tree` only with `--a11y`, `evaluations`
+only when at least one `evaluer` action ran. The `boussole` describes the
+state honestly (including `a11y_redaction_echouee` if the tree could not be
+built).
 
 ---
 
@@ -384,18 +396,23 @@ tenant (prefer the TOTP form above).
 
 ## Skills — calling a named sub-sequence
 
-Reusable action sequences defined in `skills/` (YAML files). Invoke one with
-`declencher_scenario`, resolved via the same cascade as `--scenario`
-(`scenarios/<name>{.json,.yaml,.yml}`, max depth 5):
+Reusable action sequences defined in `skills/` (JSON files, same schema as
+`scenarios/*.json` — see `skills/README.md`). Corrected 15/08/2026: not
+invoked via `declencher_scenario`, which resolves with `confiner=True`
+(`rpa.py::resoudre_chemin_scenario`) and only ever accepts a path that
+resolves inside `scenarios/` — `skills/` is unreachable from it. Run a
+skill directly instead:
 
-```json
-{"type": "declencher_scenario", "scenario": "login_myapp"}
+```bash
+/opt/dinoer/venv/bin/python /opt/dinoer/rpa.py \
+  --scenario /opt/dinoer/skills/login_myapp.json
 ```
 
-**Common pattern:** define the authentication sequence as a skill, call it at
-the beginning of every scenario that requires a logged-in session.
-`declencher_scenario` is flattened by `rpa.py` (via `_aplatir_actions`)
-before the actions reach `shot.py`.
+**Common pattern:** define the authentication sequence as a skill, run it
+standalone at the start of a session, then reuse the saved session
+(`--sauver-session` / `--reprendre-session`) for scenarios that need a
+logged-in state — `declencher_scenario` cannot inline a skill from outside
+`scenarios/`.
 
 ---
 

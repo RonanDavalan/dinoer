@@ -1,6 +1,6 @@
 # Dinoer — Betreiberleitfaden
 
-Version 1.11 — August 2026 (v1.23.0) — Oberfläche an die Dinoer-Rekonstruktion
+Version 1.11 — August 2026 (v1.0.0) — Oberfläche an die Dinoer-Rekonstruktion
 angepasst: kein Screenshot, kein Set-of-Mark, kein `watch.py`; der Agent
 liest den Accessibility-Baum und steuert Playwright-Aktionen über
 CSS-Selektoren.
@@ -104,9 +104,6 @@ Abschnitt 3b.
 | Massenlöschung oder -mutation | ✗ Nein — direkten API-Aufruf bevorzugen |
 | Workflow, der ein Rollback erfordert | ✗ Nein — Dinoer kann nichts rückgängig machen |
 
-Für davon abgeratene Fälle siehe `docs/GUIDE_LLM.md`, Abschnitt „When NOT
-to use Dinoer" (Friktionen FR-59 und FR-60 dokumentiert).
-
 ---
 
 **Dieses Dokument ist für die Person geschrieben, die Dinoer betreibt.**
@@ -138,7 +135,7 @@ Referenz validiert. Direkt ausführen:
 ```bash
 /opt/dinoer/venv/bin/python /opt/dinoer/rpa.py \
   --scenario /opt/dinoer/scenarios/exemples/depannage_local.json \
-  --guide-version 1.3
+  --guide-version 1.6
 ```
 
 ### Fall 2 — Hardwarekomponenten über Shops hinweg vergleichen
@@ -468,12 +465,14 @@ bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
   --ntfy-topic dinoer-monitoring
 ```
 
-Still bei Stabilität, ein `ntfy`-Push, wenn eine Regression erkannt wird.
-Planen Sie es selbst mit cron — das Skript führt einen Durchlauf aus und
-beendet sich, es läuft nicht in einer Schleife. `scripts/*.sh` wird nie
-nach `/opt/dinoer/` deployt, daher läuft der Cron-Eintrag aus der
-Git-Quelle, als Ihr eigener Benutzer (nicht das `dinoer`-Dienstkonto, das
-`~/git/Dinoer/Dinoer/` nicht erreichen kann):
+Still wenn stabil, ein `ntfy` Push, wenn eine Regression erkannt wird. Planen Sie
+dies selbst mit cron – das Skript führt einen Durchlauf durch und beendet sich, es läuft nicht in einer Schleife.
+Im git-clone-Kanal wird `scripts/*.sh` niemals auf `/opt/dinoer/` bereitgestellt,
+daher wird der untenstehende Cron-Eintrag von der Git-Quelle ausgeführt, als Ihr eigener Benutzer (nicht das
+`dinoer` Dienstkonto, das keinen Zugriff auf `~/git/Dinoer/Dinoer/` hat). Im
+`.deb` Kanal werden die drei eingebetteten Skripte unter
+`/opt/dinoer/scripts/` installiert und sind über die `dinoer-*` Befehle erreichbar –
+korrigiert am 15. /08/2026, dieser Abschnitt ist vor der tatsächlichen Erstellung dieses Kanals entstanden:
 
 ```bash
 # crontab -e (Ihre eigene Crontab)
