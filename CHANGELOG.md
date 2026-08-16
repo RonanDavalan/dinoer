@@ -4,7 +4,7 @@ Generated from `debian/changelog` at build time — do not edit by hand.
 Edit `debian/changelog` and rebuild instead
 (`bash ~/git/Dinoer/scripts/construire-paquet.sh`).
 
-## 1.23.0 — 13 Aug 2026 03:00:00 +0200
+## 1.0.0 — 15 Aug 2026 00:22:11 +0200
 
 - Initial dinoer .deb packaging, adapted from the diwall channel this package is forked from (Dinoer split off Diwall on 2026-07-25, diwall's own .deb history predates the fork and lives in Diwall's own changelog, not repeated here).
 - Renamed throughout: package/source name, /opt/dinoer install path, dinoer system user/group, /etc/dinoer config directory, /var/log/dinoer journal + evidence directory, the five /usr/bin/dinoer-* wrapper commands and their man pages.

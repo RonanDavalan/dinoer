@@ -36,7 +36,7 @@ You will not be asked again on this machine, as this OS user, until
 
 ```bash
 /opt/dinoer/venv/bin/python /opt/dinoer/shot.py --version
-# → {"outil": "shot.py", "version": "1.23.0"}
+# → {"outil": "shot.py", "version": "1.0.0"}
 ```
 
 No Playwright launch, no `--url` needed, exit 0 immediately (v1.18.0+). Same
@@ -231,7 +231,14 @@ runs a single continuous session. The credentials and journal are managed by the
 | `--http-credentials` (HTTP Basic Auth, origin-scoped), non-presumption rule | v1.21.0 |
 | `repli_js` JS click escalation, `dernier_code_http` in boussole, `--wait-until` for never-idle targets, **breaking: `citoyennete` output key renamed `respect`** | **v1.22.0** |
 
-**Current stable version: v1.23.0.**
+The table above is the feature-introduction history inherited from the
+Diwall lineage this project forked from (25/07/2026) — kept as-is, each row
+still a true statement about when that feature landed. It is not the current
+`shot.py --version` value: the tool's own version counter was reset to
+`1.0.0` for the first published Dinoer `.deb` release (15/08/2026), the same
+reasoning already applied to the package's own version number — a version
+string is a claim about release history, and no prior Dinoer release
+happened at "1.23".
 
 The operation log (`/var/log/dinoer/operations.jsonl`) and the friction index
 (`docs/RETOUR_EXPERIENCE.md`) cover the full history from v1.0 — see that

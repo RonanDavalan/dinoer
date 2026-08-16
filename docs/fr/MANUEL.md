@@ -1,6 +1,6 @@
 # Dinoer — manuel opérationnel
 
-**Version 1.23.0 — août 2026**
+**Version 1.0.0 — août 2026**
 
 Ce document répond à une seule question : **comment faire X avec Dinoer**.
 
@@ -37,7 +37,7 @@ Aucune description architecturale. Des commandes qui fonctionnent.
 ```bash
 # Vérification la moins coûteuse possible — pas de Playwright, pas d'URL, exit 0 immédiat (v1.18.0+)
 /opt/dinoer/venv/bin/python /opt/dinoer/shot.py --version
-# → {"outil": "shot.py", "version": "1.23.0"}
+# → {"outil": "shot.py", "version": "1.0.0"}
 ```
 
 ```bash
@@ -67,7 +67,7 @@ antérieur les couvre déjà, tant que le `notice-version` de
 ```bash
 # Vérifier la version installée
 grep "__version__" /opt/dinoer/shot.py
-# → __version__ = "1.23.0"
+# → __version__ = "1.0.0"
 
 # Vérifier que playwright-stealth est disponible (v1.15.0)
 /opt/dinoer/venv/bin/python -c "import playwright_stealth; print('stealth OK')"
@@ -1210,7 +1210,7 @@ partagé + un `collecte.jsonl` par campagne. Détail complet :
     "respect": { "pages_visitees": 0, "actions_executees": 3, "duree_totale_ms": 2400, "indice_agressivite": 0.33 }
   },
   "dinoer_meta": {
-    "version_shot": "1.23.0",
+    "version_shot": "1.0.0",
     "horodatage_iso": "2026-08-12T14:23:11+02:00",
     "hostname_executant": "operator-host",
     "utilisateur_executant": "operator",

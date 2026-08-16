@@ -1,6 +1,6 @@
 # Dinoer — Operational manual
 
-**Version 1.23.0 — August 2026**
+**Version 1.0.0 — August 2026**
 
 This document answers one question: **how to do X with Dinoer**.
 
@@ -35,7 +35,7 @@ No architectural descriptions. Commands that work.
 ```bash
 # Cheapest possible check — no Playwright, no URL, exit 0 immediately (v1.18.0+)
 /opt/dinoer/venv/bin/python /opt/dinoer/shot.py --version
-# → {"outil": "shot.py", "version": "1.23.0"}
+# → {"outil": "shot.py", "version": "1.0.0"}
 ```
 
 ```bash
@@ -63,7 +63,7 @@ from any earlier successful call already covers them, as long as
 ```bash
 # Verify the installed version
 grep "__version__" /opt/dinoer/shot.py
-# → __version__ = "1.23.0"
+# → __version__ = "1.0.0"
 
 # Verify playwright-stealth is available (v1.15.0)
 /opt/dinoer/venv/bin/python -c "import playwright_stealth; print('stealth OK')"
@@ -76,10 +76,22 @@ ls ~/Vaults/__PROJET__/Dinoer/
 If `ls ~/Vaults/...` returns an empty list or an error:
 → mount it: `bash ~/git/Dinoer/Dinoer/scripts/monter-repertoire-chiffre.sh`
 
-### 1a. Installing from source (the only channel today)
+### 1a. Installing
 
-**No `.deb` package is offered yet** — packaging is deliberately deferred
-until the product stabilises. Install from a git clone:
+Two channels, mutually exclusive on one machine.
+
+**`.deb` package** — the normal path if you want to use Dinoer as-is:
+
+```bash
+sudo apt install ./dinoer_1.0.0-1_all.deb
+```
+
+Package, sources and checksums are published on
+[dinoer.davalan.fr](https://dinoer.davalan.fr/en/guides/downloads/).
+Configuration lives at `/etc/dinoer/dinoer.conf` (JSON, commented sample
+installed beside it as `dinoer-sample.conf`).
+
+**Git clone** — if you intend to modify Dinoer's own code:
 
 ```bash
 git clone https://github.com/RonanDavalan/dinoer.git ~/git/Dinoer/Dinoer
@@ -89,11 +101,11 @@ bash scripts/install.sh
 
 `scripts/install.sh` creates the `dinoer` system user and group, the Python
 venv, deploys the code to `/opt/dinoer/`, installs Chromium, and runs a smoke
-test (`shot.py --a11y` against a real URL). If you intend to modify Dinoer's
-own code, edit this repository and deploy with `scripts/deploy.sh`.
+test (`shot.py --a11y` against a real URL). Deploy further edits with
+`scripts/deploy.sh`.
 
-Configuration lives at `/opt/dinoer/dinoer.conf` (JSON); the encrypted
-secrets directory key is `secrets_dir`. Per-project override via the
+Configuration lives at `/opt/dinoer/dinoer.conf` (JSON) on this channel; the
+encrypted secrets directory key is `secrets_dir`. Per-project override via the
 `DINOER_CONF` environment variable or `~/.dinoer.conf`.
 
 Uninstall:
@@ -1134,7 +1146,7 @@ Artefacts: the shared `/var/log/dinoer/operations.jsonl` + a per-campaign
     "respect": { "pages_visitees": 0, "actions_executees": 3, "duree_totale_ms": 2400, "indice_agressivite": 0.33 }
   },
   "dinoer_meta": {
-    "version_shot": "1.23.0",
+    "version_shot": "1.0.0",
     "horodatage_iso": "2026-08-12T14:23:11+02:00",
     "hostname_executant": "operator-host",
     "utilisateur_executant": "operator",

@@ -152,8 +152,22 @@ No GPU is required. The reference target is a Raspberry Pi 5, 8 GB RAM.
 
 ## Installation
 
-Git-clone channel only. **A `.deb` package is not offered yet** — packaging
-is deliberately deferred until the product stabilises.
+Two channels, mutually exclusive on one machine.
+
+**`.deb` package** — the normal path if you want to use Dinoer as-is:
+
+```bash
+sudo apt install ./dinoer_1.0.0-1_all.deb
+```
+
+Installs the `dinoer` system user and group, an isolated Python virtual
+environment, Chromium, the six `dinoer-*` commands and their manual pages in
+four languages. Package, sources and checksums are published on
+[dinoer.davalan.fr](https://dinoer.davalan.fr) — see the
+[Downloads](https://dinoer.davalan.fr/en/guides/downloads/) page for details,
+including what that `apt` sandbox notice means.
+
+**Git clone** — if you intend to modify the code:
 
 ```bash
 git clone https://github.com/RonanDavalan/dinoer.git
@@ -165,9 +179,9 @@ This creates the `dinoer` system user and group, the virtual environment,
 deploys the code to `/opt/dinoer/`, and runs a smoke test
 (`shot.py --a11y` against a real URL).
 
-Configuration lives in `/etc/dinoer/dinoer.conf` (or `/opt/dinoer/dinoer.conf`
-depending on your `deploy.sh` target); a commented sample is installed next
-to it as `dinoer-sample.conf`.
+Configuration lives in `/etc/dinoer/dinoer.conf` (`.deb` channel) or
+`/opt/dinoer/dinoer.conf` (git-clone channel); a commented sample is installed
+next to it as `dinoer-sample.conf`.
 
 ### Uninstallation
 

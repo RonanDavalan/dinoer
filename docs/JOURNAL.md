@@ -714,9 +714,13 @@ remote is a separate decision, not part of Lot G.
 
 ## Earlier history — Diwall fork
 
-Dinoer began as a fork of Diwall v1.23.0 (25/07/2026, reconstructed
-09/08/2026 — see `_CADRE/SPECIFICATIONS/FONDATION_DINOER.md`). The detailed
-session-by-session history predating that fork belongs to Diwall's own
-project and is not republished here. **Note (Lot G, 14/08/2026):** this
-pre-fork history was, as of this rewrite, squashed at the git level too —
-see the entry above.
+Dinoer began as a fork of Diwall v1.21.0 (25/07/2026, base commit `d3ec9e1`),
+reconstructed 09/08/2026 from Diwall v1.23.0 (base commit `302bd7f`) — see
+`_CADRE/SPECIFICATIONS/FONDATION_DINOER.md`. **Correction (15/08/2026):**
+this entry previously paired the 25/07 date with v1.23.0, the version of the
+later reconstruction, not the original fork — `git describe --tags`
+confirmed against Diwall's own history before this correction, not assumed.
+The detailed session-by-session history predating that fork belongs to
+Diwall's own project and is not republished here. **Note (Lot G,
+14/08/2026):** this pre-fork history was, as of that rewrite, squashed at
+the git level too — see the entry above.

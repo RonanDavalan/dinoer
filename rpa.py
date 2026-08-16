@@ -34,7 +34,7 @@ Dépend de :
     (résolution du répertoire chiffré : DINOER_SECRETS_DIR > dinoer.conf >
     ~/Vaults/Dinoer/). Jamais de mot de passe dans les fichiers de scénario.
 """
-__version__ = "1.23.0"
+__version__ = "1.0.0"
 
 import argparse
 import json

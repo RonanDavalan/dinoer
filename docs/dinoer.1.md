@@ -30,9 +30,9 @@ an accessibility tree (`--a11y`) as the eyes when the agent reads state.
 Every command prints a single JSON object on standard output, designed to
 be read by a program rather than by a human.
 
-Dinoer ships as a git clone installed by **scripts/install.sh** under
-**/opt/dinoer/**. A `.deb` package is deliberately not offered yet. The
-Python entry points run through the virtual environment:
+Dinoer ships two ways: this `.deb` package, or a git clone installed by
+**scripts/install.sh** under **/opt/dinoer/** for whoever intends to modify
+the code. The Python entry points run through the virtual environment:
 
     /opt/dinoer/venv/bin/python /opt/dinoer/shot.py ...
 
