@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # deploy.sh — déploie ~/git/Dinoer/Dinoer/ vers /opt/dinoer/
-# Atomique, idempotent, préserve dinoer.conf et les références watch.py
+# Atomique, idempotent, préserve dinoer.conf
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -10,7 +10,6 @@ GROUPE="dinoer"
 # Fichiers de code à déployer (relatifs à REPO)
 CODE_FILES=(
     shot.py
-    watch.py
     rpa.py
     journal.py
     lib/__init__.py
@@ -18,7 +17,6 @@ CODE_FILES=(
     lib/modeles.py
     lib/ntfy.py
     lib/profil_operateur.py
-    lib/vision.py
     lib/repertoire_chiffre.py
     lib/vector.py
     lib/preflight_guide.py
@@ -264,7 +262,7 @@ sudo chmod 644 "$DEST"/docs/*.md 2>/dev/null || true
 sudo chmod 644 "$DEST"/docs/images/* 2>/dev/null || true
 sudo find "$DEST"/docs -type d -exec chmod 755 {} + 2>/dev/null || true
 sudo find "$DEST"/i18n -type f -exec chmod 644 {} + 2>/dev/null || true
-sudo chmod 755 "$DEST"/shot.py "$DEST"/watch.py "$DEST"/rpa.py \
+sudo chmod 755 "$DEST"/shot.py "$DEST"/rpa.py \
      "$DEST"/journal.py 2>/dev/null || true
 echo ""
 if [ "$changed" -gt 0 ]; then

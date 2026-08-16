@@ -1,6 +1,8 @@
 # Dinoer — FAQ for LLMs
 
-Version 1.9 — August 2026 (v1.23.0) — version table through v1.22.0, `--guide-version` current token 1.2
+Version 1.10 — August 2026 (v1.23.0) — surface realigned to the Dinoer
+reconstruction: no screenshot, no Set-of-Mark, no vision model. The agent
+reads `a11y_tree` and `evaluer` values.
 
 Answers to technical questions raised by language models during real Dinoer sessions.
 No attribution — these are recurring questions, not individual testimonies.
@@ -13,7 +15,7 @@ No attribution — these are recurring questions, not individual testimonies.
 
 **You have not proven you read `docs/GUIDE_LLM.md` yet (v1.18.0+).**
 
-`shot.py`, `rpa.py`, and `watch.py` all refuse to launch Playwright without
+`shot.py` and `rpa.py` both refuse to launch Playwright without
 either `--guide-version X.Y` (the `<!-- notice-version: X.Y -->` value found
 on line 3 of `docs/GUIDE_LLM.md`) or a local marker from a previous accepted
 call. This is deliberate, not a bug — field observation showed models calling
@@ -22,9 +24,9 @@ reading the guide after the fact. See `docs/RADAR_MODELES.md` for the
 incident that motivated it.
 
 ```bash
-cat /opt/diwall/docs/GUIDE_LLM.md
+cat /opt/dinoer/docs/GUIDE_LLM.md
 # read it, find "<!-- notice-version: X.Y -->" near the top, then:
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py --url <url> --guide-version 1.2
+/opt/dinoer/venv/bin/python /opt/dinoer/shot.py --url <url> --guide-version 1.3
 ```
 
 You will not be asked again on this machine, as this OS user, until
@@ -33,12 +35,12 @@ You will not be asked again on this machine, as this OS user, until
 ### Q: How do I check which Dinoer version is installed, without a full run?
 
 ```bash
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py --version
-# → {"outil": "shot.py", "version": "1.22.0"}
+/opt/dinoer/venv/bin/python /opt/dinoer/shot.py --version
+# → {"outil": "shot.py", "version": "1.23.0"}
 ```
 
 No Playwright launch, no `--url` needed, exit 0 immediately (v1.18.0+). Same
-flag on `rpa.py` and `watch.py`. Distinct from `--guide-version` — one reports
+flag on `rpa.py`. Distinct from `--guide-version` — one reports
 the Dinoer release, the other proves you read the guide. Passing one where
 the other is expected fails.
 
@@ -46,73 +48,46 @@ the other is expected fails.
 
 ## Perception
 
-### Q: Can Dinoer analyze image files (JPG, PNG, PDF)?
-
-**Yes — natively, without any OCR library.**
-
-Chromium renders image files and PDFs as visual pages. `shot.py` captures the
-rendered output as a PNG and passes it to the local vision model (`qwen3-vl:2b`
-via Ollama). No external library, no cloud service.
-
-```bash
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
-  --url file:///home/<user>/documents/invoice.pdf \
-  --som --a11y
-```
-
-For a JPEG:
-```bash
---url file:///home/<user>/photos/screenshot.jpg
-```
-
-The browser renders it, `shot.py` captures it, the vision LLM reads it.
-Text extraction (if needed) goes through `evaluer` on the DOM text layer exposed
-by the PDF viewer — not through OCR pixel parsing.
-
-**Not yet supported:** audio files. There is no ASR integration in Dinoer.
-Do not confuse Vosk (ASR = audio-to-text) with OCR (image-to-text). Vosk cannot
-read text from images or screenshots.
-
----
-
 ### Q: What is in the `boussole` object?
 
-The `boussole` is the first object to read in any Dinoer JSON output. Since v1.16.0
-it always contains six fields:
+The `boussole` is the first object to read in any Dinoer JSON output. It
+always contains the run's identity and the page it actually reached:
 
 ```json
 "boussole": {
   "utilisateur": "operator",
   "ip_locale": "__IP_LAN__",
-  "repertoire": "/opt/diwall",
+  "repertoire": "/opt/dinoer",
   "operation_id": "a1b2c3d4e5f6",
   "url_courante": "https://target.local/dashboard",
-  "titre_page": "Dashboard — My App"
+  "titre_page": "Dashboard — My App",
+  "dernier_code_http": 200
 }
 ```
 
-Plus conditional fields that appear only when active:
+Conditional keys appear only when the corresponding mechanism is active:
 
 | Key | Present when |
 |---|---|
-| `session_derive` | `--reprendre-session` active and URL diverged |
 | `auth_status` | `--auth-indicator` active (`"active"` or `"inactive"`) |
-| `som_hors_viewport` | SoM active and at least one interactive element is off-screen |
-| `shadow_dom_actif` | `--shadow-dom` active |
+| `session_derive` | `--reprendre-session` active and URL diverged |
 | `stealth_actif` | `--stealth` active and applied successfully (v1.15.0) |
-| `som_rafraichir_actif` | `--som-rafraichir` active (v1.17.0) |
-| `respect.waf_bloquants` | at least one navigation was flagged as a likely WAF block (v1.16.0, refined v1.17.2 — generic vendor names now matched on page title only, fewer false positives) |
-| `waf_ignore_actif` | `--ignorer-waf` active — a WAF block degrades `niveau_confiance` but no longer forces `pret_a_agir: false` on its own (v1.17.2) |
+| `wait_until` | the effective wait model differs from the default (v1.22.0) |
+| `http_credentials_actif` | HTTP Basic Auth credentials present and no 401 occurred |
+| `http_auth_requise` | the target answered 401, a challenge is pending |
+| `tls_errors_ignored` | `--ignore-tls-errors` active |
+| `waf_ignore_actif` | `--ignorer-waf` active |
+| `repli_js_utilise` | a `repli_js` JS click escalation actually fired |
+| `filtre_evaluer_actif: false` | `--no-filtre-evaluer` active (debug runs only) |
+| `a11y_redaction_echouee` | the a11y-tree secret redaction failed for one node |
 
 `titre_page` is always present but may be empty (`""`) on `about:blank` or if Playwright
 cannot read the title before closing. `operation_id` (v1.16.0) uniquely identifies the
-run and names its temporary-file directory under `/tmp/diwall/<operation_id>/`.
+run and names its temporary-file directory under `/tmp/dinoer/<operation_id>/`.
 
 The JSON root also carries a deterministic `etat` object (`pret_a_agir`,
 `niveau_confiance`, `raisons`, v1.16.0) synthesizing these signals into one
 go/no-go read — see `docs/MANUEL.md` section 2d.
-
----
 
 ### Q: Does `etat.pret_a_agir: false` block my next action?
 
@@ -133,76 +108,40 @@ it functions as a synthesis of signals already present elsewhere in the JSON
 purely because the flag is `false`, without having read `raisons` first, you
 are treating a signal as an authority it does not have.
 
----
+### Q: Is `boussole` present in every output?
 
-### Q: Are `boussole`, `auth_status`, and `derive_session` present in `--no-capture` mode?
+**Yes** — `boussole`, `url_courante`, `titre_page` and `dernier_code_http`
+(v1.14.0, extended v1.22.0) are always present after a completed run. Dinoer
+has no capture path, so there is no question of a key dropping because a
+PNG was skipped: reading state **is** the output.
 
-**`boussole`** — always present, always enriched with `url_courante` and `titre_page`
-(v1.14.0). `--no-capture` does not affect it.
-
-**`auth_status`** — present whenever `--auth-indicator` is provided. The check
-(`page.locator(selector).is_visible()`) is a lightweight DOM query, not a capture.
-`--no-capture` does not affect it.
-
-**`derive_session`** — controlled by `--reprendre-session`, not by `--no-capture`.
-If you resume a session and the URL diverged, `derive_session` appears in both the
-root JSON and the `boussole` object regardless of whether a PNG was taken.
-
-Summary:
-
-| Key | Present with `--no-capture`? |
+| Key | Always in a successful run? |
 |---|---|
-| `boussole` (incl. `url_courante`, `titre_page`) | Always |
-| `auth_status` | Yes, if `--auth-indicator` provided |
-| `evaluations` | Yes, if `evaluer` actions present |
-| `a11y_tree` | Yes, if `--a11y` provided |
-| `dom_stats` | **Only** in `--no-capture` mode |
-| `derive_session` | If `--reprendre-session` + URL drift |
-| `capture` | **No** — that is the purpose of `--no-capture` |
-| `capture_som` / `elements_som` | **No** |
+| `boussole` (incl. `url_courante`, `titre_page`, `dernier_code_http`) | Always |
+| `a11y_tree` | Only with `--a11y` |
+| `evaluations` | Only if `evaluer` actions ran |
+| `extraction_texte` | Only if `extraire_texte` ran |
+| `etat` | Always (descriptive) |
+| `latences_actions` | Always (v1.20.0) |
 
----
+### Q: What about iframes — are they supported?
 
-### Q: What about Shadow DOM and iframes — are they supported?
+**Yes, via `cliquer_iframe`/`remplir_iframe` (v1.17.0), including cross-origin.
+There is no Set-of-Mark to be aware of: target frames and elements by explicit
+CSS selector.**
 
-**Shadow DOM: yes, via `--shadow-dom` (v1.13.0). Iframes: yes, via `cliquer_iframe`/`remplir_iframe` (v1.17.0) — but not through SoM.**
-
-`shot.py`'s standard SoM injection uses `document.querySelectorAll`, which does not
-cross Shadow Root boundaries. Since v1.13.0, pass `--shadow-dom` to enable recursive
-traversal of **open** Shadow Roots:
-
-```bash
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
-  --url https://angular-app.local/ --som --shadow-dom
-```
-
-The three SoM JS functions (inject / count-off-screen / find-by-id) all share the
-same `queryShadowAll` recursive walker, guaranteeing indexing consistency.
-
-**When to use it:** Angular, Lit, Stencil, Polymer applications where interactive
-elements inside shadow roots are not numbered by default.
-
-**Known limitation:** closed Shadow Roots (created with `{mode: 'closed'}`) are
-inaccessible from JS and are silently skipped. There is no workaround — this is
-a browser-level enforcement, not a Dinoer limitation.
-
-In scenario JSON, activate with `"shadow_dom": true` at the root level.
-
-**Cross-origin iframes:** JS injection cannot cross the Same-Origin Policy boundary
-by construction — a hard browser security limit, not a Dinoer gap (unlike Shadow DOM,
-which is the same document, just encapsulated). Since v1.17.0, `cliquer_iframe` and
-`remplir_iframe` bypass this via Playwright's native `page.frame_locator()` (CDP-based,
-not JS injection):
+Cross-origin iframes: JS injection cannot cross the Same-Origin Policy boundary
+by construction — a hard browser security limit, not a Dinoer gap. Since v1.17.0,
+`cliquer_iframe` and `remplir_iframe` bypass this via Playwright's native
+`page.frame_locator()` (CDP-based, not JS injection):
 
 ```json
 {"type": "cliquer_iframe", "iframe_selecteur": "iframe#paiement", "selecteur": "button.valider"},
 {"type": "remplir_iframe", "iframe_selecteur": "iframe#paiement", "selecteur": "input[name=cvv]", "valeur": "depuis_secrets", "secret_cle": "cvv"}
 ```
 
-**No SoM numbering inside a frame yet** — target by CSS selector, discovered via
-`evaluer` on the frame content if same-origin, or from the target application's
-own markup if cross-origin. `remplir_iframe` supports `depuis_secrets` exactly like
-`remplir` — never a plaintext credential in the scenario.
+`remplir_iframe` supports `depuis_secrets` exactly like `remplir` — never a
+plaintext credential in the scenario.
 
 **Nested iframes (v1.18.0):** replace `iframe_selecteur` with `iframe_chemin`,
 an ordered array of selectors, one per nesting level:
@@ -214,76 +153,9 @@ an ordered array of selectors, one per nesting level:
 `iframe_selecteur` and `iframe_chemin` are mutually exclusive — exactly one
 required per action.
 
----
-
-### Q: What does `--mode fast` do, and when should I use it?
-
-`--mode fast` is a shortcut introduced in v1.14.0. It is exactly equivalent to
-passing both `--no-capture` and `--a11y`:
-
-```bash
-# These two calls are strictly equivalent:
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py --url https://target.local/ --mode fast
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py --url https://target.local/ --no-capture --a11y
-```
-
-**When to use `--mode fast`:**
-
-| Goal | Use |
-|---|---|
-| Check authentication status | `--mode fast --auth-indicator <sel>` |
-| Read DOM text / extract a JS value | `--mode fast` + `evaluer` actions |
-| Verify page title or URL after navigation | `--mode fast` (read `boussole`) |
-| Check that an element is present | `--mode fast --a11y` (read `a11y_tree`) |
-
-**When NOT to use `--mode fast`:**
-- When you need a visual render (PNG) for inspection
-- When you need `--som` (SoM requires a capture — `fast` and `som` are incompatible)
-
-`--mode full` is the current default behavior. It is useful to name it explicitly for
-clarity in scripts or when overriding a `--mode fast` set upstream.
-
-**Not sure which mode a given host needs?** If you have already run
-`scenarios/diagnostic_dom.json` against this host, `etat.mode_conseille`
-(v1.18.0) may already tell you — see `docs/GUIDE_LLM_MONITORING.md`. Absent
-if there is no prior data; never a guess.
-
----
-
-### Q: What is `auth_indicator_negative` and when do I need it?
-
-`--auth-indicator-negative` (v1.14.0) is a companion to `--auth-indicator` for
-interfaces where the positive selector is ambiguous — e.g. a `.user-menu` element
-that is present even on the login page (persistent header, multi-account banner).
-
-```bash
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
-  --url https://target.local/ \
-  --auth-indicator ".user-menu" \
-  --auth-indicator-negative ".btn-login"
-```
-
-Logic:
-- `auth_status: "active"` → positive visible **AND** negative absent or not visible
-- `auth_status: "inactive"` → otherwise
-
-In a scenario file, add `"auth_indicator_negative": ".btn-login"` at the root level
-alongside `"auth_indicator"`. `rpa.py` propagates it to `shot.py` automatically.
-
----
-
-### Q: Can Dinoer fill a login form? What about a network-level auth wall (HTTP Basic Auth)?
-
-Both, and they are unrelated mechanisms — do not confuse one for a limit on
-the other. **Web form authentication** (a username/password `<input>` on a
-page) has always been supported, and is Dinoer's core credential
-mechanism: `remplir_som` + `valeur: "depuis_secrets"` (see the Security
-section of `docs/GUIDE_LLM.md`). **HTTP Basic Auth** (RFC 7617, a browser-
-level challenge raised by a reverse proxy before any page renders — Caddy,
-nginx, Traefik) is a separate, network-layer mechanism: `--http-credentials`
-(v1.21.0, `docs/GUIDE_LLM_SESSIONS.md`), confirmed against a real
-Caddy-protected target. Never presume either is unsupported without
-checking — see the non-presumption rule in `docs/GUIDE_LLM.md`.
+**Shadow DOM:** Dinoer does not number elements inside shadow roots. Reach
+them with `evaluer` (JS operates per-document, shadow roots included) or by
+giving the application stable CSS selectors.
 
 ---
 
@@ -293,26 +165,18 @@ checking — see the non-presumption rule in `docs/GUIDE_LLM.md`.
 
 **Partial — since v1.9.2.**
 
-`rpa.py` now runs two static validators **before launching Playwright**:
+`rpa.py` runs a static validator **before launching Playwright**:
 
-1. **Schema validation** (`jsonschema`) — checks action types, required keys, and
-   rejects unknown properties. Requires `jsonschema` in the venv:
-   ```bash
-   /opt/diwall/venv/bin/pip install jsonschema
-   ```
+**Schema validation** (`jsonschema`) — checks action types, required keys, and
+rejects unknown properties. Requires `jsonschema` in the venv:
 
-2. **SoM linter** (`_linter_som`) — checks that every `cliquer_som` / `remplir_som`
-   action has a positive integer `id`. Exits with a structured JSON error if not:
-   ```json
-   {"succes": false, "erreur": "linter_som",
-    "message": "Action #2 (cliquer_som) : 'id' doit être un entier positif, reçu : \"btn-submit\"."}
-   ```
+```bash
+/opt/dinoer/venv/bin/pip install jsonschema
+```
 
 A full dry-run (resolving `depuis_secrets`, validating CSS selectors on a live DOM)
-would require Playwright and is not yet implemented. The linter catches the most
+would require Playwright and is not yet implemented. The schema validator catches the most
 common authoring errors without browser overhead.
-
----
 
 ### Q: Can a scenario call another scenario?
 
@@ -323,7 +187,7 @@ common authoring errors without browser overhead.
   "url": "https://target.local/dashboard",
   "actions": [
     {"type": "declencher_scenario", "scenario": "login"},
-    {"type": "cliquer_som", "id": 5}
+    {"type": "cliquer", "selecteur": "button.continue"}
   ]
 }
 ```
@@ -334,7 +198,7 @@ runs a single continuous session. The credentials and journal are managed by the
 - Sub-scenario resolved via: `scenarios/<name>{.json,.yaml,.yml}` or absolute path.
 - Recursion depth capped at 5 levels. Circular references produce a structured
   `profondeur_max_chainages` error.
-- The SoM linter runs on the **full flattened action list** (parent + all sub-scenarios
+- Schema validation runs on the **full flattened action list** (parent + all sub-scenarios
   inlined) before any Playwright call.
 
 ---
@@ -345,40 +209,31 @@ runs a single continuous session. The credentials and journal are managed by the
 
 | Feature | Version |
 |---|---|
-| SoM, A11y, ReAct, session persistence | v1.4 |
 | RPA scenarios (`rpa.py`), encrypted credentials | v1.5 |
 | Scroll (`defiler`), skills, TOTP, ntfy MFA | v1.6 |
-| Exclude zone, capture-reference, multi-view | v1.7 |
 | Wait primitives, `nettoyer_overlay`, vector memory | v1.8 / v1.9 (internal) |
 | `--auth-indicator` / `auth_status` (S-1) | v1.9.0 |
-| `--no-capture` (S-2) | v1.9.0 |
-| Security hardening: `RLIMIT_CORE`, session cleanup | v1.9.1 |
-| `declencher_scenario`, SoM linter, pre-push hook | v1.9.2 |
-| `diwall-sample.conf`, `SecretsNonConfigureError` (exit 43) | v1.9.3 |
-| Modular scenarios (group C credential fill), `evaluer` field clearing | v1.9.6 |
+| `declencher_scenario` | v1.9.2 |
+| `dinoer.conf`, `SecretsNonConfigureError` (exit 43) | v1.9.3 |
 | `--secrets` multiple credentials files, fail-fast venv | v1.10.0 |
-| `force: true` on `cliquer`, `--screenshot-timeout`, assertions `contient`/`motif` | v1.11.0 |
-| Session file persistence fix (FR-74/FR-75) | v1.11.1 |
-| Error routing table, notice versioning, secret blurring, `dom_stats` | v1.12.0 |
-| Shadow DOM SoM traversal (`--shadow-dom`) | v1.13.0 |
-| Enriched `boussole` (`url_courante`, `titre_page`), `--auth-indicator-negative`, `--mode fast\|full` | v1.14.0 |
+| `force: true` on `cliquer`, assertions `contient`/`motif` | v1.11.0 |
+| Error routing table, notice versioning, secret blurring | v1.12.0 |
+| Enriched `boussole` (`url_courante`, `titre_page`), `--auth-indicator-negative` | v1.14.0 |
 | Scenario neutralisation doctrine, `password` fields require `depuis_secrets` | v1.14.1 |
 | Respectful Navigation: `--stealth`, courtesy delays, navigation caps, `respect` metrics, `SecretsChecksumError` | v1.15.0 |
 | Security hardening: `--no-evaluer`, journal permissions, URL scheme validation, `--ignore-tls-errors` | v1.15.1 |
-| `chemin_png` collision fix, early CLI rejection, `scenarios/exemples/` | v1.15.2 |
-| `etat` deterministic verdict, `operation_id`, passive WAF signal, `erreurs_console`, `indice_agressivite` | v1.16.0 |
-| `--replay-verifier`, `--checkpoint`, `--som-rafraichir`, `cliquer_iframe`/`remplir_iframe` | v1.17.0 |
-| Encrypted-directory write guard (journal/proof archiving), SoM collision cleanup, refined WAF heuristic + `--ignorer-waf`, checkpoint navigation-cap fix | v1.17.2 |
-| Mandatory `--guide-version`/`--version` pre-flight lock, `mode_conseille`, nested iframes (`iframe_chemin`), `scripts/monitor-verifier.sh` | v1.18.0 |
-| `mode_conseille` filtered to successful diagnostics only, `chainage` traceability for `declencher_scenario`, `etat` clarified as declarative | v1.19.0 |
+| `etat` deterministic verdict, `operation_id`, passive WAF signal, `erreurs_console` | v1.16.0 |
+| `--replay-verifier`, `--checkpoint`, `cliquer_iframe`/`remplir_iframe` | v1.17.0 |
+| Refined WAF heuristic + `--ignorer-waf`, checkpoint navigation-cap fix | v1.17.2 |
+| Mandatory `--guide-version`/`--version` pre-flight lock, nested iframes (`iframe_chemin`), `scripts/monitor-verifier.sh` | v1.18.0 |
+| `chainage` traceability for `declencher_scenario`, `etat` clarified as declarative | v1.19.0 |
 | `journal.py --erreurs` filter, `latences_actions` per-action timing | v1.20.0 |
-| `--http-credentials` (HTTP Basic Auth, credentials-resolved, origin-scoped), `docs/GUIDE_LLM.md` compressed to its 250-line budget, non-presumption rule | v1.21.0 |
+| `--http-credentials` (HTTP Basic Auth, origin-scoped), non-presumption rule | v1.21.0 |
 | `repli_js` JS click escalation, `dernier_code_http` in boussole, `--wait-until` for never-idle targets, **breaking: `citoyennete` output key renamed `respect`** | **v1.22.0** |
 
-**Current stable version: v1.21.0** (v1.17.1 was a documentation-only
-correction; v1.17.2 was a fix patch — see the rows above).
+**Current stable version: v1.23.0.**
 
-The operation log (`/var/log/diwall/operations.jsonl`) and the friction index
+The operation log (`/var/log/dinoer/operations.jsonl`) and the friction index
 (`docs/RETOUR_EXPERIENCE.md`) cover the full history from v1.0 — see that
 file directly for the current friction count rather than a number
 duplicated here, which would otherwise need updating every cycle.

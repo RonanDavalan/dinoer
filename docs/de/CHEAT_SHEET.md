@@ -1,6 +1,6 @@
-# Dinoer – Schnellreferenz
+# Dinoer — Spickzettel
 
-Version 1.23.0 – August 2026
+Version 1.23.0 — August 2026
 
 Alles auf einer Seite. Vollständige Referenz: `docs/MANUEL.md`.
 
@@ -9,123 +9,116 @@ Alles auf einer Seite. Vollständige Referenz: `docs/MANUEL.md`.
 ## Drei Befehle
 
 ```bash
-# Eine Seite anzeigen: PNG-Bild + nummerierte Elemente + Accessibility-Baum.
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py --url URL --som --a11y
+# Eine Seite sehen: Accessibility-Baum
+/opt/dinoer/venv/bin/python /opt/dinoer/shot.py --url URL --a11y
 
-# Lesen ohne Zwischenspeichern (~2 Sekunden schneller, keine PNG-Dateien).
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py --url URL --mode fast
+# Ein Szenario ausführen
+/opt/dinoer/venv/bin/python /opt/dinoer/rpa.py --scenario DATEI.json
 
-# Führen Sie ein Szenario aus.
-/opt/diwall/venv/bin/python3 /opt/diwall/rpa.py --scenario FILE.json
+# Eine Szenario-Referenz lesen und vergleichen (strukturelle Überwachung)
+/opt/dinoer/venv/bin/python /opt/dinoer/rpa.py \
+  --scenario DATEI.json --replay-verifier REF.json
 ```
 
-Über das `.deb` installiert? Verwenden Sie `diwall-shot` und `diwall-rpa`
-statt der vollständigen Pfade. Der erste Aufruf auf einer Maschine benötigt
-`--guide-version X.Y`, auszulesen mit
-`grep notice-version /opt/diwall/docs/GUIDE_LLM.md`.
+Der erste Aufruf auf einer Maschine benötigt `--guide-version X.Y`, zu
+lesen mit `grep notice-version /opt/dinoer/docs/GUIDE_LLM.md`.
 
 ---
 
 ## Die Schleife
 
 ```
-        you decide what to do next
+        Sie entscheiden, was als Nächstes zu tun ist
                   │
                   ▼
    ┌──────────────────────────────┐
-   │  shot.py / rpa.py            │   one process, one JSON on stdout
+   │  shot.py / rpa.py            │   ein Prozess, ein JSON auf stdout
    │    ├─ Chromium (headless)    │
-   │    ├─ SoM: numbers elements  │
-   │    ├─ A11y: page structure   │
-   │    └─ secrets: fills credentials│   never in the shell, never in a log
+   │    ├─ A11y: Seitenstruktur   │
+   │    └─ secrets: füllt Credentials aus│   nie in der Shell, nie in einem Log
    └──────────────┬───────────────┘
-                  │  PNG + JSON
+                  │  boussole + JSON
                   ▼
-        you read the same state
-        the operator can see too
+        Sie lesen denselben Zustand,
+        den auch der Betreiber sehen kann
 ```
 
-Der Sitzungsstatus wird in einer Datei gespeichert, nicht im Prozess: ein zweiter Aufruf mit
-`--reprendre-session` verwendet Cookies erneut – niemals den DOM-Zustand.
+Der Sitzungszustand lebt in einer Datei, nicht im Prozess: ein zweiter
+Aufruf mit `--reprendre-session` nutzt Cookies wieder — nie den
+DOM-Zustand.
 
 ---
 
 ## Die Ausgabe in dieser Reihenfolge lesen
 
-| Lesen Sie | Zeigt Ihnen |
+| Lesen | Sagt Ihnen |
 |---|---|
-| `succes` | ob die Ausführung abgeschlossen wurde |
-| `boussole.url_courante` | wo Sie tatsächlich angekommen sind |
-| `boussole.dernier_code_http` | letzter Navigationsstatus |
-| `etat.pret_a_agir` + `etat.raisons` | wahrgenommene Reibung – ein Bericht, niemals eine Fehlermeldung |
-| `capture_som` / `elements_som` | was Sie anklicken sollen und seine Nummer |
-| `respect` | Ihre eigene Spur: Seiten, Aktionen, Dauer |
+| `succes` | ob der Lauf abgeschlossen wurde |
+| `boussole.url_courante` | wo Sie tatsächlich gelandet sind |
+| `boussole.dernier_code_http` | Status der letzten Navigation |
+| `etat.pret_a_agir` + `etat.raisons` | wahrgenommene Friktionen — ein Bericht, nie eine Schranke |
+| `a11y_tree` | Seitenstruktur — Überschriften, Felder, Schaltflächen |
+| `respect` | Ihr eigener Fußabdruck: Seiten, Aktionen, Dauer |
 
-Wenn `boussole` nicht Ihren Erwartungen entspricht, stoppen Sie vor jeglicher verändernden Aktion.
+Stimmt `boussole` nicht mit Ihrer Erwartung überein: vor jeder mutierenden
+Aktion anhalten.
 
 ---
 
 ## Jede Aktion
 
-`type` ist immer erforderlich. Die Schlüssel unten sind die zusätzlichen.
+`type` ist immer erforderlich. Die folgenden Schlüssel sind die
+zusätzlichen.
 
 | Aktion | Erforderlich | Optional |
 |---|---|---|
 | `naviguer` | `url` | — |
 | `cliquer` | `selecteur` | `force`, `repli_js` |
-| `cliquer_som` | `id` | — |
-| `cliquer_visuel` | `description` | — |
 | `cliquer_iframe` | `iframe_selecteur` \| `iframe_chemin`, `selecteur` | `force` |
 | `remplir` | `selecteur`, `valeur` | `secret_cle` |
-| `remplir_som` | `id`, `valeur` | `secret_cle` |
 | `remplir_iframe` | `iframe_selecteur` \| `iframe_chemin`, `selecteur`, `valeur` | `secret_cle` |
-| `capturer` | `nom` | `som` |
 | `evaluer` | `script` | `attendu` \| `contient` \| `motif` |
+| `extraire_texte` | — | — |
 | `defiler` | `px` \| `selecteur` | — |
-| `pause` | `ms` | `interval_capture` |
-| `attendre` | `selecteur` | `interval_capture` |
+| `pause` | `ms` | — |
+| `attendre` | `selecteur` | — |
 | `attendre_selecteur_present` | `selecteur` | — |
 | `attendre_absence` | `selecteur` | `delai_initial_ms` |
 | `attendre_navigation` | — | — |
 | `attendre_url` | `motif` | `attendre_changement` |
 | `attendre_reseau_calme` | — | `timeout_ms` |
-| `attendre_mfa_ntfy` | `id_som` | `timeout` |
+| `attendre_mfa_ntfy` | `selecteur` | `timeout` |
 | `nettoyer_overlay` | `selecteur` | — |
 | `declencher_scenario` | `scenario` | — |
 
 ---
 
-## Zugangsdaten – die einzige korrekte Formularausgabe
+## Credentials — die einzig korrekte Form
 
 ```json
-{"type": "remplir_som", "id": 3, "valeur": "depuis_secrets", "secret_cle": "password"}
+{"type": "remplir", "selecteur": "input[name=\"password\"]", "valeur": "depuis_secrets", "secret_cle": "password"}
 ```
 
-Extrahieren Sie ein Geheimnis niemals in die Shell. `lib/repertoire_chiffre.py` löst es
-innerhalb des Playwright-Prozesses auf; der Wert erreicht weder Ihre
-Befehlszeile noch Ihren Verlauf noch irgendein Protokoll.
-`depuis_secrets_totp` tut dasselbe für einen TOTP-Code.
+Nie ein Secret in die Shell extrahieren. `lib/repertoire_chiffre.py` löst es
+innerhalb des Playwright-Prozesses auf; der Wert erreicht nie Ihre
+Kommandozeile, Ihre History oder ein Log.
 
 ---
 
-## Wenn etwas Widerstand leistet
+## Wenn sich etwas sperrt
 
-| Symptom | Versuchen Sie |
+| Symptom | Versuchen |
 |---|---|
-| Klick führt zu einem Timeout, Element ist visuell ausgeblendet | `"force": true`, dann `"repli_js": true` |
-| Element wird nicht von SoM nummeriert | `--shadow-dom` (Shadow Roots öffnen) |
-| Element befindet sich außerhalb des sichtbaren Bereichs | `defiler` zuerst — prüfen Sie `boussole.som_hors_viewport` |
-| Seite lädt nie vollständig | `--wait-until load` |
-| Absenden-Button hat keine Funktion, kein Fehler | native HTML-Validierung — Formular über `evaluer` absenden |
-| `exit 42` | verschlüsseltes Verzeichnis nicht gemountet: `diwall-monter-secrets` |
-| `exit 43` | kein `diwall.conf` — Beispiel daneben kopieren |
-| `guide_non_lu` | einmal `--guide-version` ausführen |
-| 403 / 429 | lesen Sie `respect.waf_bloquants` — ein Signal, keine Ausnahme |
+| Klick läuft in Timeout, Element visuell verborgen | `"force": true`, dann `"repli_js": true` |
+| Element unterhalb des sichtbaren Bereichs | zuerst `defiler` |
+| Seite wird nie fertig geladen | `--wait-until load` |
+| Absenden bewirkt nichts, kein Fehler | native HTML-Validierung — Formular über `evaluer` absenden |
+| `exit 42` | verschlüsseltes Verzeichnis nicht gemountet (`bash ~/git/Dinoer/Dinoer/scripts/monter-repertoire-chiffre.sh`), oder Prüfsumme der Credentials ungültig (Credentials-Datei prüfen) — beides `SecretsFermesError` |
+| `guide_non_lu` | einmalig `--guide-version` übergeben |
+| 403 / 429 | `respect.waf_bloquants` lesen — ein Signal, keine Ausnahme |
 
 ---
 
-## Rückgabecodes
+## Exit-Codes
 
-`0` Erfolg · `1` Fehler im Playwright oder fehlende Assertion · `2` Abweichung der Bildschirmauflösung
-(`watch.py`) · `3` Falscher Interpreter, verwenden Sie die virtuelle Umgebung · `42` Verschlüsseltes Verzeichnis geschlossen oder fehlerhafte
-Prüfsumme · `43` `diwall.conf` fehlt.
+`0` Erfolg · `1` Ausführung fehlgeschlagen oder Assertion fehlgeschlagen · `2` Ungültige Argumente (abgelehnt, bevor ein Browser gestartet wurde) · `3` Falscher Interpreter – verwenden Sie die venv (`/opt/dinoer/venv/bin/python`) · `42` Verschlüsselter Credential-Verzeichnis geschlossen oder Prüfsumme der Credentials ungültig (`SecretsFermesError` Familie) · `43` Keine `secrets_dir` konfiguriert (`SecretsNonConfigureError`).

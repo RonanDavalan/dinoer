@@ -1,211 +1,299 @@
-# Dinoer – Bedienungsanleitung
+# Dinoer — Betreiberleitfaden
 
-Version 1.10 – August 2026 (v1.23.0) – vier weitere Demonstrationsanwendungsfälle (selbstgehostete Observability, Verwaltung von Ticketing-Plattformen, Verfolgung lokaler Veranstaltungen, E-Commerce-Zugriff unter Verwendung von Respectful Navigation).
+Version 1.11 — August 2026 (v1.23.0) — Oberfläche an die Dinoer-Rekonstruktion
+angepasst: kein Screenshot, kein Set-of-Mark, kein `watch.py`; der Agent
+liest den Accessibility-Baum und steuert Playwright-Aktionen über
+CSS-Selektoren.
 
-*Ebenfalls auf Französisch, Deutsch und Spanisch unter `docs/fr/`, `docs/de/` und `docs/es/`.*
+*Ebenfalls verfügbar auf Englisch, Französisch und Spanisch unter
+`docs/`, `docs/fr/` und `docs/es/`.*
 
 ---
 
-## Warum Dinoer – was Sie tatsächlich delegieren
+## Warum Dinoer — was Sie tatsächlich delegieren
 
 ### Das Problem, das Dinoer löst
 
-Wenn Sie mit einem LLM in einer Webanwendung arbeiten, entsteht eine Wahrnehmungsasymmetrie:
-Das Modell liest Code, führt Befehle aus und beobachtet textuelle Ausgaben – aber es sieht nicht
-die Benutzeroberfläche, die Ihre Benutzer sehen. Sie schon.
+Wenn Sie mit einem LLM an einer Webanwendung arbeiten, entsteht eine
+Wahrnehmungsasymmetrie: Das Modell liest Code, führt Befehle aus,
+beobachtet Textausgaben — aber es sieht nicht die Oberfläche, die Ihre
+Nutzer sehen. Sie schon.
 
-Diese Asymmetrie erzeugt eine bestimmte Form von Unsicherheit: Sie wissen nicht, ob das, was
-das Modell beschreibt, mit dem übereinstimmt, was Sie in einem Browser sehen würden. Um sicherzugehen, müssen Sie
-entweder ihm vertrauen oder es selbst überprüfen.
+Diese Asymmetrie erzeugt eine spezifische Form von Unsicherheit: Sie
+wissen nicht, ob das, was das Modell beschreibt, dem entspricht, was Sie in
+einem Browser sehen würden. Um sicherzugehen, müssen Sie ihm entweder aufs
+Wort glauben oder es selbst überprüfen.
 
-Dinoer löst dieses Problem, indem es eine **gemeinsame visuelle Referenz** schafft:
-das Modell erfasst die Benutzeroberfläche mit einem echten Browser (headless Chromium),
-und Sie haben Zugriff auf dieselben PNG-Aufnahmen und Accessibility-Bäume.
-Sie müssen dem Modell nicht mehr blind vertrauen – Sie beobachten denselben Zustand wie es.
+Dinoer löst dieses Problem, indem es dem Modell dieselbe strukturierte
+Sicht verschafft, die Sie in einem Browser hätten: den Accessibility-Baum,
+gelesen über ein echtes Headless-Chromium, plus die DOM-Werte, die es mit
+`evaluer` extrahiert. Sie nehmen das Modell nicht mehr beim Wort — Sie
+beobachten denselben Zustand wie es.
 
 ```
- Browser (headless Chromium)
-        │  Playwright drives it — click, fill, navigate
+ Browser (Headless-Chromium)
+        │  Playwright steuert ihn — klicken, ausfüllen, navigieren
         ▼
  shot.py / rpa.py
-        │  reads the resulting DOM state through parallel views
-        ├──▶ capture_som   PNG, interactive elements numbered
-        ├──▶ elements_som  JSON list — id, tag, text
-        ├──▶ a11y_tree     accessibility tree, text
-        └──▶ session file  cookies only (--sauver-session)
+        │  liest den resultierenden DOM-Zustand über parallele Sichten
+        ├──▶ a11y_tree            Accessibility-Baum, Text
+        ├──▶ evaluations          über `evaluer` extrahierte Werte
+        └──▶ Sitzungsdatei        nur Cookies (--sauver-session)
         │
         ▼
- boussole + JSON on stdout — same state you would see in a browser
+ boussole + JSON auf stdout — der Zustand, wie der Betreiber ihn prüfen kann
         │
         ▼
- You (the model): read → analyse → decide → act → loop
+ Sie (das Modell): lesen → analysieren → entscheiden → handeln → Schleife
 ```
 
 ### Was Sie delegieren
 
-Dinoer ermöglicht es Ihnen, **wiederholende und stressauslösende visuelle Überprüfungen** auszulagern:
+Dinoer lässt Sie **repetitive und kontrollintensive Überprüfungen**
+delegieren:
 
-- Überprüfen, ob 20 Seiten einer Website nach einem Deployment korrekt angezeigt werden.
-- Bestätigen, dass ein Anmeldeformular auf der richtigen Oberfläche funktioniert.
-- Sicherstellen, dass ein Deployment die Darstellung einer kritischen Ansicht nicht beeinträchtigt hat.
-- Visuelle Validierung, ob eine Korrektur korrekt auf dem Bildschirm sichtbar ist.
+- Prüfen, dass 20 Seiten einer Site nach einem Deployment korrekt antworten
+- Bestätigen, dass ein Login-Formular auf der richtigen Oberfläche
+  funktioniert
+- Sicherstellen, dass ein Deployment die Struktur einer kritischen Ansicht
+  nicht beschädigt hat
+- Ein Admin-Panel über dieselbe Oberfläche steuern, die ein Mensch nutzen
+  würde
 
-Ohne Dinoer sind diese Überprüfungen Ihre Verantwortung. Mit Dinoer führt das Modell sie durch und meldet das Ergebnis – mit visuellen Beweisen.
+Ohne Dinoer liegen diese Überprüfungen in Ihrer Verantwortung. Mit Dinoer
+führt das Modell sie aus und meldet das Ergebnis — mit dem JSON-Beleg dazu.
 
-### Was Sie behalten
+### Was bei Ihnen bleibt
 
-Sie behalten die **übergeordnete Validierung des Ergebnisses**: Sie entscheiden, ob das Ergebnis,
-das das Modell präsentiert, akzeptabel ist, mit Ihren Erwartungen übereinstimmt und im Einklang
-mit dem steht, was Ihre Benutzer sehen sollten. Diese Entscheidung bleibt bei Ihnen.
+Bei Ihnen bleibt die **Sinnvalidierung auf hoher Ebene**: die Entscheidung,
+ob das vom Modell präsentierte Ergebnis akzeptabel ist, Ihren Erwartungen
+entspricht und mit dem übereinstimmt, was Ihre Nutzer sehen sollten. Diese
+Entscheidung bleibt Ihre.
 
-### Respektvolles Navigieren (Version 1.15.0)
+### Respektvolle Navigation (v1.15.0)
 
-Dinoer verschleiert seine Identität nicht, um die Erkennung durch Bots zu umgehen. `--stealth`
-entfernt automatische technische Markierungen (`navigator.webdriver`), die Headless-Browser blockieren, unabhängig von der Absicht – es ändert weder die IP-Adresse des Betreibers noch dessen Identität, noch die Tatsache, dass der Durchlauf deklariert ist. Im Gegenzug meldet jeder Durchlauf seinen eigenen Fingerabdruck (`respect`: besuchte Seiten, ausgeführte Aktionen, Dauer) und respektiert konfigurierbare Höflichkeitsverzögerungen und harte Limits (`diwall.conf [navigation]`). Das Recht zu navigieren und die Pflicht zur messbaren Navigation werden als untrennbar behandelt – siehe `docs/RETOUR_EXPERIENCE.md` FR-77/FR-78/FR-79 für den Kontext, der dies geprägt hat.
+Dinoer verschleiert seine Identität nicht, um Bot-Erkennung zu umgehen.
+`--stealth` entfernt automatische technische Markierungen
+(`navigator.webdriver`), die Headless-Browser unabhängig von der Absicht
+blockieren — es ändert weder die IP-Adresse noch die Identität des
+Betreibers noch die Tatsache, dass der Lauf deklariert ist. Im Gegenzug
+meldet jeder Lauf seinen eigenen Fußabdruck (`respect`: besuchte Seiten,
+ausgeführte Aktionen, Dauer) und respektiert konfigurierbare
+Höflichkeitsverzögerungen und harte Obergrenzen (`dinoer.conf
+[navigation]`). Das Recht zu navigieren und die Pflicht, dies messbar zu
+tun, werden als untrennbar behandelt — siehe `docs/RETOUR_EXPERIENCE.md`
+FR-77/FR-78/FR-79 für den Praxiskontext, der dies geprägt hat.
 
-Lokale Ziele – die Höflichkeitsverzögerung ist keine Doktrin, sondern eine Standardeinstellung.
-(v1.19.0): Die ausgelieferte Einstellung `min_action_delay_ms: 800` schützt
-einen unkonfigurierten ersten Start vor dem öffentlichen Internet – sie ist bedeutungslos
-gegenüber Ihrem eigenen Entwicklungs-/Produktionssystem. Setzen Sie sie auf `0` in Ihrer lokalen
-Konfiguration `diwall.conf` für lokales Debugging; siehe Abschnitt `docs/MANUEL.md` 3b.
+**Lokale Ziele — die Höflichkeitsverzögerung ist keine Doktrin, sondern
+ein Standardwert (v1.19.0):** Der mitgelieferte Wert
+`min_action_delay_ms: 800` schützt einen unkonfigurierten Erstlauf gegen
+das öffentliche Internet — gegen Ihre eigene Entwicklungs- oder
+Produktionsmaschine ist er bedeutungslos. Setzen Sie ihn für lokales
+Debugging in Ihrer lokalen `dinoer.conf` auf `0`; siehe `docs/MANUEL.md`
+Abschnitt 3b.
 
-### Wann ist Dinoer das richtige Werkzeug?
+### Wann Dinoer das richtige Werkzeug ist
 
-| Anwendungsfall | Geeignet für Dinoer? |
+| Anwendungsfall | Für Dinoer geeignet? |
 |---|---|
-| Visuelle Validierung nach der Bereitstellung | ✓ Ja |
-| Diagnose von Rendering-Fehlern | ✓ Ja |
-| Navigation und Formulareingabe (max. ~30 s) | ✓ Ja |
-| Delegation wiederholter Prüfungen | ✓ Ja |
-| Lange Serveroperationen (Klonen ~2–5 min) | ✗ Nein — Playwright Timeout |
-| Massenlöschung oder -änderung | ✗ Nein — direkte API-Aufrufe bevorzugen |
-| Workflows, die ein Rollback erfordern | ✗ Nein — Dinoer kann keine Änderungen rückgängig machen |
+| Strukturelle Validierung nach einem Deployment | ✓ Ja |
+| Diagnose einer defekten Interaktion | ✓ Ja |
+| Navigation und Formulareingabe (~30 s max.) | ✓ Ja |
+| Delegation repetitiver Prüfungen | ✓ Ja |
+| Lange Server-Operation (Klonen ~2–5 min) | ✗ Nein — Playwright-Timeout |
+| Massenlöschung oder -mutation | ✗ Nein — direkten API-Aufruf bevorzugen |
+| Workflow, der ein Rollback erfordert | ✗ Nein — Dinoer kann nichts rückgängig machen |
 
-Für Fälle, in denen die Anwendung nicht geeignet ist, siehe Abschnitt "Wann man Dinoer NICHT verwenden sollte" (Dokumentation der Reibungskörper FR-59 und FR-60).
-`docs/GUIDE_LLM.md`
-
----
-
-**Dieses Dokument ist für die Person bestimmt, die Dinoer bedient.**
-
-Es ergänzt `GUIDE_LLM.md` (für Modelle gedacht) mit konkreten Beispielen,
-Schritt-für-Schritt-Anleitungen und Hinweisen zu häufigen Problempunkten.
+Für davon abgeratene Fälle siehe `docs/GUIDE_LLM.md`, Abschnitt „When NOT
+to use Dinoer" (Friktionen FR-59 und FR-60 dokumentiert).
 
 ---
 
-## Demonstrationsszenarien
+**Dieses Dokument ist für die Person geschrieben, die Dinoer betreibt.**
 
-Die folgenden Beispiele veranschaulichen, wie eine "Agent-plus-Dinoer"-Sitzung in der
-Praxis aussehen kann. Sie dienen dazu, dass Sie sie im Kontext Ihrer eigenen Situation bewerten, und sind nicht als Empfehlung zur Übernahme eines bestimmten Ansatzes gedacht. Nur Fall 1 wird als ausführbares Szenario bereitgestellt; die anderen sind absichtlich deskriptiv, und jeder erklärt unter seiner eigenen Überschrift, warum dies so ist.
+Es ergänzt `GUIDE_LLM.md` (für Modelle bestimmt) um konkrete Beispiele,
+Schritt-für-Schritt-Anleitungen und Hinweise zu häufigen Stolperfallen.
 
-### Fall 1 – Fehlerbehebung bei lokalen CSS-/JavaScript-Dateien
+---
 
-Als ein echtes, ausführbares Szenario implementiert:
-`scenarios/exemples/depannage_local.json`. Es diagnostiziert eine visuelle
-Änderung oder eine blockierte Interaktion auf einer lokal bereitgestellten Schnittstelle – eine schnelle Prüfung
-(`--mode fast`), die `erreurs_js`/`erreurs_console` liest, eine `--som` Aufnahme,
-falls die Änderung rein visuell ist, dann wird die Korrektur mit
-`watch.py --comparer-pixel` anhand einer Referenz validiert, die vor der
-Regression erfasst wurde. Führen Sie es direkt aus:
+## Demonstrations-Anwendungsfälle
+
+Die folgenden Fälle veranschaulichen, wie eine Sitzung aus Agent plus
+Dinoer in der Praxis aussehen kann. Sie sind dazu gedacht, dass Sie sie
+gegen Ihren eigenen Kontext bewerten — nicht als Empfehlung, einen
+bestimmten Fall zu übernehmen. Nur Fall 1 wird als lauffähiges Szenario
+ausgeliefert; die anderen sind bewusst erzählend, und jeder erklärt unter
+seiner eigenen Überschrift, warum.
+
+### Fall 1 — lokale CSS/JS-Fehlersuche
+
+Als reales, lauffähiges Szenario eingecheckt:
+`scenarios/exemples/depannage_local.json`. Es diagnostiziert eine
+Layoutverschiebung oder eine blockierte Interaktion auf einer lokal
+bereitgestellten Oberfläche — eine schnelle Sonde, die `erreurs_js`/
+`erreurs_console` und den Accessibility-Baum liest und dann die Korrektur
+mit `rpa.py --replay-verifier` gegen eine vor der Regression erfasste
+Referenz validiert. Direkt ausführen:
 
 ```bash
-/opt/diwall/venv/bin/python3 /opt/diwall/rpa.py \
-  --scenario /opt/diwall/scenarios/exemples/depannage_local.json \
-  --guide-version 1.2
+/opt/dinoer/venv/bin/python /opt/dinoer/rpa.py \
+  --scenario /opt/dinoer/scenarios/exemples/depannage_local.json \
+  --guide-version 1.3
 ```
 
-### Fall 2 – Vergleich von Hardwarekomponenten in verschiedenen Geschäften
+### Fall 2 — Hardwarekomponenten über Shops hinweg vergleichen
 
-Ein Agent, der beauftragt wurde, den Preis und die Verfügbarkeit eines Produkts in mehreren Online-Shops zu vergleichen, könnte Dinoer mit einem separaten URL-Findungs-Tool (z. B. einer lokalen Suchmaschine) verwenden, um potenzielle Shop-Seiten zu finden, dann Dinoer im Sondermodus (`--mode fast`, ohne PNG) mit `evaluer` Aktionen nutzen, um den Preis/stock/specifications von jeder Seite zu extrahieren und schließlich die Ergebnisse selbst zu vergleichen.
+Ein Agent, der gebeten wird, Preis und Lagerbestand einer Komponente über
+mehrere Online-Shops hinweg zu vergleichen, könnte Dinoer mit einem
+separaten Werkzeug zur URL-Entdeckung (zum Beispiel einer lokalen
+Suchinstanz) kombinieren, um Kandidatenseiten von Shops zu finden, dann
+Dinoer im schreibgeschützten Modus mit `evaluer`-Aktionen nutzen, um
+Preis/Lagerbestand/Spezifikationen von jeder Seite zu extrahieren, und
+schließlich die Ergebnisse selbst vergleichen.
 
-**Bewusst nicht als versioniertes Szenario ausgeliefert:** einen bestimmten
-Shop in einem öffentlichen, versionierten Szenario zu nennen, ist eine
-Entscheidung, die Ihnen gehört — keine Vorgabe, die dieses Projekt an Ihrer
-Stelle treffen sollte. Sie birgt zudem ein reales Fragilitätsrisiko: ein
-öffentliches Szenario, das eine namentlich genannte kommerzielle Website
-anspricht, kann Monate später scheitern, wenn sich deren Anti-Bot-Haltung
-ändert (39 % der in `docs/RETOUR_EXPERIENCE.md` FR-77 untersuchten
-kommerziellen Websites antworteten mit einer sofortigen Sperre) — was das
-Beispiel mehr diskreditiert als es hilft. Wenn Sie diese Komposition selbst
-bauen: jedes Werkzeug zur URL-Ermittlung, das Sie mit Dinoer kombinieren (eine
-lokale Suchinstanz oder anderes), ist kein Bestandteil von Dinoer — es ist ein
-eigenständiger Baustein, den der Agent darüber komponiert.
+**Bewusst nicht als eingechecktes Szenario ausgeliefert:** Einen
+bestimmten Shop in einem öffentlichen, versionierten Szenario zu nennen,
+ist eine Entscheidung, die Ihnen gehört, kein Standard, den dieses Projekt
+in Ihrem Namen treffen sollte. Es birgt auch ein reales
+Fragilitätsrisiko — ein öffentliches Szenario, das auf eine namentlich
+genannte kommerzielle Site zielt, kann Monate später scheitern, wenn sich
+deren Anti-Bot-Haltung ändert (39 % der in `docs/RETOUR_EXPERIENCE.md`
+FR-77 erfassten kommerziellen Sites gaben einen sofortigen Block zurück),
+was das Beispiel eher diskreditiert als hilft. Wenn Sie diese Komposition
+selbst aufbauen: Beachten Sie, dass jedes Werkzeug zur URL-Entdeckung, mit
+dem Sie Dinoer kombinieren (eine lokale Suchinstanz oder sonstiges), keine
+Dinoer-Komponente ist — es ist ein separates Teil, das der Agent
+obendrauf komponiert.
 
-### Fall 3 – Erkundung und Zusammenfassung von technischer Dokumentation (Single-Page-Anwendungen)
+### Fall 3 — technische Dokumentation erkunden und zusammenfassen (Single-Page-Apps)
 
-Ein Agent, der mit der Erstellung eines Integrationshandbuchs für eine Dokumentationsseite beauftragt ist, die als Single-Page-Anwendung aufgebaut ist, könnte `rpa.py` zusammen mit `attendre_reseau_calme` verwenden, um das clientseitige Routing zu ermöglichen, den Accessibility-Baum im Schnellmodus zu extrahieren, um die Seitenstruktur abzubilden, dann Codeblöcke rekursiv mit `evaluer` durchzugehen, um ihren genauen Inhalt abzurufen, und schließlich das gesammelte Material zu einem Handbuch zusammenzufassen.
+Ein Agent, der beauftragt ist, einen Integrationsleitfaden für eine als
+Single-Page-App gebaute Dokumentations-Site zu erstellen, könnte `rpa.py`
+mit `attendre_reseau_calme` nutzen, um clientseitiges Routing sich setzen
+zu lassen, den Accessibility-Baum extrahieren, um die Seitenstruktur zu
+kartieren, dann Codeblöcke rekursiv mit `evaluer` durchlaufen, um ihren
+exakten Inhalt zu ziehen, und schließlich das gesammelte Material zu einem
+Leitfaden synthetisieren.
 
-**Nicht als fertiges Szenario versendet, aus dem gleichen Grund wie Fall 2** –
-die Nennung einer bestimmten Dokumentationsseite (oder, schlimmer noch, eines bestimmten Zahlungsanbieters, dessen Dokumentation zufällig ein funktionierendes Beispiel ist) stellt eine kommerzielle und reputationsbezogene Verpflichtung dar, die dieses Projekt grundsätzlich nicht eingehen sollte. Das gleiche Risiko von WAF-Schwachstellen besteht auch bei einem öffentlichen Szenario, das an ein bestimmtes reales Ziel gebunden ist.
+**Aus demselben Grund wie Fall 2 nicht als eingechecktes Szenario
+ausgeliefert** — eine bestimmte Dokumentations-Site zu nennen (oder,
+schlimmer, einen bestimmten Zahlungsanbieter, dessen Dokumentation zufällig
+das funktionierende Beispiel ist) ist eine kommerzielle und
+reputationsbezogene Festlegung, die dieses Projekt nicht standardmäßig
+treffen sollte, und dasselbe WAF-Fragilitätsrisiko gilt für ein
+öffentliches Szenario, das auf ein einziges reales Ziel festgenagelt ist.
 
-### Fall 4 – Konfiguration eines selbst gehosteten Observability- oder Analyse-Dashboards
+### Fall 4 — ein selbstgehostetes Observability- oder Analytics-Dashboard konfigurieren
 
-Ein Administrator, der ein selbstgehostetes Monitoring- oder Webanalyse-Dashboard hinter einem Reverse-Proxy einrichtet, kann Dinoer verwenden, um die Benutzeroberfläche selbst zu steuern –
-um ein Dashboard zu erstellen, eine Datenquelle anzuschließen und eine Alarmregel festzulegen –
-auf die gleiche Weise, wie jedes andere Admin-Panel konfiguriert wird, anstatt Dateien manuell zu bearbeiten für Schritte, die die Benutzeroberfläche eigentlich abdecken soll. Dies umfasst auch Ziele, die sich
-hinter einer HTTP Basic Auth-Authentifizierung auf Netzwerkebene befinden (`--http-credentials`,
-Version 1.21.0) – dies wurde anhand einer echten, von Caddy geschützten Admin-Oberfläche bestätigt, nicht nur anhand eines simulierten Systems: die gespeicherten Zugangsdaten haben die
-Authentifizierung beim ersten Versuch erfolgreich bestanden.
+Ein Betreiber, der ein selbstgehostetes Monitoring- oder
+Web-Analytics-Dashboard hinter einem Reverse-Proxy einrichtet, kann Dinoer
+nutzen, um die Oberfläche selbst zu steuern — ein Dashboard erstellen,
+eine Datenquelle verdrahten, eine Alarmregel setzen — genauso, wie jedes
+andere Admin-Panel konfiguriert wird, statt Dateien für Schritte von Hand
+zu bearbeiten, die die Oberfläche eigentlich übernehmen soll. Dies schließt
+Ziele hinter einer HTTP-Basic-Auth-Herausforderung auf Netzwerkebene ein
+(`--http-credentials`, v1.21.0) — bestätigt gegen eine echte,
+Caddy-geschützte Admin-Oberfläche, nicht nur eine synthetische Fixture:
+die gespeicherten Credentials beantworteten die Herausforderung beim
+ersten Versuch.
 
-**Nicht als einheitliches Szenario ausgeliefert** – das Layout des Dashboards und die Namen der Datenquellen sind spezifisch für die Infrastruktur eines bestimmten Operators. Eine synthetische Entsprechung zu erstellen würde bedeuten, dass das, was bereits durch die lokale Testumgebung in Fall 1 abgedeckt wird (nämlich strukturelle Regression), dupliziert würde, und zwar nicht für diese Art von geführter, mehrstufiger Konfigurationsarbeit.
+**Nicht als eingechecktes Szenario ausgeliefert** — das Dashboard-Layout
+und die Namen der Datenquellen sind spezifisch für die Infrastruktur eines
+Betreibers, und ein synthetisches Äquivalent zu erfinden würde
+duplizieren, was die lokale Fixture in Fall 1 bereits für strukturelle
+Regression abdeckt — nicht für diese Art geführter, mehrstufiger
+Konfigurationsarbeit.
 
-### Fall 5 – Betrieb einer Ticketing-Plattform von Anfang bis Ende
+### Fall 5 — eine Ticketing-Plattform durchgängig administrieren
 
-Dinoer wurde über mehrere Sitzungen verwendet, um eine echte, selbst gehostete Ticketinstallation zu konfigurieren und zu betreiben – einschließlich der Einrichtung von Veranstaltungen, Ticketkategorien, einer benutzerdefinierten Domain sowie der Tools für den Scannen/Check-in am Veranstaltungstag – und zwar über die gleiche Weboberfläche, die auch ein menschlicher Administrator verwenden würde. Es gab echte Probleme, die auf dem Weg gelöst wurden (Session-Management, Eigenheiten bei Dropdown-Menüs, eine Berechtigungsabfrage, die einen unbeaufsichtigten Schritt blockierte) – es war also keine reibungslose Erfolgsgeschichte, was Teil dessen ist, was dieses Beispiel nützlich macht: Die Hindernisse waren typische Probleme der Webautomatisierung und nicht etwas Spezifisches für Dinoer.
+Dinoer über mehrere Sitzungen hinweg eingesetzt, um eine echte,
+selbstgehostete Ticketing-Installation zu konfigurieren und zu betreiben —
+Event-Einrichtung, Ticketkategorien, eine eigene Domain und die
+Scan-/Check-in-Werkzeuge am Veranstaltungstag — über dieselbe
+Weboberfläche, die ein menschlicher Administrator nutzen würde. Unterwegs
+traten reale Friktionen auf und wurden gelöst (Sitzungsverwaltung,
+Dropdown-Eigenheiten, ein Berechtigungs-Prompt, der einen unbeaufsichtigten
+Schritt blockierte) — keine reibungslose Erfolgsgeschichte, was Teil dessen
+ist, was sie zu einem nützlichen Beispiel macht: Die Hindernisse waren
+gewöhnliche Web-Automatisierungshindernisse, nichts Dinoer-Spezifisches.
 
-**Nicht als fest definiertes Szenario versendet** – eine Ticketkonfiguration betrifft
-Abrechnungsdetails und spezifische Informationen zur Veranstaltung, die für den jeweiligen Betreiber einzigartig sind, aus dem gleichen Grund wie
-Fall 2.
+**Nicht als eingechecktes Szenario ausgeliefert** — eine
+Ticketing-Konfiguration berührt Abrechnungs- und Veranstaltungsortdetails,
+die für den Betreiber spezifisch sind, dieselbe Begründung wie Fall 2.
 
-### Fall 6 – Verfolgung eines regionalen Veranstaltungskalenders
+### Fall 6 — einen regionalen Veranstaltungskalender verfolgen
 
-Eine einfache Verwendung von semantischen Abfragen: Ein Agent wird gebeten, einen lokalen Ereigniskalender auf bevorstehende Veranstaltungen zu überprüfen, ohne im Voraus zu wissen, welche Seite die Antwort enthält. Dinoers schneller Modus (`--mode fast`, keine Erfassung) in Kombination mit dem Accessibility-Baum ermöglicht es dem Agenten, innerhalb weniger Anfragen zu scannen und Ergebnisse zurückzumelden – für diese Art von rein lesender, textbasierter Aufgabe ist kein Vision-Modell erforderlich. Eine Sitzung lieferte auch ein sauberes, reales Beispiel für das dokumentierte Fehlalarmverhalten des WAF-Signals: eine Seite wurde normal geladen (reichhaltiger Inhalt, kein Captcha, keine Zwischenseite), während `respect.waf_bloquants` dennoch ausgelöst wurde, weil eine nicht zusammenhängende Ressource eines Drittanbieters auf der Seite ein Erkennungswort enthielt – dies wurde in etwa einer Minute behoben, indem der bereits im selben Antwort-Dokument vorhandene Accessibility-Baum gelesen wurde, genau wie von der Regel "Signal, niemals ein Lock" des Handbuchs erwartet.
+Eine einfache semantische Sondennutzung: einen Agenten bitten, einen
+lokalen Veranstaltungskalender auf bevorstehende Termine zu prüfen, ohne
+vorab zu wissen, welche Seite die Antwort enthält. Der
+schreibgeschützte Modus von Dinoer, kombiniert mit dem Accessibility-Baum,
+lässt den Agenten in einer Handvoll Anfragen scannen und zurückmelden —
+kein Vision-Modell für diese Art textgetriebener Aufgabe nötig. Eine
+Sitzung produzierte auch ein sauberes, reales Beispiel für das dokumentierte
+Falsch-positiv-Verhalten des WAF-Signals: eine Seite lud normal (reicher
+Inhalt, kein Captcha, kein Interstitial), während `respect.waf_bloquants`
+trotzdem auslöste — wegen einer nicht damit zusammenhängenden
+Drittanbieter-Ressource auf der Seite, die einem Erkennungsschlüsselwort
+entsprach — in etwa einer Minute gelöst, indem der bereits in derselben
+Antwort vorhandene Accessibility-Baum gelesen wurde, genau wie es die
+Regel „Signal, nie Verriegelung" des Leitfadens vorwegnimmt.
 
-**Nicht als fest definiertes Szenario versendet** – eine bestimmte regionale Ereignis-Website
-ist kein stabiles, reproduzierbares öffentliches Ziel, und die Benennung einer solchen Website öffentlich liegt im Ermessen des Betreibers, nicht in der Standardeinstellung des Projekts.
+**Nicht als eingechecktes Szenario ausgeliefert** — eine bestimmte
+regionale Veranstaltungs-Site ist kein stabiles, reproduzierbares
+öffentliches Ziel, und eine namentlich zu nennen ist die Entscheidung des
+Betreibers, kein Projektstandard.
 
-### Fall 7 – Test des Zugriffs auf E-Commerce-Seiten unter realen Bedingungen im Rahmen von "Respectful Navigation"
+### Fall 7 — realen Zugriff auf E-Commerce-Sites unter respektvoller Navigation testen
 
-Eine wiederkehrende, ehrliche Beobachtung aus tatsächlichen Sitzungen: verwendet mit Respekt
-(durch Ratenbegrenzung verursachte Verzögerungen, Beschränkungen für Seiten/Aktionen, `--stealth` aktiv, kein Versuch,
-auf eine echte Blockade zuzugreifen), Dinoer-Tests gegen verschiedene E-Commerce-
-Seiten zeigen, dass ein großer Teil der großen Plattformen einen direkten
-Block zurückgibt – HTTP 403 oder eine Anfrage, die nie abgeschlossen wird – unabhängig davon, wie
-höflich der Datenverkehr ist. Dies ist kein Fehler von Dinoer, den es beheben muss:
-Die Anti-Bot-Strategie ist die eigene Wahl der Website, und Dinoer versucht nicht,
-diese zu umgehen (siehe "Respektvolle Navigation" oben). Praktisch: Bei
-Vergleichsaufgaben für große kommerzielle Plattformen sollte man mit einer
-bedeutenden Anzahl von Sackgassen rechnen und ein Block-Signal
-(`respect.waf_bloquants`) als Information betrachten, um einen anderen Weg zu finden, nicht als
-Fehler, der wiederholt werden soll.
+Eine wiederkehrende, ehrliche Beobachtung aus echten Sitzungen: respektvoll
+eingesetzt (ratenbegrenzte Verzögerungen, Seiten-/Aktionsobergrenzen,
+`--stealth` aktiv, kein Versuch, einen echten Block zu erzwingen), stellt
+Dinoer bei einer Reihe von E-Commerce-Sites fest, dass ein großer Anteil
+großer Plattformen einen glatten Block zurückgibt — HTTP 403, oder eine
+Anfrage, die nie abschließt — unabhängig davon, wie höflich der Traffic
+ist. Dies ist kein zu behebendes Dinoer-Manko: Anti-Bot-Haltung ist die
+eigene Entscheidung der Site, und Dinoer versucht nicht, sie zu
+überwinden (siehe „Respektvolle Navigation" oben). Praktisch: Für
+Preisvergleichsaufgaben gegen große kommerzielle Plattformen einen
+nennenswerten Anteil an Sackgassen erwarten, und ein Block-Signal
+(`respect.waf_bloquants`) als Information zum Umfahren behandeln, nicht
+als Fehler, gegen den erneut versucht werden sollte.
 
-Eine Unterscheidung, die es wert ist, im Hinterkopf behalten zu werden: Ein unsichtbarer Verifizierungsbildschirm, der
-niemals aufgelöst wird und nichts präsentiert, auf das man reagieren könnte (keine Checkbox, keine Bildaufgabe), unterscheidet sich von einem interaktiven CAPTCHA. Letzteres kann ehrlich beantwortet werden – ein Agent, der im Auftrag einer bestimmten Person handelt, von deren eigener IP-Adresse aus, ist nicht der "Roboter", an den die Frage gerichtet ist. Der erste bietet einfach keine Möglichkeit für den Agenten, etwas zu tun, und das Umgehen (IP-Rotation, TLS-Fingerprint-Spoofing) fällt außerhalb dessen, was Dinoer tut.
+Eine Unterscheidung, die es sich zu merken lohnt: ein unsichtbarer
+Verifizierungsbildschirm, der nie aufgelöst wird und nichts zum Handeln
+bietet (keine Checkbox, keine Bildherausforderung), unterscheidet sich von
+einem interaktiven CAPTCHA. Letzteres ehrlich zu beantworten ist legitim —
+ein Agent, der für einen namentlich genannten Menschen von dessen eigener
+IP aus operiert, ist nicht der „Roboter", auf den die Frage abzielt.
+Ersteres bietet der Agentenseite schlicht keine Tür zum Öffnen, und es
+gewaltsam zu umgehen (IP-Rotation, TLS-Fingerprint-Fälschung) liegt
+außerhalb dessen, was Dinoer tut.
 
-**Bewusst nicht als versioniertes Szenario ausgeliefert, und bewusst ohne
-Nennung der beteiligten Plattformen** — siehe die Überlegung zur
-WAF-Fragilität unter Fall 2: eine datierte Tabelle mit Sperre/keine Sperre,
-gebunden an namentlich genannte kommerzielle Websites, veraltet und untergräbt
-ihre eigene Aussage schneller, als sie sie belegt. `docs/RETOUR_EXPERIENCE.md`
-FR-77 dokumentiert dasselbe Muster im Panel-Maßstab (39 % sofortige Sperrrate).
+**Bewusst nicht als eingechecktes Szenario ausgeliefert, und bewusst ohne
+Nennung der beteiligten Plattformen** — siehe die
+WAF-Fragilitätsbegründung unter Fall 2: eine datierte
+Block-/Kein-Block-Tabelle, die an namentlich genannte kommerzielle Sites
+gebunden ist, veraltet und untergräbt ihren eigenen Punkt schneller, als
+sie ihn veranschaulicht. `docs/RETOUR_EXPERIENCE.md` FR-77 dokumentiert
+dasselbe Muster im Panel-Maßstab (39 % Sofort-Block-Rate).
 
 ---
 
 ## Voraussetzungen vor dem Start
 
 ```bash
-# 1. Überprüfen Sie, ob Dinoer antwortet.
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
-  --url https://example.com --som --a11y
-# → must return {"succes": true, ...}
+# 1. Prüfen, dass Dinoer antwortet
+/opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
+  --url https://example.com --a11y
+# → muss {"succes": true, ...} zurückgeben
 
-# 2. Überprüfen Sie, ob das verschlüsselte Verzeichnis gemountet ist (falls gocryptfs verwendet wird).
+# 2. Prüfen, dass das verschlüsselte Verzeichnis gemountet ist (falls gocryptfs)
 ls ~/Vaults/Dinoer/
-# → müssen `.json`-Dateien anzeigen, keine verschlüsselten Inhalte.
+# → muss .json-Dateien zeigen, nicht verschlüsselten Inhalt
 
-# 3. Überprüfen Sie die Anmeldeinformationen für eine Domain.
-/opt/diwall/venv/bin/python3 -c "
-import sys; sys.path.insert(0, '/opt/diwall')
+# 3. Credentials für eine Domain prüfen
+/opt/dinoer/venv/bin/python -c "
+import sys; sys.path.insert(0, '/opt/dinoer')
 from lib.repertoire_chiffre import lire_credential
 print('OK' if lire_credential('target.local', 'password') else 'EMPTY')
 "
@@ -213,76 +301,76 @@ print('OK' if lire_credential('target.local', 'password') else 'EMPTY')
 
 ---
 
-## Konfiguration der Anmeldeinformationen pro Projekt
+## Credentials-Konfiguration pro Projekt
 
-Jedes Projekt kann sein eigenes Verzeichnis für Anmeldeinformationen haben. Zwei Methoden:
+Jedes Projekt kann sein eigenes Credentials-Verzeichnis haben. Zwei
+Methoden:
 
-**Methode 1 – Direkte Umgebungsvariable (einmalige Ausführung):**
-
-```bash
-DIWALL_SECRETS_DIR=~/Vaults/MyProject \
-  /opt/diwall/venv/bin/python3 /opt/diwall/shot.py --url …
-```
-
-Methode 2 – Projektdatei `.diwall.conf` (empfohlen für wiederkehrende Projekte):
+**Methode 1 — direkte Umgebungsvariable (einmalig):**
 
 ```bash
-# Erstellen Sie die Datei im Projektstammverzeichnis.
-echo '{"secrets_dir": "../MyProject-secrets"}' > ~/git/MyProject/.diwall.conf
-
-# Then prefix each invocation (or export at the start of the shell session)
-export DIWALL_CONF=~/git/MyProject/.diwall.conf
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py --url …
+DINOER_SECRETS_DIR=~/Vaults/MyProject \
+  /opt/dinoer/venv/bin/python /opt/dinoer/shot.py --url …
 ```
 
-Der `secrets_dir` in `.diwall.conf` kann ein relativer Pfad sein – er wird relativ zum Speicherort der `.diwall.conf` Datei aufgelöst.
+**Methode 2 — projektspezifische `.dinoer.conf`-Datei (empfohlen für
+wiederkehrende Projekte):**
+
+```bash
+# Datei im Projektwurzelverzeichnis erstellen
+echo '{"secrets_dir": "../MyProject-secrets"}' > ~/git/MyProject/.dinoer.conf
+
+# Dann jedem Aufruf voranstellen (oder zu Beginn der Shell-Sitzung exportieren)
+export DINOER_CONF=~/git/MyProject/.dinoer.conf
+/opt/dinoer/venv/bin/python /opt/dinoer/shot.py --url …
+```
+
+Das `secrets_dir` in `.dinoer.conf` kann ein relativer Pfad sein — er wird
+relativ zum Speicherort der Datei `.dinoer.conf` aufgelöst.
 
 ---
 
 ## Eine Seite erfassen und analysieren
 
 ```bash
-# Schnelle Prüfung (keine PNG-Dateien – ca. 2 Sekunden, schreibgeschützt).
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
-  --url https://target.local/ \
-  --mode fast
-# Gibt url_courante, titre_page, a11y_tree im JSON zurück.
-
-# Vollständige Erfassung mit nummerierten Elementen.
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
-  --url https://target.local/ \
-  --som --a11y
-# Der PNG-Screenshot befindet sich unter /tmp/diwall/capture_<ts>.png.
+# Seitenzustand lesen (schreibgeschützt)
+/opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
+  --url https://target.local/ --a11y
+# → gibt url_courante, titre_page, a11y_tree im JSON zurück
 ```
 
 **Was Sie erhalten:**
-- `boussole.url_courante` + `boussole.titre_page`: effektive URL und Titel nach der Navigation
-- `capture`: Pfad zum PNG der Seite, wie sie dargestellt wurde
-- `capture_som`: annotiertes PNG mit den Elementnummern
-- `a11y_tree`: Struktur der Seite als Text (Überschriften, Felder, Schaltflächen)
+- `boussole.url_courante` + `boussole.titre_page`: effektive URL und Titel
+  nach der Navigation
+- `a11y_tree`: Seitenstruktur als Text (Überschriften, Felder,
+  Schaltflächen)
+- `etat.pret_a_agir` + `etat.raisons`: wahrgenommene Friktionen, damit das
+  Modell sie umgeht
 
 ---
 
-## Automatisierung eines Anmeldeformulars
+## Ein Login-Formular automatisieren
 
-**Schritt 1** – Bereiten Sie die Datei mit den Zugangsdaten vor.
+**Schritt 1** — Die Credentials-Datei vorbereiten.
 
-Die Datei mit den Zugangsdaten hat den Namen `<hostname>.json`, wobei `hostname` das Ergebnis von `urlparse(url).hostname` ist. Für `https://app.example.com/` lautet der Dateiname `app.example.com.json`.
+Die Credentials-Datei heißt `<hostname>.json`, wobei `hostname` das
+Ergebnis von `urlparse(url).hostname` ist. Für `https://app.example.com/`
+lautet die Datei `app.example.com.json`.
 
 ```json
 {"username": "admin@example.com", "password": "my-secret"}
 ```
 
-**Schritt 2** — Untersuchen Sie die Anmeldeseite.
+**Schritt 2** — Die Login-Seite erkunden.
 
 ```bash
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
-  --url https://app.example.com/login/ --som --a11y
+/opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
+  --url https://app.example.com/login/ --a11y
 ```
 
-Öffnen Sie das annotierte PNG-Bild (`capture_som`), um die SoM-IDs der Felder zu identifizieren.
+`a11y_tree` lesen, um die Feld-Selektoren zu identifizieren.
 
-**Schritt 3** – Schreiben Sie das Szenario.
+**Schritt 3** — Das Szenario schreiben.
 
 ```bash
 cat > /tmp/login.json << 'EOF'
@@ -290,11 +378,10 @@ cat > /tmp/login.json << 'EOF'
   "nom": "app_login",
   "url": "https://app.example.com/login/",
   "actions": [
-    {"type": "remplir_som", "id": 1, "valeur": "depuis_secrets", "secret_cle": "username"},
-    {"type": "remplir_som", "id": 2, "valeur": "depuis_secrets", "secret_cle": "password"},
-    {"type": "cliquer_som", "id": 3},
-    {"type": "pause",        "ms": 2000},
-    {"type": "capturer",     "nom": "after-login"}
+    {"type": "remplir", "selecteur": "input[name=\"username\"]", "valeur": "depuis_secrets", "secret_cle": "username"},
+    {"type": "remplir", "selecteur": "input[name=\"password\"]", "valeur": "depuis_secrets", "secret_cle": "password"},
+    {"type": "cliquer", "selecteur": "button[type=submit]"},
+    {"type": "attendre_selecteur_present", "selecteur": ".user-logged-in"}
   ]
 }
 EOF
@@ -303,15 +390,16 @@ EOF
 **Schritt 4** — Ausführen.
 
 ```bash
-/opt/diwall/venv/bin/python3 /opt/diwall/rpa.py \
-  --scenario /tmp/login.json --som
+/opt/dinoer/venv/bin/python /opt/dinoer/rpa.py \
+  --scenario /tmp/login.json
 ```
 
 ---
 
-## Gültigkeit mehrerer Seiten mit einem einzigen Aufruf prüfen
+## Mehrere Seiten in einem einzigen Aufruf validieren
 
-Um N Seiten einer authentifizierten Website zu überprüfen, ohne jedes Mal die Anmeldung erneut durchführen zu müssen:
+Um N Seiten einer authentifizierten Site zu prüfen, ohne den Login jedes
+Mal zu wiederholen:
 
 ```bash
 cat > /tmp/audit.json << 'EOF'
@@ -319,149 +407,140 @@ cat > /tmp/audit.json << 'EOF'
   "nom": "audit_pages",
   "url": "https://app.example.com/login/",
   "actions": [
-    {"type": "remplir_som", "id": 1, "valeur": "depuis_secrets", "secret_cle": "username"},
-    {"type": "remplir_som", "id": 2, "valeur": "depuis_secrets", "secret_cle": "password"},
-    {"type": "cliquer_som", "id": 3},
-    {"type": "pause",        "ms": 2000},
+    {"type": "remplir", "selecteur": "input[name=\"username\"]", "valeur": "depuis_secrets", "secret_cle": "username"},
+    {"type": "remplir", "selecteur": "input[name=\"password\"]", "valeur": "depuis_secrets", "secret_cle": "password"},
+    {"type": "cliquer", "selecteur": "button[type=submit]"},
+    {"type": "attendre_selecteur_present", "selecteur": ".dashboard-main"},
     {"type": "naviguer",     "url": "https://app.example.com/dashboard/"},
-    {"type": "capturer",     "nom": "dashboard"},
+    {"type": "attendre_navigation"},
     {"type": "naviguer",     "url": "https://app.example.com/settings/"},
-    {"type": "capturer",     "nom": "settings"}
+    {"type": "attendre_navigation"}
   ]
 }
 EOF
-/opt/diwall/venv/bin/python3 /opt/diwall/rpa.py --scenario /tmp/audit.json --som
+/opt/dinoer/venv/bin/python /opt/dinoer/rpa.py --scenario /tmp/audit.json
 ```
 
 ---
 
-## Extrahieren eines Wertes von der Seite
+## Einen Wert aus der Seite extrahieren
 
-Um eine Textzeichenkette, einen Zähler oder einen beliebigen DOM-Wert auszulesen:
+Um einen Textstring, einen Zähler oder einen beliebigen DOM-Wert zu lesen:
 
 ```bash
 cat > /tmp/extract.json << 'EOF'
 [{"type": "evaluer", "script": "document.title"}]
 EOF
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
+/opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
   --url https://target.local/ --actions /tmp/extract.json
-# → führt zu evaluations[0].valeur
+# → Ergebnis in evaluations[0].valeur
 ```
 
-**Wichtig**: schreiben Sie JS-Skripte immer in eine `--actions`-Datei,
-niemals inline mit `--action` (die Shell beschädigt verschachtelte Anführungszeichen).
+Für bereinigten dokumentarischen Text (Formulare und Rauschtags entfernt)
+stattdessen `extraire_texte` verwenden — die Ausgabe ist eine
+`titre`/`texte`/`url`/`date_capture`-Struktur, die ein
+zusammenfassender Agent direkt konsumieren kann.
+
+**Wichtig**: JS-Skripte immer in eine `--actions`-Datei schreiben, nie
+inline mit `--action` (die Shell beschädigt verschachtelte
+Anführungszeichen).
 
 ---
 
-## Visuelle Überwachung einrichten
+## Kontinuierliche strukturelle Überwachung einrichten (v1.18.0)
+
+Dinoer hat keine visuelle Pipeline — Überwachung ist *strukturell*: Sie
+prüft den Statuscode der Seite, DOM-Elementzahlen und
+JS-Auswertungsergebnisse. Das ist günstiger als Bildvergleich und erfasst
+eine andere Klasse von Regression (zum Beispiel ein verschwundenes
+Formularfeld bei unverändertem Layout).
 
 ```bash
-# 1. Speichern Sie die visuelle Referenz.
-/opt/diwall/venv/bin/python3 /opt/diwall/watch.py \
-  --url https://target.local/ --sauver-reference --nom home
+# 1. Einmalig eine strukturelle Referenz speichern
+/opt/dinoer/venv/bin/python /opt/dinoer/rpa.py \
+  --scenario /opt/dinoer/scenarios/my-scenario.json \
+  --sauver-verifier-reference /opt/dinoer/references/my-scenario.ref.json
 
-# 2. Später vergleichen (Pixel-Differenz).
-/opt/diwall/venv/bin/python3 /opt/diwall/watch.py \
-  --url https://target.local/ \
-  --comparer-pixel /opt/diwall/references/target.local_home/reference.png \
-  --nom home
-# → Urteil: stabil / Drift / Regression (Exit-Code 0 oder 1)
-
-# 3. Auf einer authentifizierten Seite: zuerst mit rpa.py erfassen, dann speichern.
-/opt/diwall/venv/bin/python3 /opt/diwall/rpa.py --scenario /tmp/login.json > /tmp/out.json
-CAPTURE=$(python3 -c "import json; d=json.load(open('/tmp/out.json')); print(d['captures_intermediaires'][-1])")
-/opt/diwall/venv/bin/python3 /opt/diwall/watch.py \
-  --url https://target.local/ --sauver-reference --capture "$CAPTURE" --nom dashboard
-```
-
----
-
-## Einrichten einer kontinuierlichen Strukturüberwachung (Version 1.18.0)
-
-Ergänzt die oben beschriebene visuelle Überwachung: Dies prüft die *Struktur*
-(Statuscode, Anzahl der DOM-Elemente, Ergebnisse der JavaScript-Auswertung) der Seite anstelle ihres
-*Aussehens* – kostengünstiger und erfasst eine andere Art von Regression (z. B. ein verschwundenes Formularfeld mit unveränderter Anordnung).
-
-```bash
-# 1. Speichern Sie eine strukturelle Referenz, einmalig.
-/opt/diwall/venv/bin/python3 /opt/diwall/rpa.py \
-  --scenario /opt/diwall/scenarios/my-scenario.json \
-  --sauver-verifier-reference /opt/diwall/references/my-scenario.ref.json
-
-# 2. Ein Check- und Alarmvorgang.
+# 2. Ein Prüf-und-Alarm-Durchlauf
 bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
-  --scenario /opt/diwall/scenarios/my-scenario.json \
-  --reference /opt/diwall/references/my-scenario.ref.json \
-  --ntfy-topic diwall-monitoring
+  --scenario /opt/dinoer/scenarios/my-scenario.json \
+  --reference /opt/dinoer/references/my-scenario.ref.json \
+  --ntfy-topic dinoer-monitoring
 ```
 
-Stumm, wenn stabil; ein `ntfy` Push, wenn eine Regression erkannt wird. Planen Sie dies selbst mit Cron – das Skript führt einen Durchlauf durch und beendet sich, es läuft nicht in einer Schleife.
-`scripts/*.sh` wird niemals auf `/opt/diwall/` bereitgestellt, sodass der Cron-Eintrag von der Git-Quelle aus ausgeführt wird, als Ihr eigener Benutzer (nicht das Dienstkonto `diwall`, das keinen Zugriff auf `~/git/Dinoer/Dinoer/` hat):
+Still bei Stabilität, ein `ntfy`-Push, wenn eine Regression erkannt wird.
+Planen Sie es selbst mit cron — das Skript führt einen Durchlauf aus und
+beendet sich, es läuft nicht in einer Schleife. `scripts/*.sh` wird nie
+nach `/opt/dinoer/` deployt, daher läuft der Cron-Eintrag aus der
+Git-Quelle, als Ihr eigener Benutzer (nicht das `dinoer`-Dienstkonto, das
+`~/git/Dinoer/Dinoer/` nicht erreichen kann):
 
 ```bash
 # crontab -e (Ihre eigene Crontab)
 */15 * * * * bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
-  --scenario /opt/diwall/scenarios/my-scenario.json \
-  --reference /opt/diwall/references/my-scenario.ref.json \
-  --ntfy-topic diwall-monitoring \
-  >> /var/log/diwall/cron-structural.jsonl 2>&1
+  --scenario /opt/dinoer/scenarios/my-scenario.json \
+  --reference /opt/dinoer/references/my-scenario.ref.json \
+  --ntfy-topic dinoer-monitoring \
+  >> /var/log/dinoer/cron-structural.jsonl 2>&1
 ```
 
 ---
 
-## Häufige Fehlerquellen
+## Häufige Stolperfallen
 
 | Situation | Was zu tun ist |
 |---|---|
-| `FileNotFoundError` in der Datei mit den Zugangsdaten | Überprüfen Sie, ob die JSON-Datei mit dem vollständigen FQDN (`urlparse(url).hostname`) benannt ist. |
+| `FileNotFoundError` bei der Credentials-Datei | Prüfen, dass die JSON-Datei mit dem vollständigen FQDN benannt ist (`urlparse(url).hostname`) |
 | `SecretsFermesError` (Exit 42) | Das verschlüsselte Verzeichnis mounten: `bash ~/git/Dinoer/Dinoer/scripts/monter-repertoire-chiffre.sh` |
-| Ungültiges JSON in der Ausgabe | Verwenden Sie `2>/dev/null \| tail -1`, um nur die JSON-Zeile zu extrahieren. |
-| SoM-IDs unterscheiden sich zwischen Sitzungen | Erwartet – SoM-IDs werden bei jeder Aufnahme neu berechnet. Verwenden Sie sie nicht wiederholt über mehrere Sitzungen hinweg. |
-| Anmeldung, gefolgt von einer Django-Weiterleitung zum Dashboard | Verwenden Sie `naviguer` nicht in einer fortgesetzten Django-Sitzung – übergeben Sie die URL über `--url`. |
-| Das Formularfeld `<select>` ist nicht ausgefüllt | Verwenden Sie `remplir_som` (nicht `remplir`) mit der SoM-ID des `<select>`. |
-| Ein Klick hat keine Auswirkung auf einen Button außerhalb des sichtbaren Bereichs | Fügen Sie `{"type":"defiler","selecteur":"#the-button"}` vor dem Klick ein. |
-| `auth_status: "active"` auch auf der Anmeldeseite | Der positive Selektor ist mehrdeutig (persistenter Header) – fügen Sie `--auth-indicator-negative .btn-login` hinzu. |
-| Web Components-Elemente werden nicht von SoM nummeriert | Fügen Sie `--shadow-dom` hinzu (Angular, Lit, Stencil). |
-| `respect.waf_bloquants` erscheint auf einer Seite, die tatsächlich nicht blockiert ist | Die Erkennung basiert auf Schlüsselwörtern (v1.16.0, verfeinert v1.17.2) – behandeln Sie dies als ein Signal und nicht als ein Urteil. Wenn es auf einer Seite weiterhin angezeigt wird, von der Sie bestätigt haben, dass sie nicht blockiert ist, fügen Sie `--ignorer-waf` hinzu. |
-| `cliquer_som` klickt auf das falsche Element auf einer Seite, die sich zwischen Aufnahme und Klick geändert hat | Fügen Sie `--som-rafraichir` hinzu (v1.17.0) – behebt dies durch einen stabilen Marker anstelle von Live-Reindexierung. |
-| Ein langes RPA-Szenario schlägt mitten im Ablauf fehl, und Sie möchten die abgeschlossenen Schritte nicht erneut ausführen | Fügen Sie `--checkpoint FILE` hinzu (v1.17.0) – starten Sie den gleichen Befehl neu, um fortzufahren; der DOM-Zustand wird nicht beibehalten, nur Sitzung + Aktionsposition. |
-| Interaktive Elemente innerhalb eines Iframes sind für Dinoer unsichtbar | SoM kann Inhalte von Iframes (gleichnamig oder übergeordnet) nicht nummerieren – verwenden Sie `cliquer_iframe`/`remplir_iframe` (v1.17.0) mit einem expliziten CSS-Selektor oder `iframe_chemin` (v1.18.0) für einen innerhalb eines anderen verschachtelten Iframe. |
-| Ihr Modell meldet `"erreur": "guide_non_lu"` / Exit 1 bei seinem ersten Dinoer-Aufruf | Erwartet beim ersten Mal, dass ein Modell Dinoer auf dieser Maschine als dieser Betriebssystembenutzer verwendet (v1.18.0) – es muss `docs/GUIDE_LLM.md` lesen und `--guide-version` einmal übergeben. Dies ist absichtlich und kein Fehler – weisen Sie das Modell an, die Anleitung zu lesen, anstatt den Fehler zu umgehen. |
+| Ungültiges JSON in der Ausgabe | `2>/dev/null \| tail -1` verwenden, um nur die JSON-Zeile zu extrahieren |
+| Login gefolgt von Django-Redirect zum Dashboard | `naviguer` nicht in einer wiederaufgenommenen Django-Sitzung verwenden — die URL über `--url` übergeben |
+| `<select>`-Formularfeld nicht ausgefüllt | `remplir` mit `selecteur` verwenden, dann auf die Option `cliquer`, oder über `evaluer` steuern |
+| Klick hat keine Wirkung auf eine Schaltfläche außerhalb des sichtbaren Bereichs | `{"type":"defiler","selecteur":"#the-button"}` vor dem Klick hinzufügen |
+| `auth_status: "active"` auch auf der Login-Seite | Positiver Selektor ist mehrdeutig (persistente Kopfzeile) — `--auth-indicator-negative .btn-login` hinzufügen |
+| Web Components blockieren einen normalen Selektor | `cliquer_iframe`/`remplir_iframe` mit explizitem Selektor verwenden, oder über `evaluer` in die Shadow Root greifen |
+| `respect.waf_bloquants` erscheint auf einer Seite, die tatsächlich nicht blockiert ist | Erkennung ist schlüsselwortbasiert (v1.16.0, verfeinert in v1.17.2) — als Signal behandeln, nicht als Urteil. Bleibt es auf einer bestätigt nicht blockierten Seite bestehen, `--ignorer-waf` hinzufügen |
+| `cliquer` klickt auf das falsche Element einer Seite, die sich verändert hat | Reihenfolgestabile Selektoren bevorzugen, oder den Baum vor dem Klick mit einem frischen `--a11y`-Aufruf neu lesen |
+| Ein langes RPA-Szenario schlägt auf halbem Weg fehl, und Sie wollen abgeschlossene Schritte nicht wiederholen | `--checkpoint DATEI` hinzufügen (v1.17.0) — denselben Befehl erneut starten, um fortzusetzen; DOM-Zustand bleibt nicht erhalten, nur Sitzung + Aktionsposition |
+| Interaktive Elemente innerhalb eines iframes sind für den Baum unsichtbar | `cliquer_iframe`/`remplir_iframe` (v1.17.0) mit explizitem CSS-Selektor verwenden, oder `iframe_chemin` (v1.18.0) für ein in einem anderen verschachteltes iframe |
+| Ihr Modell meldet `"erreur": "guide_non_lu"` / Exit 1 beim ersten Dinoer-Aufruf | Erwartet beim ersten Mal, dass ein Modell Dinoer auf dieser Maschine als dieser Betriebssystembenutzer nutzt (v1.18.0) — es muss `docs/GUIDE_LLM.md` lesen und einmalig `--guide-version` übergeben. Das ist beabsichtigt, kein Fehler — dem Modell sagen, den Leitfaden zu lesen, statt den Fehler zu umgehen |
 
 ---
 
-## Deinstallation von Dinoer
+## Dinoer deinstallieren
 
-Das Skript `~/git/Dinoer/Dinoer/scripts/uninstall.sh` entfernt die Installation sauber, in der umgekehrten Reihenfolge von `install.sh`.
+Das Skript `~/git/Dinoer/Dinoer/scripts/uninstall.sh` entfernt die
+Installation sauber, in umgekehrter Reihenfolge zu `install.sh`.
 
 ```bash
-# Beobachten Sie, was entfernt wird, ohne etwas zu tun.
+# Zeigen, was entfernt würde, ohne etwas zu tun
 bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh --dry-run
 
-# Vollständige Deinstallation (interaktive Bestätigung).
+# Vollständige Deinstallation (interaktive Bestätigung)
 bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh
 
-# Ohne Bestätigung (Kalttests, mehrfache Neuinstallationen).
+# Ohne Bestätigung (Kalttests, verkettete Neuinstallation)
 bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh --confirme && bash ~/git/Dinoer/Dinoer/scripts/install.sh
 ```
 
-Was wird entfernt:
+**Was entfernt wird:**
 
-| Item | Detail |
+| Element | Detail |
 |---|---|
-| `/opt/diwall/` | Code, Python venv, Konfiguration |
-| `/var/log/diwall/` | Operationsprotokolle |
-| `diwall` system user | Erstellt ausschließlich für Dinoer |
-| `diwall` system group | Gleiches gilt |
-| Gruppenmitgliedschaft | Ihr Konto wird aus der Gruppe `diwall` entfernt. |
-| git pre-push hook | `core.hooksPath` deaktiviert im Quellrepository |
+| `/opt/dinoer/` | Code, Python-venv, Konfiguration |
+| `/var/log/dinoer/` | Vorgangsprotokolle |
+| Systembenutzer `dinoer` | Exklusiv für Dinoer erstellt |
+| Systemgruppe `dinoer` | Dasselbe |
+| Gruppenmitgliedschaft | Ihr Konto wird aus der Gruppe `dinoer` entfernt |
+| Git-Pre-Push-Hook | `core.hooksPath` im Quell-Repository deaktiviert |
 
-**Was niemals verändert wird:**
-- `~/Vaults/` – Ihre Zugangsdaten
-- `~/git/Dinoer/` – Git-Quellen
-- Der Browser-Cache von Playwright (***`~/.cache/ms-playwright/`***)
+**Was nie angerührt wird:**
+- `~/Vaults/` — Ihre Credentials
+- `~/git/Dinoer/` — Git-Quellen
+- Playwright-Browser-Cache (`~/.cache/ms-playwright/`)
 
-Beweise erfassen (`/var/log/diwall/preuves/`): Wenn das Verzeichnis Unterverzeichnisse enthält, werden diese standardmäßig mit einer Warnung beibehalten. Um sie zu entfernen:
+**Strukturierte Beweise (`/var/log/dinoer/preuves/`):** Enthält das
+Verzeichnis Erfassungen, wird es standardmäßig mit einer Warnung
+beibehalten. Zum Entfernen:
 
 ```bash
 bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh --confirme --purge-preuves
@@ -469,16 +548,16 @@ bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh --confirme --purge-preuves
 
 ---
 
-## Einsicht in die Betriebshistorie
+## Die Vorgangshistorie einsehen
 
 ```bash
-# Alle Operationen an einem Ziel.
-/opt/diwall/venv/bin/python3 /opt/diwall/journal.py --cible target.local
+# Alle Vorgänge zu einem Ziel
+/opt/dinoer/venv/bin/python /opt/dinoer/journal.py --cible target.local
 
-# Nur mutierende Operationen (Klicks, Formulareingaben).
-/opt/diwall/venv/bin/python3 /opt/diwall/journal.py --cible target.local --mutatif
+# Nur mutierende Vorgänge (Klicks, Formulareingabe)
+/opt/dinoer/venv/bin/python /opt/dinoer/journal.py --cible target.local --mutatif
 
-# Von einem Datum
-/opt/diwall/venv/bin/python3 /opt/diwall/journal.py --cible target.local \
+# Ab einem Datum
+/opt/dinoer/venv/bin/python /opt/dinoer/journal.py --cible target.local \
   --depuis 2026-06-01
 ```

@@ -17,7 +17,7 @@ SKIP_TEST=false
 # lib/preflight_guide.py et <!-- notice-version --> en tête de docs/GUIDE_LLM.md.
 # Le smoke test d'installation est un appelant légitime comme un autre : il
 # passe le jeton explicitement plutôt que de contourner le verrou.
-GUIDE_VERSION="1.2"
+GUIDE_VERSION="1.3"
 
 # ── Arguments ────────────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
@@ -194,33 +194,25 @@ if [ "$SKIP_TEST" = false ]; then
 
     PYTHON="$DEST/venv/bin/python3"
 
-    # shot.py
-    RESULT=$(sudo -u "$USER" "$PYTHON" "$DEST/shot.py" --url "$URL_TEST" --som --guide-version "$GUIDE_VERSION" 2>&1)
+    # shot.py --a11y (watch.py/--som retirés du produit, FONDATION_DINOER.md §4 —
+    # corrigé le 12/08/2026, cette section appelait encore watch.py, absent du dépôt,
+    # ce qui aurait fait échouer toute installation neuve)
+    RESULT=$(sudo -u "$USER" "$PYTHON" "$DEST/shot.py" --url "$URL_TEST" --a11y --guide-version "$GUIDE_VERSION" 2>&1)
     if echo "$RESULT" | grep -q '"succes": true'; then
-        echo "  shot.py  : OK"
+        echo "  shot.py --a11y : OK"
     else
-        echo "  shot.py  : ERREUR"
+        echo "  shot.py --a11y : ERREUR"
         echo "$RESULT" | head -5
         exit 1
     fi
 
-    # watch.py --sauver-reference
-    RESULT=$(sudo -u "$USER" "$PYTHON" "$DEST/watch.py" --url "$URL_TEST" --sauver-reference --guide-version "$GUIDE_VERSION" 2>&1)
+    # shot.py --action extraire_texte
+    RESULT=$(sudo -u "$USER" "$PYTHON" "$DEST/shot.py" --url "$URL_TEST" \
+        --action '{"type":"extraire_texte"}' --guide-version "$GUIDE_VERSION" 2>&1)
     if echo "$RESULT" | grep -q '"succes": true'; then
-        echo "  watch.py --sauver-reference : OK"
+        echo "  shot.py --action extraire_texte : OK"
     else
-        echo "  watch.py --sauver-reference : ERREUR"
-        echo "$RESULT" | head -5
-        exit 1
-    fi
-
-    # watch.py --comparer-pixel
-    REF="$DEST/references/$(echo "$URL_TEST" | sed 's|https\?://||;s|/.*||')/reference.png"
-    RESULT=$(sudo -u "$USER" "$PYTHON" "$DEST/watch.py" --url "$URL_TEST" --comparer-pixel "$REF" --guide-version "$GUIDE_VERSION" 2>&1)
-    if echo "$RESULT" | grep -q '"succes": true'; then
-        echo "  watch.py --comparer-pixel   : OK"
-    else
-        echo "  watch.py --comparer-pixel   : ERREUR"
+        echo "  shot.py --action extraire_texte : ERREUR"
         echo "$RESULT" | head -5
         exit 1
     fi

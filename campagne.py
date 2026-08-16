@@ -421,6 +421,13 @@ def main() -> None:
         page = 1
         while page <= max_pages_securite and len(candidats_bruts) < max_candidats:
             urls = rechercher(valeur, page=page)
+            # Discipline anti-ban (§9 DINOER_RESEARCH.md) étendue à l'appel
+            # SearXNG lui-même, pas seulement aux pages retenues : une cible
+            # sans URL éligible enchaînait sinon immédiatement sur l'appel
+            # suivant, sans délai — root cause d'une suspension réelle des
+            # moteurs sous-jacents (Brave/DuckDuckGo/Startpage) constatée en
+            # exécution le 12/08/2026 (pipeline territorial).
+            time.sleep(random.uniform(delai_min, delai_max))
             if not urls:
                 break
             for url in urls:
@@ -510,6 +517,7 @@ def main() -> None:
             page = 1
             while page <= max_pages_securite and trouvees < max_resultats:
                 urls = rechercher(requete_ciblee, page=page)
+                time.sleep(random.uniform(delai_min, delai_max))
                 if not urls:
                     break
                 for url in urls:
@@ -575,6 +583,7 @@ def main() -> None:
             # sont déjà dans l'index de déduplication).
             while page <= max_pages_securite and trouvees_pour_requete < max_resultats:
                 urls = rechercher(valeur, page=page)
+                time.sleep(random.uniform(delai_min, delai_max))
                 if not urls:
                     break
                 for url in urls:

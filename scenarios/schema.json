@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/RonanDavalan/diwall/main/scenarios/schema.json",
+  "$id": "https://raw.githubusercontent.com/RonanDavalan/dinoer/main/scenarios/schema.json",
   "title": "Dinoer scenario",
   "description": "Formal contract for a Dinoer scenario: a root object with a target URL and a list of typed actions executed sequentially by shot.py and rpa.py.",
   "type": "object",

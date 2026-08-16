@@ -40,7 +40,7 @@ problème Playwright, un PATH, une perm.
 sortie. Pas d'extension, pas de mime type.
 
 **Fix côté utilisateur** : toujours `.png` (ou laisser Dinoer générer le nom
-automatique dans `/tmp/diwall/`).
+automatique dans `/tmp/dinoer/`).
 
 **Fix côté Dinoer** (suggestion) : ajouter `.png` si manquant, ou échouer tôt
 avec un message explicite.
@@ -263,7 +263,7 @@ peut avoir historiquement rangé les credentials en `~/Vaults/<PROJET>/Dinoer/..
 La première tentative `remplir … "valeur":"depuis_secrets"` a échoué parce
 que Dinoer cherchait `~/Vaults/Dinoer/__HOST_ADMIN__.json` (absent).
 
-**Origine** : `lib/repertoire_chiffre.py` lit `DIWALL_SECRETS_DIR` (env var), sinon défaut
+**Origine** : `lib/repertoire_chiffre.py` lit `DINOER_SECRETS_DIR` (env var), sinon défaut
 `~/Vaults/Dinoer`. La doc ne dit pas que la convention multi-projet
 `~/Vaults/<Projet>/Dinoer/` est gérée à la main par l'utilisateur via env.
 
@@ -271,11 +271,11 @@ que Dinoer cherchait `~/Vaults/Dinoer/__HOST_ADMIN__.json` (absent).
 ça ne marche pas ? ». Cinq minutes de `find` pour réaliser que c'était une
 question de variable d'env.
 
-**Workaround** : `DIWALL_SECRETS_DIR=~/Vaults/<PROJET>/Dinoer` devant
+**Workaround** : `DINOER_SECRETS_DIR=~/Vaults/<PROJET>/Dinoer` devant
 l'invocation, à chaque fois.
 
 **Suggestion Dinoer** : (a) lire un fichier de config par projet
-(`.diwall.toml` à la racine du dépôt courant qui pointe le vault dir), ou
+(`.dinoer.toml` à la racine du dépôt courant qui pointe le vault dir), ou
 (b) une convention « auto-détecter `~/Vaults/<basename-du-cwd>/Dinoer/` ».
 
 ---
@@ -332,7 +332,7 @@ parcours de validation.
 
 ## 14. Les fichiers `scenarios/*.json` ne sont pas consommables tels quels
 
-`/opt/diwall/scenarios/sillage_login.json` est un objet
+`/opt/dinoer/scenarios/sillage_login.json` est un objet
 `{"nom":…, "url":…, "actions":[…]}`. Réflexe : `--actions
 scenarios/sillage_login.json`.
 
@@ -501,11 +501,11 @@ un flag `--scenario` qui lit l'objet complet `{url, actions}`. Mais il attend un
 **chemin de fichier**, pas un nom de scénario du répertoire `scenarios/`.
 
 `--scenario sillage_voir_client` → `{"erreur":"fichier_introuvable"}`.
-Il faut `--scenario /opt/diwall/scenarios/sillage_voir_client.json`.
+Il faut `--scenario /opt/dinoer/scenarios/sillage_voir_client.json`.
 
 **Friction ressentie** : le répertoire `scenarios/` ressemble à une bibliothèque
 adressable par nom ; en réalité il faut le chemin complet. (Et il n'y a pas de
-wrapper `diwall.sh` — l'invocation est `venv/bin/python3 rpa.py --scenario …`.)
+wrapper `dinoer.sh` — l'invocation est `venv/bin/python3 rpa.py --scenario …`.)
 
 **Suggestion** : résoudre un nom nu contre `scenarios/<nom>.json` en plus du
 chemin absolu.
@@ -761,7 +761,7 @@ exclusif des commits (Claude seul) inscrite consécutivement dans
 
 Session de validation d'utilisabilité : trois exercices en conditions réelles,
 opérateur simulé sans connaissance du code interne, contrainte absolue — pas de
-script Python, uniquement `/opt/diwall/`. Vault Phase 7 (gocryptfs, v1.5.0) en
+script Python, uniquement `/opt/dinoer/`. Vault Phase 7 (gocryptfs, v1.5.0) en
 production. Deux nouvelles frictions, plusieurs confirmations structurantes.
 
 ## 26. `evaluer` + `element.click()` ne soumet pas un formulaire HTTP
@@ -952,8 +952,8 @@ données mutables (compteurs, dates, états).
 **Contexte** : création d'une référence pour le tableau de bord admin (distinct de la page
 de login qui a sa propre référence). Le répertoire cible a dû être créé manuellement :
 ```bash
-sudo mkdir -p /opt/diwall/references/hostname_vue_tableau_bord/
-sudo cp capture.png /opt/diwall/references/hostname_vue_tableau_bord/reference.png
+sudo mkdir -p /opt/dinoer/references/hostname_vue_tableau_bord/
+sudo cp capture.png /opt/dinoer/references/hostname_vue_tableau_bord/reference.png
 ```
 
 **Origine** : `watch.py --sauver-reference` dérive le nom du répertoire depuis l'URL sans
@@ -964,7 +964,7 @@ distinguer.
 **Besoin identifié** : paramètre `--nom <vue>` dans `watch.py --sauver-reference`. Exemple :
 ```bash
 watch.py --url https://host/ --sauver-reference --nom vue_tableau_bord
-# → /opt/diwall/references/host_vue_tableau_bord/
+# → /opt/dinoer/references/host_vue_tableau_bord/
 ```
 
 ---
@@ -1066,13 +1066,13 @@ continuent de fonctionner sans modification.
 
 **Phase 7bis — étanchéité du coffre visuel chiffré.**
 
-Les références `watch.py` (`/opt/diwall/references/`) ne sont pas encore sous
+Les références `watch.py` (`/opt/dinoer/references/`) ne sont pas encore sous
 gocryptfs. Une capture de référence d'un tableau de bord authentifié contient des
 données sensibles (mise en page, chiffres, noms) stockées en clair sur le disque.
 La Phase 7 a chiffré le vault de credentials ; la Phase 7bis devra étendre
 l'enveloppe chiffrée aux artefacts visuels (références et preuves).
 
-Travaux probables : intégration de `/opt/diwall/references/` dans un volume
+Travaux probables : intégration de `/opt/dinoer/references/` dans un volume
 gocryptfs, point de montage cohérent avec le vault existant, `SecretsFermesError`
 symétrique si le volume n'est pas monté au moment d'un `--sauver-reference` ou
 `--comparer`.
@@ -1095,31 +1095,31 @@ Objectif : réinstallation complète de Dinoer depuis le dépôt GitHub distant
 (dépôt GitHub public) + validation du mot de passe Sillage
 nouvellement initialisé.
 
-### Friction #32 — Groupe système `diwall` orphelin après `userdel`
+### Friction #32 — Groupe système `dinoer` orphelin après `userdel`
 
-`sudo userdel diwall` supprime l'utilisateur mais laisse le groupe `diwall` intact.
-Le script `install.sh` échoue ensuite avec `useradd : le groupe diwall existe (si vous
+`sudo userdel dinoer` supprime l'utilisateur mais laisse le groupe `dinoer` intact.
+Le script `install.sh` échoue ensuite avec `useradd : le groupe dinoer existe (si vous
 voulez rajouter cet utilisateur à ce groupe, utilisez -g)` (exit code 9).
 
 **Cause** : `userdel` sans `--remove` ne supprime pas le groupe primaire si d'autres
 membres pourraient en dépendre (comportement Debian).
 
-**Solution** : désinstallation complète = `sudo userdel diwall && sudo groupdel diwall`.
+**Solution** : désinstallation complète = `sudo userdel dinoer && sudo groupdel dinoer`.
 
-### Friction #33 — Permissions `750` sur `lib/` bloquent `ron` hors groupe `diwall`
+### Friction #33 — Permissions `750` sur `lib/` bloquent `ron` hors groupe `dinoer`
 
-Après réinstallation, `lib/`, `scenarios/` et `skills/` sont créés en `750 root:diwall`.
-`ron` n'est pas dans le groupe `diwall` au moment de l'installation, ni dans la session
-shell active après `usermod -aG diwall ron` (les groupes sont lus au login).
+Après réinstallation, `lib/`, `scenarios/` et `skills/` sont créés en `750 root:dinoer`.
+`ron` n'est pas dans le groupe `dinoer` au moment de l'installation, ni dans la session
+shell active après `usermod -aG dinoer ron` (les groupes sont lus au login).
 
 **Symptôme** : `ModuleNotFoundError: No module named 'lib.vault'` — Python ne peut pas
 traverser `lib/` pour trouver `vault.py`.
 
-**Contournement appliqué** : `sudo chmod 755 /opt/diwall/lib /opt/diwall/scenarios /opt/diwall/skills`
-et `sudo chmod 644 /opt/diwall/scenarios/sillage_login.json`.
+**Contournement appliqué** : `sudo chmod 755 /opt/dinoer/lib /opt/dinoer/scenarios /opt/dinoer/skills`
+et `sudo chmod 644 /opt/dinoer/scenarios/sillage_login.json`.
 
 **Solution structurelle suggérée** : `install.sh` devrait soit ajouter l'utilisateur courant
-au groupe `diwall` (via `sudo usermod -aG diwall $USER`), soit créer `lib/` en `755`
+au groupe `dinoer` (via `sudo usermod -aG dinoer $USER`), soit créer `lib/` en `755`
 (le code Python ne contient pas de secrets — seul le vault est sensible).
 
 ### Résultat final
@@ -1177,7 +1177,7 @@ première tentative d'authentification via `depuis_secrets`.
 `lib/repertoire_chiffre.py` effectue désormais une recherche récursive via `os.walk(followlinks=False)`
 si aucun fichier n'est trouvé à la racine du vault. En cas d'ambiguïté (plusieurs candidats),
 `FileNotFoundError` est levée avec la liste des fichiers trouvés — l'opérateur doit affiner
-`secrets_dir` dans `diwall.conf`.
+`secrets_dir` dans `dinoer.conf`.
 
 ---
 
@@ -1263,12 +1263,12 @@ fonctionnalités absentes de la version de référence déployée.
 
 ---
 
-## 39. `diwall.conf` unique par machine — conflit multi-projets sans résolution per-projet
+## 39. `dinoer.conf` unique par machine — conflit multi-projets sans résolution per-projet
 
-**Contexte** : `diwall.conf` est stocké dans `/opt/diwall/diwall.conf` — un
+**Contexte** : `dinoer.conf` est stocké dans `/opt/dinoer/dinoer.conf` — un
 seul fichier pour toute la machine. La clé `secrets_dir` pointait sur le vault
 du projet en cours (`~/Vaults/<PROJET>/`). Pour un second projet, il a fallu
-contourner via la variable d'environnement `DIWALL_SECRETS_DIR=~/Vaults/Dinoer`
+contourner via la variable d'environnement `DINOER_SECRETS_DIR=~/Vaults/Dinoer`
 à chaque invocation.
 
 **Symptôme** : sans le contournement, `depuis_secrets` charge les credentials
@@ -1277,15 +1277,15 @@ silencieusement injectés.
 
 **Impact** : sur une machine hébergeant plusieurs projets Dinoer (Sillage,
 Pretix, client X…), la conf globale devient un point de friction permanent.
-Le contournement `DIWALL_SECRETS_DIR=` est fonctionnel mais doit être rappelé
+Le contournement `DINOER_SECRETS_DIR=` est fonctionnel mais doit être rappelé
 à chaque invocation ou scriptés — source d'oubli.
 
 **Workaround** : préfixer chaque invocation avec
-`DIWALL_SECRETS_DIR=~/Vaults/<Projet>` ou l'exporter en début de session shell.
+`DINOER_SECRETS_DIR=~/Vaults/<Projet>` ou l'exporter en début de session shell.
 
 **Piste de correction** : résolution per-projet — lire un fichier
-`.diwall.conf` à la racine du répertoire courant (ou d'un répertoire parent)
-en priorité sur `/opt/diwall/diwall.conf`. Compatible avec la cascade actuelle
+`.dinoer.conf` à la racine du répertoire courant (ou d'un répertoire parent)
+en priorité sur `/opt/dinoer/dinoer.conf`. Compatible avec la cascade actuelle
 (env var > conf local > conf global > défaut).
 
 **Lien avec friction #12** : même famille (vault path non trouvé), cause
@@ -1293,35 +1293,35 @@ distincte (multi-projets vs chemin de vault inconnu de l'utilisateur).
 
 ---
 
-## 40. `/var/log/diwall/preuves` — avertissement permission refusée à chaque run
+## 40. `/var/log/dinoer/preuves` — avertissement permission refusée à chaque run
 
 **Contexte** : à chaque invocation de `shot.py` ou `rpa.py`, un avertissement
 apparaît :
 
 ```
-⚠ journal : preuves non archivées ([Errno 13] Permission denied: '/var/log/diwall/preuves')
+⚠ journal : preuves non archivées ([Errno 13] Permission denied: '/var/log/dinoer/preuves')
 ```
 
-Le run continue normalement, les captures vont dans `/tmp/diwall/`. L'opérateur
-ne peut pas écrire dans `/var/log/diwall/preuves` car ce répertoire appartient
-à `root:diwall` en mode `770` — et l'utilisateur `ron` n'a pas les droits
+Le run continue normalement, les captures vont dans `/tmp/dinoer/`. L'opérateur
+ne peut pas écrire dans `/var/log/dinoer/preuves` car ce répertoire appartient
+à `root:dinoer` en mode `770` — et l'utilisateur `ron` n'a pas les droits
 d'écriture directe.
 
 **Impact** : l'avertissement est non-bloquant mais pollue toutes les sorties,
 crée de la confusion sur l'état du système, et masque les vraies erreurs dans
 le flux de logs.
 
-**Cause** : `/var/log/diwall/preuves` est créé par `install.sh` avec des
+**Cause** : `/var/log/dinoer/preuves` est créé par `install.sh` avec des
 permissions restrictives. L'utilisateur courant n'est pas dans le groupe
-`diwall` au moment de la création, ou les permissions ne sont pas accordées
+`dinoer` au moment de la création, ou les permissions ne sont pas accordées
 à l'utilisateur opérateur.
 
-**Workaround** : `sudo chmod 775 /var/log/diwall/preuves` ou
-`sudo chown ron:diwall /var/log/diwall/preuves` selon la politique locale.
+**Workaround** : `sudo chmod 775 /var/log/dinoer/preuves` ou
+`sudo chown ron:dinoer /var/log/dinoer/preuves` selon la politique locale.
 
 **Piste de correction** : `install.sh` devrait accorder l'accès en écriture
-à l'utilisateur opérateur sur ce répertoire (via `usermod -aG diwall $USER`
-ou propriété `$USER:diwall 775`). À aligner avec la correction structurelle
+à l'utilisateur opérateur sur ce répertoire (via `usermod -aG dinoer $USER`
+ou propriété `$USER:dinoer 775`). À aligner avec la correction structurelle
 suggérée en friction #33 (`lib/` en 755).
 
 ---
@@ -1335,8 +1335,8 @@ permission) représente une friction d'onboarding significative pour un
 nouvel opérateur.
 
 **Candidats prioritaires pour le prochain incrément :**
-1. Résolution per-projet de `diwall.conf` (#39) — impact direct multi-projets
-2. Permissions `/var/log/diwall/preuves` dans `install.sh` (#40) — à aligner avec #33
+1. Résolution per-projet de `dinoer.conf` (#39) — impact direct multi-projets
+2. Permissions `/var/log/dinoer/preuves` dans `install.sh` (#40) — à aligner avec #33
 3. Alignement guide/version déployée pour `--navigate` (#38) — cohérence doc
 
 40 frictions sur 14 sessions.
@@ -1351,7 +1351,7 @@ navigations avec redirections enchaînées.
 
 ## 41. Perte du fichier session entre deux appels rapides
 
-**Contexte** : `/tmp/diwall/pretix-session.json` disparaît ou devient invalide
+**Contexte** : `/tmp/dinoer/pretix-session.json` disparaît ou devient invalide
 si `--sauver-session` et `--reprendre-session` ciblent le même fichier en
 succession rapide (moins de 10 s).
 
@@ -1459,7 +1459,7 @@ son mécanisme sudo Django et ses conventions d'URL.
 
 ## Session 16 — 9 juin 2026 — Vault multi-projet
 
-**Contexte** : `diwall.conf` global contient un `secrets_dir` en dur
+**Contexte** : `dinoer.conf` global contient un `secrets_dir` en dur
 (`~/Vaults/<PROJET>/`) — tous les projets utilisent le même coffre.
 Demande : chaque projet doit pouvoir utiliser son propre coffre.
 
@@ -1470,8 +1470,8 @@ section "Résolution du chemin vault" v1.1.
 **Frictions adressées :** #39 (résolution per-projet) + #35/#37 (récursion + port-aware)
 intégrées dans un algorithme cohérent à 4 niveaux.
 
-**À implémenter :** `lib/repertoire_chiffre.py` (cascade DIWALL_CONF, algorithme 4 niveaux),
-`/opt/diwall/diwall.conf` (remise à défaut), tests T_CONF_A–D.
+**À implémenter :** `lib/repertoire_chiffre.py` (cascade DINOER_CONF, algorithme 4 niveaux),
+`/opt/dinoer/dinoer.conf` (remise à défaut), tests T_CONF_A–D.
 
 **47 frictions sur 16 sessions** (frictions #39b et #39c ajoutées).
 
@@ -1494,7 +1494,7 @@ au lieu de stderr.
 
 **Workaround** :
 ```bash
-result=$(/opt/diwall/venv/bin/python3 /opt/diwall/shot.py --url … 2>/dev/null | tail -1)
+result=$(/opt/dinoer/venv/bin/python /opt/dinoer/shot.py --url … 2>/dev/null | tail -1)
 ```
 `tail -1` récupère uniquement la dernière ligne (le JSON). `2>/dev/null` élimine le stderr.
 
@@ -1518,7 +1518,7 @@ spéciaux, utiliser `--actions /tmp/actions.json` avec le tableau dans un fichie
 cat > /tmp/actions.json << 'EOF'
 [{"type":"evaluer","script":"document.querySelector('#field').value"}]
 EOF
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py --url … --actions /tmp/actions.json
+/opt/dinoer/venv/bin/python /opt/dinoer/shot.py --url … --actions /tmp/actions.json
 ```
 
 **Lien** : documenté dans `GUIDE_LLM.md` comme règle absolue.
@@ -1537,7 +1537,7 @@ contexte de session reprise (le middleware session détecte un contexte inhabitu
 **Workaround** : passer l'URL cible directement comme `--url` à l'invocation shot.py,
 plutôt que via l'action `naviguer` dans une session reprise.
 ```bash
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
+/opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
   --url https://__HOST_SERVICE__/control/organizer/__TENANT__/ \
   --reprendre-session session.json --som
 ```
@@ -1652,7 +1652,7 @@ de sécurité documentée.
 **Cause** : Dinoer n'est pas dans le corpus d'entraînement du modèle. Sans lecture
 explicite du guide, le comportement par défaut est l'improvisation.
 
-**Règle** : lire `/opt/diwall/docs/GUIDE_LLM.md` en entier avant toute manipulation
+**Règle** : lire `/opt/dinoer/docs/GUIDE_LLM.md` en entier avant toute manipulation
 Dinoer. Ce pré-vol est maintenant inscrit dans `CLAUDE.md` (lu automatiquement par
 Claude Code à chaque session) et dans `PROTOCOLE_DEMARRAGE.md` instruction n°1ter.
 
@@ -1660,20 +1660,20 @@ Claude Code à chaque session) et dans `PROTOCOLE_DEMARRAGE.md` instruction n°1
 
 ---
 
-## 56. `DIWALL_SECRETS_DIR` et `DIWALL_CONF` ont des sémantiques distinctes
+## 56. `DINOER_SECRETS_DIR` et `DINOER_CONF` ont des sémantiques distinctes
 
 **Contexte** : benchmark Gemini Flash (09/06/2026) — connexion à `__TENANT_SERVICE__` +
-`__HOST_DEMO__` + Sillage. Gemini a positionné `DIWALL_SECRETS_DIR` vers le répertoire
-contenant le fichier `.diwall.conf` de Sillage. Vault introuvable → erreur silencieuse.
+`__HOST_DEMO__` + Sillage. Gemini a positionné `DINOER_SECRETS_DIR` vers le répertoire
+contenant le fichier `.dinoer.conf` de Sillage. Vault introuvable → erreur silencieuse.
 
 **Cause** : les deux variables existent dans vault.py mais ne pointent pas vers le même objet.
-`DIWALL_SECRETS_DIR` attend un répertoire contenant directement des fichiers `<hostname>.json`.
-`DIWALL_CONF` attend un chemin vers un fichier `.diwall.conf` (JSON) dont la clé `secrets_dir`
-résout le répertoire vault. Pointer `DIWALL_SECRETS_DIR` vers un répertoire qui contient un
+`DINOER_SECRETS_DIR` attend un répertoire contenant directement des fichiers `<hostname>.json`.
+`DINOER_CONF` attend un chemin vers un fichier `.dinoer.conf` (JSON) dont la clé `secrets_dir`
+résout le répertoire vault. Pointer `DINOER_SECRETS_DIR` vers un répertoire qui contient un
 `.conf` ne fonctionne pas — le `.conf` n'est pas lu.
 
-**Règle** : pour tout projet utilisant un fichier `.diwall.conf` (configuration per-projet),
-toujours utiliser `DIWALL_CONF=/chemin/vers/fichier.diwall.conf`. Réserver `DIWALL_SECRETS_DIR`
+**Règle** : pour tout projet utilisant un fichier `.dinoer.conf` (configuration per-projet),
+toujours utiliser `DINOER_CONF=/chemin/vers/fichier.dinoer.conf`. Réserver `DINOER_SECRETS_DIR`
 aux coffres plats où les fichiers `<hostname>.json` se trouvent directement dans le répertoire pointé.
 
 **Lien** : documenté dans `GUIDE_LLM.md` section "Known CLI pitfalls" (FR-58).
@@ -1881,7 +1881,7 @@ Ces frictions étendent et complètent FR-57 (modales CSS Sillage).
 
 ---
 
-## Friction #64 — Chemin Python RAG : `/opt/diwall/venv` n'a pas `chromadb`
+## Friction #64 — Chemin Python RAG : `/opt/dinoer/venv` n'a pas `chromadb`
 
 > **RÉSOLU le 15/06/2026 (session 30).** Chemin corrigé dans `PROTOCOLE_DEMARRAGE.md`,
 > `PROTOCOLE_CLOTURE.md`, `scripts/build-index.py` et `scripts/search-index.py` (_CADRE).
@@ -1890,10 +1890,10 @@ Ces frictions étendent et complètent FR-57 (modales CSS Sillage).
 
 **Symptôme :** `ModuleNotFoundError: No module named 'chromadb'` en tentant :
 ```
-/opt/diwall/venv/bin/python3 ~/git/Dinoer/_CADRE/scripts/search-index.py "..."
+/opt/dinoer/venv/bin/python ~/git/Dinoer/_CADRE/scripts/search-index.py "..."
 ```
 
-**Cause :** `/opt/diwall/venv` ne contient que `playwright`. Il ne sert qu'à `rpa.py`,
+**Cause :** `/opt/dinoer/venv` ne contient que `playwright`. Il ne sert qu'à `rpa.py`,
 `watch.py` et `shot.py`. Il n'a jamais eu `chromadb`.
 
 **Chemin correct (vérifié 2026-06-15) :**
@@ -2170,7 +2170,7 @@ Cette lacune est propre à Sillage, pas à Dinoer. Consignée ici par erreur de 
 
 ---
 
-## Friction #68 — `diwall.conf` inaccessible après installation : 640 root:root ou groupe inactif
+## Friction #68 — `dinoer.conf` inaccessible après installation : 640 root:root ou groupe inactif
 
 **Remontée par :** Claude Sillage (session 36, 21/06/2026).
 
@@ -2178,25 +2178,25 @@ Cette lacune est propre à Sillage, pas à Dinoer. Consignée ici par erreur de 
 
 **Problème :** deux causes indépendantes produisent le même symptôme (`SecretsNonConfigureError`, exit 43) :
 
-1. **`root:root 640` au lieu de `root:diwall 640`** — `deploy.sh` fait `sudo chown root:"$GROUPE" diwall.conf 2>/dev/null || true`. Si le groupe `diwall` n'existe pas encore au moment du déploiement (ex. `deploy.sh` lancé sans `install.sh` préalable), le `chown` échoue silencieusement → propriétaire `root:root` → `ron` ne peut pas lire le fichier.
+1. **`root:root 640` au lieu de `root:dinoer 640`** — `deploy.sh` fait `sudo chown root:"$GROUPE" dinoer.conf 2>/dev/null || true`. Si le groupe `dinoer` n'existe pas encore au moment du déploiement (ex. `deploy.sh` lancé sans `install.sh` préalable), le `chown` échoue silencieusement → propriétaire `root:root` → `ron` ne peut pas lire le fichier.
 
-2. **Groupe `diwall` inactif dans la session courante** — `install.sh` ajoute `ron` au groupe via `usermod -aG diwall ron`, mais ce changement n'est effectif qu'à la prochaine reconnexion. Si `rpa.py` est lancé dans la même session, `ron` n'a pas encore le groupe → lecture interdite → exit 43.
+2. **Groupe `dinoer` inactif dans la session courante** — `install.sh` ajoute `ron` au groupe via `usermod -aG dinoer ron`, mais ce changement n'est effectif qu'à la prochaine reconnexion. Si `rpa.py` est lancé dans la même session, `ron` n'a pas encore le groupe → lecture interdite → exit 43.
 
 **Symptôme :** `SecretsNonConfigureError` avec exit 43 — le message ne précise pas si la cause est une permission ou une configuration manquante.
 
 **Contournement immédiat :**
 ```bash
 # Cas 1 — mauvais propriétaire
-sudo chown root:diwall /opt/diwall/diwall.conf
+sudo chown root:dinoer /opt/dinoer/dinoer.conf
 
 # Cas 2 — groupe inactif (sans reconnexion)
-sg diwall -c "/opt/diwall/venv/bin/python3 /opt/diwall/rpa.py ..."
+sg dinoer -c "/opt/dinoer/venv/bin/python /opt/dinoer/rpa.py ..."
 # ou se reconnecter
 ```
 
-**Cause racine :** `install.sh` vérifie les permissions des répertoires (`check_dir`) mais pas des fichiers (`diwall.conf`, `diwall-sample.conf`). Le message d'erreur `SecretsNonConfigureError` ne distingue pas "fichier illisible" de "fichier absent ou secrets_dir non configuré".
+**Cause racine :** `install.sh` vérifie les permissions des répertoires (`check_dir`) mais pas des fichiers (`dinoer.conf`, `dinoer-sample.conf`). Le message d'erreur `SecretsNonConfigureError` ne distingue pas "fichier illisible" de "fichier absent ou secrets_dir non configuré".
 
-**Correction à terme :** ajouter une vérification `check_file` pour `diwall.conf` dans `install.sh` + préciser le message d'erreur selon la cause (IOError vs JSON invalide).
+**Correction à terme :** ajouter une vérification `check_file` pour `dinoer.conf` dans `install.sh` + préciser le message d'erreur selon la cause (IOError vs JSON invalide).
 
 ---
 
@@ -2300,7 +2300,7 @@ de systèmes de fichiers persistants ordinaires (ext4, btrfs, etc.).
 
 ## Synthèse session 36
 
-4 frictions nouvelles (#68 — diwall.conf permissions, #69 — message schéma JSON, #70 — remplir_som clear implicite, #71 — --secrets logistique vault). Remontées par Claude Sillage.
+4 frictions nouvelles (#68 — dinoer.conf permissions, #69 — message schéma JSON, #70 — remplir_som clear implicite, #71 — --secrets logistique vault). Remontées par Claude Sillage.
 Corrections documentation : GUIDE_LLM.md étendu (tail -1 pour rpa.py + diagnostic hint cliquer timeout).
 
 **68 frictions sur 36 sessions.**
@@ -2387,25 +2387,25 @@ Ou ajouter une option `--keep-session`.
 
 ---
 
-## 75. Nettoyage de `/tmp/diwall/` détruit la session qui y est stockée
+## 75. Nettoyage de `/tmp/dinoer/` détruit la session qui y est stockée
 
 **Session : 38 — Testeur : Gemini 3.5 Flash — Mission : audit découverte interface Sillage — 23/06/2026**
 
-À chaque démarrage, `shot.py` nettoie son dossier de sortie par défaut `/tmp/diwall/`.
+À chaque démarrage, `shot.py` nettoie son dossier de sortie par défaut `/tmp/dinoer/`.
 Si l'utilisateur a sauvegardé sa session dans ce répertoire (chemin naturel :
-`--sauver-session /tmp/diwall/session.json`), le fichier est effacé par le run suivant
+`--sauver-session /tmp/dinoer/session.json`), le fichier est effacé par le run suivant
 **avant** que Playwright n'ait pu le lire.
 
-Comportement observé : `FileNotFoundError` sur `--reprendre-session /tmp/diwall/session.json`
+Comportement observé : `FileNotFoundError` sur `--reprendre-session /tmp/dinoer/session.json`
 alors que le fichier avait bien été créé par l'appel précédent.
 
 **Piste suggérée par le testeur :** protéger les fichiers `.json` du nettoyage automatique
-de `/tmp/diwall/`, ou imposer un sous-dossier dédié (ex. `/tmp/diwall/sessions/`) exclu
-du nettoyage. Le testeur a contourné en passant le chemin de session hors de `/tmp/diwall/`.
+de `/tmp/dinoer/`, ou imposer un sous-dossier dédié (ex. `/tmp/dinoer/sessions/`) exclu
+du nettoyage. Le testeur a contourné en passant le chemin de session hors de `/tmp/dinoer/`.
 
-**Analyse post-correction (session 39) :** shot.py n'effectue aucun `rmtree` sur `/tmp/diwall/`.
+**Analyse post-correction (session 39) :** shot.py n'effectue aucun `rmtree` sur `/tmp/dinoer/`.
 La cause racine est identique à FR-74 — `_nettoyer_session_ephemere` supprimait le fichier en
-fin de run. FR-75 est une manifestation de FR-74 avec un chemin dans `/tmp/diwall/`.
+fin de run. FR-75 est une manifestation de FR-74 avec un chemin dans `/tmp/dinoer/`.
 **Corrections (v1.11.1 — session 39, 23/06/2026) :** même correctif que FR-74. T-B1 VERT.
 
 ---

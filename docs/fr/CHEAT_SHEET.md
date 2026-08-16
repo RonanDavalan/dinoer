@@ -1,94 +1,91 @@
-# Dinoer — guide rapide
+# Dinoer — pense-bête
 
-Version 1.23.0 — Août 2026
+Version 1.23.0 — août 2026
 
-Tout sur une seule page. Référence complète : `docs/MANUEL.md`.
+Tout sur une page. Référence complète : `docs/MANUEL.md`.
 
 ---
 
 ## Trois commandes
 
 ```bash
-# Consulter une page : PNG + éléments numérotés + arbre d'accessibilité.
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py --url URL --som --a11y
+# Voir une page : arbre d'accessibilité
+/opt/dinoer/venv/bin/python /opt/dinoer/shot.py --url URL --a11y
 
-# Lecture sans capture (~2 secondes plus rapide, pas de fichier PNG).
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py --url URL --mode fast
+# Exécuter un scénario
+/opt/dinoer/venv/bin/python /opt/dinoer/rpa.py --scenario FICHIER.json
 
-# Exécuter un scénario.
-/opt/diwall/venv/bin/python3 /opt/diwall/rpa.py --scenario FILE.json
+# Lire une référence de scénario et comparer (surveillance structurelle)
+/opt/dinoer/venv/bin/python /opt/dinoer/rpa.py \
+  --scenario FICHIER.json --replay-verifier REF.json
 ```
 
-Installé depuis le `.deb`? Utilisez les chemins relatifs [`diwall-shot`] et [`diwall-rpa`] au lieu des
-chemins complets. Le premier appel sur une machine nécessite [`--guide-version X.Y`], à lire avec
-`grep notice-version /opt/diwall/docs/GUIDE_LLM.md`].
+Le premier appel sur une machine nécessite `--guide-version X.Y`, à lire avec
+`grep notice-version /opt/dinoer/docs/GUIDE_LLM.md`.
 
 ---
 
 ## La boucle
 
 ```
-        you decide what to do next
+        vous décidez de la suite
                   │
                   ▼
    ┌──────────────────────────────┐
-   │  shot.py / rpa.py            │   one process, one JSON on stdout
+   │  shot.py / rpa.py            │   un processus, un JSON sur stdout
    │    ├─ Chromium (headless)    │
-   │    ├─ SoM: numbers elements  │
-   │    ├─ A11y: page structure   │
-   │    └─ secrets: fills credentials│   never in the shell, never in a log
+   │    ├─ A11y : structure de page│
+   │    └─ secrets : remplit les identifiants│  jamais dans le shell, jamais dans un log
    └──────────────┬───────────────┘
-                  │  PNG + JSON
+                  │  boussole + JSON
                   ▼
-        you read the same state
-        the operator can see too
+        vous lisez le même état
+        que l'opérateur peut voir aussi
 ```
 
-L'état de la session est stocké dans un fichier, et non dans le processus : un deuxième appel avec
-`--reprendre-session` réutilise les cookies – jamais l'état du DOM.
+L'état de session vit dans un fichier, pas dans le processus : un second appel
+avec `--reprendre-session` réutilise les cookies — jamais l'état du DOM.
 
 ---
 
 ## Lire la sortie dans cet ordre
 
-| Lire | Vous indique |
+| Lire | Vous dit |
 |---|---|
-| `succes` | si l'exécution s'est terminée |
-| `boussole.url_courante` | où vous vous êtes réellement trouvé |
-| `boussole.dernier_code_http` | le dernier état de navigation |
-| `etat.pret_a_agir` + `etat.raisons` | les frictions perçues — un rapport, et non une alerte |
-| `capture_som` / `elements_som` | ce qu'il faut cliquer, et son numéro |
-| `respect` | votre propre trace : pages, actions, durée |
+| `succes` | l'exécution s'est-elle terminée |
+| `boussole.url_courante` | où vous avez effectivement atterri |
+| `boussole.dernier_code_http` | statut de la dernière navigation |
+| `etat.pret_a_agir` + `etat.raisons` | frictions perçues — un rapport, jamais une barrière |
+| `a11y_tree` | structure de la page — titres, champs, boutons |
+| `respect` | votre propre empreinte : pages, actions, durée |
 
-Si `boussole` ne correspond pas à vos attentes, arrêtez-vous avant toute action modifiant le texte.
+Si `boussole` ne correspond pas à votre attente, arrêtez-vous avant toute
+action mutante.
 
 ---
 
 ## Chaque action
 
-`type` est toujours requis. Les clés ci-dessous sont les clés supplémentaires.
+`type` est toujours requis. Les clés ci-dessous sont les clés additionnelles.
 
 | Action | Requis | Optionnel |
 |---|---|---|
 | `naviguer` | `url` | — |
 | `cliquer` | `selecteur` | `force`, `repli_js` |
-| `cliquer_som` | `id` | — |
-| `cliquer_visuel` | `description` | — |
 | `cliquer_iframe` | `iframe_selecteur` \| `iframe_chemin`, `selecteur` | `force` |
 | `remplir` | `selecteur`, `valeur` | `secret_cle` |
-| `remplir_som` | `id`, `valeur` | `secret_cle` |
 | `remplir_iframe` | `iframe_selecteur` \| `iframe_chemin`, `selecteur`, `valeur` | `secret_cle` |
-| `capturer` | `nom` | `som` |
 | `evaluer` | `script` | `attendu` \| `contient` \| `motif` |
+| `extraire_texte` | — | — |
 | `defiler` | `px` \| `selecteur` | — |
-| `pause` | `ms` | `interval_capture` |
-| `attendre` | `selecteur` | `interval_capture` |
+| `pause` | `ms` | — |
+| `attendre` | `selecteur` | — |
 | `attendre_selecteur_present` | `selecteur` | — |
 | `attendre_absence` | `selecteur` | `delai_initial_ms` |
 | `attendre_navigation` | — | — |
 | `attendre_url` | `motif` | `attendre_changement` |
 | `attendre_reseau_calme` | — | `timeout_ms` |
-| `attendre_mfa_ntfy` | `id_som` | `timeout` |
+| `attendre_mfa_ntfy` | `selecteur` | `timeout` |
 | `nettoyer_overlay` | `selecteur` | — |
 | `declencher_scenario` | `scenario` | — |
 
@@ -97,33 +94,29 @@ Si `boussole` ne correspond pas à vos attentes, arrêtez-vous avant toute actio
 ## Identifiants — la seule forme correcte
 
 ```json
-{"type": "remplir_som", "id": 3, "valeur": "depuis_secrets", "secret_cle": "password"}
+{"type": "remplir", "selecteur": "input[name=\"password\"]", "valeur": "depuis_secrets", "secret_cle": "password"}
 ```
 
-N'extrayez jamais un secret dans le shell. `lib/repertoire_chiffre.py` le résout à
-l'intérieur du processus Playwright ; la valeur n'atteint jamais votre ligne
-de commande, votre historique, ni aucun journal. `depuis_secrets_totp` fait de
-même pour un code TOTP.
+N'extrayez jamais un secret dans le shell. `lib/repertoire_chiffre.py` le
+résout à l'intérieur du processus Playwright ; la valeur n'atteint jamais
+votre ligne de commande, votre historique, ni aucun journal.
 
 ---
 
-## Quand quelque chose résiste
+## Quand ça résiste
 
-| Symptôme | Essayez |
+| Symptôme | Essayer |
 |---|---|
-| Le délai d'attente de clic, l'élément est visuellement masqué | `"force": true`, puis `"repli_js": true` |
-| L'élément n'est pas numéroté par SoM | `--shadow-dom` (ouvrir les Shadow Roots) |
-| Élément situé en dessous du "fold" | `defiler` d'abord — vérifiez `boussole.som_hors_viewport` |
-| La page ne se charge jamais complètement | `--wait-until load` |
-| Le bouton de soumission ne fait rien, aucune erreur | validation HTML native — soumettez le formulaire via `evaluer` |
-| `exit 42` | répertoire chiffré non monté : `diwall-monter-secrets` |
-| `exit 43` | pas de `diwall.conf` — copiez l'exemple à côté |
-| `guide_non_lu` | passer `--guide-version` une fois |
-| 403 / 429 | lire `respect.waf_bloquants` — un signal, et non une exception |
+| Le clic expire, élément visuellement caché | `"force": true`, puis `"repli_js": true` |
+| Élément sous la ligne de flottaison | `defiler` d'abord |
+| La page ne finit jamais de charger | `--wait-until load` |
+| Le submit ne fait rien, aucune erreur | validation HTML native — soumettez le formulaire via `evaluer` |
+| `exit 42` | répertoire chiffré non monté (`bash ~/git/Dinoer/Dinoer/scripts/monter-repertoire-chiffre.sh`), ou somme de contrôle des identifiants invalide (vérifiez le fichier d'identifiants) — les deux relèvent de `SecretsFermesError` |
+| `guide_non_lu` | passez `--guide-version` une fois |
+| 403 / 429 | lisez `respect.waf_bloquants` — un signal, pas une exception |
 
 ---
 
 ## Codes de sortie
 
-`0` succès · `1` Erreur du playwright ou assertion échouée · `2` Incompatibilité de la zone d'affichage
-(`watch.py`) · `3` Mauvais interpréteur, utilisez l'environnement virtuel (venv) · `42` Répertoire chiffré fermé ou somme de contrôle incorrecte · `43` `diwall.conf` manquant.
+`0` succès · `1` échec d'exécution ou assertion échouée · `2` arguments invalides (rejetés avant tout lancement de navigateur) · `3` mauvais interpréteur — utilisez le venv (`/opt/dinoer/venv/bin/python`) · `42` répertoire d'identifiants chiffré fermé, ou somme de contrôle des identifiants invalide (famille `SecretsFermesError`) · `43` aucun `secrets_dir` configuré (`SecretsNonConfigureError`).

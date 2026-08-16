@@ -42,8 +42,6 @@ _CONF_D = _DINOER_RACINE / "dinoer.conf.d"
 class ProfilOperateur:
     nom_profil: str
     auto_confirmer: frozenset[str]
-    tracabilite_modeles_active: bool
-    tracabilite_inclure_hash: bool
     chemin_charge: Optional[Path]
 
     @property
@@ -62,8 +60,6 @@ class ProfilOperateur:
 _PROFIL_STRICT = ProfilOperateur(
     nom_profil="strict_defaut",
     auto_confirmer=frozenset(),
-    tracabilite_modeles_active=True,
-    tracabilite_inclure_hash=True,
     chemin_charge=None,
 )
 
@@ -137,15 +133,6 @@ def _construire_depuis_yaml(chemin: Path, data: dict) -> ProfilOperateur:
             file=sys.stderr,
         )
 
-    trac = data.get("tracabilite_modeles") or {}
-    if not isinstance(trac, dict):
-        raise ValueError(
-            f"{chemin} : clé 'tracabilite_modeles' doit être un dict, "
-            f"reçu {type(trac).__name__}."
-        )
-    trac_active = bool(trac.get("active", True))
-    trac_hash = bool(trac.get("inclure_hash_ollama", True))
-
     nom_profil = data.get("nom_profil")
     if not isinstance(nom_profil, str) or not nom_profil:
         nom_profil = chemin.stem
@@ -153,8 +140,6 @@ def _construire_depuis_yaml(chemin: Path, data: dict) -> ProfilOperateur:
     return ProfilOperateur(
         nom_profil=nom_profil,
         auto_confirmer=frozenset(noms_valides),
-        tracabilite_modeles_active=trac_active,
-        tracabilite_inclure_hash=trac_hash,
         chemin_charge=chemin,
     )
 
@@ -211,9 +196,9 @@ def charger_profil(chemin: Optional[Path] = None) -> ProfilOperateur:
     except ValueError as exc:
         # Cohérence avec le reste de cette fonction (§4.4 : "YAML invalide →
         # exit 1") — _construire_depuis_yaml lève ValueError sur plusieurs
-        # défauts de contenu (type de auto_confirmer, type de
-        # tracabilite_modeles, et depuis l'audit 06/08/2026/F-18/C-14, un nom
-        # de LISTE_ROUGE_INVIOLABLE dans auto_confirmer). Aucun de ces cas ne
-        # doit remonter comme une trace Python brute à l'appelant.
+        # défauts de contenu (type de auto_confirmer, et depuis l'audit
+        # 06/08/2026/F-18/C-14, un nom de LISTE_ROUGE_INVIOLABLE dans
+        # auto_confirmer). Aucun de ces cas ne doit remonter comme une trace
+        # Python brute à l'appelant.
         print(f"✖ Dinoer : {exc}", file=sys.stderr)
         sys.exit(1)

@@ -119,8 +119,8 @@ invoked from `~/git/Dinoer/Dinoer/` via CLI. Access: `__HOST_SERVICE__` (Pretix)
 ```
 
 **External observations (operator, not attributed to Gemini):**
-- `DIWALL_SECRETS_DIR` pointed to the directory containing the `.conf` instead of the directory
-  containing `<hostname>.json` files — self-corrected to `DIWALL_CONF` without assistance (FR-58)
+- `DINOER_SECRETS_DIR` pointed to the directory containing the `.conf` instead of the directory
+  containing `<hostname>.json` files — self-corrected to `DINOER_CONF` without assistance (FR-58)
 - End-of-session drift: proposal to record a rule in `CLAUDE.md` (public product)
   instead of `_CADRE/GOUVERNANCE/` — typical long-session drift
 

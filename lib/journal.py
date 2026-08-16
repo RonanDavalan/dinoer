@@ -352,8 +352,7 @@ def enregistrer_operation(outil, version, cible_url, resultat, actions,
     """Compose et écrit une entrée de journal. Best-effort, ne lève jamais.
 
     Réutilise les champs d'environnement de `dinoer_meta` (v1.3.2) :
-    hostname_executant, utilisateur_executant, profil_actif,
-    modeles_utilises.
+    hostname_executant, utilisateur_executant, profil_actif.
 
     `mutatif` : si None, déduit des actions (est_mutatif) ; sinon imposé
     par l'appelant (watch.py n'a pas d'actions au sens de shot.py —
@@ -425,8 +424,6 @@ def enregistrer_operation(outil, version, cible_url, resultat, actions,
                 entree["actions_raw"] = raw
         if captures_ref:
             entree["captures"] = captures_ref
-        if meta.get("modeles_utilises"):
-            entree["modeles_utilises"] = meta["modeles_utilises"]
         if erreur:
             entree["erreur"] = erreur
         if respect:

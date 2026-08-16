@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/RonanDavalan/diwall/main/scenarios/schema.json",
+  "$schema": "https://raw.githubusercontent.com/RonanDavalan/dinoer/main/scenarios/schema.json",
   "nom": "diagnostic_dom",
   "description": "Exploration non-mutante des elements interactifs d'une page. Utiliser avec --url pour cibler n'importe quelle vue sans modifier ce fichier.",
   "url": "https://example.com",

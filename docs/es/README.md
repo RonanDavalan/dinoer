@@ -1,103 +1,86 @@
-# Dinoer: Referencia visual compartida entre humanos y modelos de lenguaje grandes (LLM)
+# Dinoer — Investigación web soberana y local-first para agentes LLM
 
-> **Para el operador humano:** Dinoer le permite delegar la verificación visual a su modelo de lenguaje. Ambos ven la misma captura — ya no tiene que confiar a ciegas en su palabra.
+> **Para el operador humano:** Dinoer se ejecuta en tu propia máquina, delega
+> la búsqueda y la recopilación a primitivas que puedes leer línea por línea,
+> y te entrega un informe Markdown con fuentes y fecha — no una respuesta de
+> caja negra.
 >
-> **Para el modelo de lenguaje:** [`docs/GUIDE_LLM.md`](../GUIDE_LLM.md) es su referencia operativa. Empiece por ahí.
-> Si es un agente de IA que está descubriendo Dinoer, omita la página de inicio con formato y obtenga sus instrucciones directamente: **[https://diwall.davalan.fr/instructions.md](https://diwall.davalan.fr/instructions.md)**
+> **Para el LLM:** [`docs/GUIDE_LLM.md`](../GUIDE_LLM.md) es tu referencia
+> operativa. Empieza por ahí.
 
 ---
 
 ## ¿Qué es Dinoer?
 
-Dinoer crea una **referencia visual compartida** entre un operador humano y un modelo de lenguaje. Le da al LLM la capacidad de **ver interfaces web** y le brinda al operador humano una forma de **delegar la verificación visual** sin perder el control.
+Dinoer es un **motor de búsqueda y síntesis pasivo, local-first y soberano**.
+Es una bifurcación (fork) de [Diwall](https://github.com/RonanDavalan/diwall)
+(automatización visual de navegador para LLMs), despojada de toda su capa de
+percepción — **cero capturas de pantalla, cero Set-of-Mark, cero modelo de
+visión.** Dinoer nunca mira una página; la lee: DOM, árbol de accesibilidad y
+texto de página depurado.
 
-Sin Dinoer, el operador debe confiar a ciegas en la palabra de su modelo de lenguaje o verificar el resultado por sí mismo. Con Dinoer, ambas partes ven la misma captura PNG y el mismo árbol de accesibilidad. La duda desaparece en ambos lados.
+Donde Diwall responde a «interactuar con una interfaz autenticada, de forma
+visual», Dinoer responde a una pregunta distinta: «explorar un gran número de
+fuentes públicas y compilar una señal verificable y con fuentes a partir de
+ellas» — en un hardware tan modesto como una Raspberry Pi 5.
 
 ```
-El LLM actúa → Dinoer captura → el LLM ve e informa → el operador verifica desde el mismo estado
+Consulta → descubrimiento vía SearXNG → recopilación HTTP ligera
+      → escalado a un navegador real solo para las páginas que lo necesitan
+      → síntesis por un LLM delegado → informe Markdown fechado y con fuentes
 ```
 
-**Lo que gana el humano:** la delegación del trabajo repetitivo y estresante de verificación visual. En lugar de revisar docenas de páginas después de una implementación, el humano revisa los resultados ya generados por el LLM.
-
-**Lo que gana el modelo:** una percepción real de la interfaz. Sin Dinoer, un modelo que desarrolla una aplicación web modifica código pero no puede ver el resultado en un navegador. `lynx` no procesa las interfaces modernas.
-
-### Lo que el modelo realmente recibe
-
-![Captura Set-of-Mark: cada elemento interactivo numerado sobre la página renderizada](../images/som-example-es.png)
-
-Se trata de una captura `--som` real, no de una maqueta. Cada elemento
-interactivo está numerado en la página renderizada, y los mismos números
-vuelven en el JSON — de modo que `{"type": "cliquer_som", "id": 7}` pulsa
-*Sign in*, sin selector que adivinar y sin ambigüedad sobre qué botón se
-pretendía. Reprodúzcalo usted mismo — la página es una fixture versionada en
-este repositorio, así que obtendrá los mismos números que nosotros:
-
-```bash
-cd scenarios/interoperabilite/fixture && python3 -m http.server 8765 &
-diwall-shot --url http://127.0.0.1:8765/demo_som_en.html --som --guide-version 1.2
-```
-
-`elements_som` regresa con `{"id": 7, "tag": "BUTTON", "texte": "Sign in"}`.
+**Doctrina:** el código Python no lleva ninguna inteligencia de negocio. Cada
+módulo hace una sola cosa mecánica — consultar SearXNG, extraer texto limpio
+de una página, leer una credencial cifrada, enviar una notificación. La
+*estrategia* de una búsqueda (cómo hacer seguimiento, cuándo escalar, cuándo
+detenerse) vive en un escenario, nunca codificada de forma rígida en un
+módulo. Consulta [`docs/GUIDE_LLM.md`](../GUIDE_LLM.md) para la doctrina
+completa.
 
 ---
 
 ## Arquitectura
 
 ```
-Modelo de lenguaje (el cerebro — bucle ReAct)
-        ↓  invoca
-  shot.py (las manos — ejecutor Playwright)
-        ↓
-  Chromium headless → captura PNG
-        ↓
-  El modelo de lenguaje lee el PNG directamente (multimodal)
+campagne.py (orquestación)
+  ├─ lib/searxng.py         → API JSON de SearXNG (solo HTTP, sin navegador)
+  ├─ lib/fetch_leger.py     → requests + BeautifulSoup, respeta robots.txt
+  ├─ rpa.py / shot.py       → Playwright, solo para páginas que el nivel ligero
+  │                           marcó como «insuficientes» (shells solo-JS)
+  ├─ lib/extraction.py      → extracción de hechos dirigida, trouve/valeur/url
+  ├─ lib/tables_reference.py→ tabla persistente y con fuentes de sitios de referencia
+  ├─ lib/cache_recherche.py → caché de búsqueda respaldada por ChromaDB
+  └─ lib/synthese.py + lib/modeles.py → LLM delegado (OpenCode/Ollama),
+                                        redacta el informe final
 ```
 
-`shot.py` no tiene inteligencia. Ejecuta instrucciones y devuelve el estado.
-El modelo de lenguaje decide qué hacer a continuación.
+`shot.py`/`rpa.py` conservan el núcleo de ejecución ReAct de Diwall
+(`naviguer`, `remplir`, `cliquer`, `evaluer`, persistencia de sesión,
+resolución de credenciales) — nada de su capa de percepción.
 
 ---
 
 ## Capacidades
 
-| Característica | Descripción |
+| Función | Descripción |
 |---|---|
-| **Captura** | Captura una captura de pantalla de cualquier página web |
-| **Acciones** | Rellena formularios, haz clic, navega |
-| **Conjunto de marcas (SoM)** | Numera todos los elementos interactivos para clics precisos en el DOM |
-| **Instantánea de accesibilidad** | Extrae la estructura semántica de la página (árbol A11y) |
-| **Persistencia de sesión** | Mantiene el estado de inicio de sesión a través de bucles ReAct de varios pasos |
-| **Escenarios de RPA** | Ejecuta secuencias de acciones desde archivos JSON |
-| **Monitoreo visual** | Detecta si una página ha cambiado desde la última referencia |
-| **Diferencia de píxeles** | Diferencia cuantitativa y determinista con respecto a una referencia almacenada (v1.2) |
-| **Resolución de credenciales** | Inyección segura de credenciales; nunca en texto plano, nunca en la línea de comandos |
-| **Directorio cifrado** | Volumen gocryptfs — `SecretsFermesError` (salida 42) si no está montado (v1.5) |
-| **Desplazamiento** | Acción `defiler` — desplazamiento relativo de píxeles o por selector CSS `scrollIntoView` (v1.6) |
-| **Advertencia fuera de pantalla** | Cuenta `som_hors_viewport` en JSON cuando existen elementos interactivos debajo del pliegue (v1.6) |
-| **Memoria procedimental** | Las ejecuciones exitosas se almacenan como habilidades reproducibles a través de `journal.py --exporter-skill` (v1.6) |
-| **TOTP 2FA** | Códigos de Google Authenticator / Authy generados en tiempo de ejecución desde una semilla almacenada (v1.6) |
-| **MFA asíncrono a través de ntfy** | Códigos 2FA de SMS/correo electrónico recibidos de forma asíncrona a través de la notificación push de ntfy (v1.6) |
-| **Perfil de operador** | Perfil YAML para eliminar confirmaciones administrativas repetitivas (v1.3) |
-| **Trazabilidad del modelo** | Cada ejecución registra qué modelos se llamaron, incluido el resumen de Ollama (v1.3) |
-| **Registro de operaciones** | Registro persistente y de solo escritura de todas las ejecuciones: quién hizo qué, dónde, cuándo (v1.4) |
-| **Recorrido del DOM sombreado** | Números `--shadow-dom` de elementos interactivos dentro de Shadow Roots abiertos; Angular, Lit, Stencil, FAST (v1.13.0) |
-| **Navegación Respetuosa** | `--stealth` (elimina los marcadores automáticos del modo headless), retrasos de cortesía y límites estrictos (`min_action_delay_ms`, `max_pages_par_run`, `max_actions_par_run`), métricas de impacto (`respect`) informadas en cada ejecución (v1.15.0) |
-| **Veredicto determinista** | El objeto `etat` (`pret_a_agir`, `niveau_confiance`, `raisons`) sintetiza señales de autenticación, deriva de sesión y fricción en una sola lectura (v1.16.0) |
-| **Identidad de ejecución unificada** | `operation_id` aísla los archivos temporales de cada ejecución y los vincula a su entrada del registro de operaciones (v1.16.0) |
-| **Señal pasiva de WAF** | `respect.waf_bloquants` marca un posible bloqueo (HTTP 403/429 o palabras clave conocidas) como una señal no fatal, nunca como una excepción (v1.16.0) |
-| **No regresión estructural** | `--replay-verifier` compara el estado HTTP, las estadísticas del DOM y los resultados de `evaluer` con una referencia guardada; sin píxeles, sin modelo de visión (v1.17.0) |
-| **Puntos de control del escenario** | `--checkpoint` reanuda un escenario largo después de un fallo a la mitad sin reproducir las acciones completadas (v1.17.0) |
-| **Identidad SoM estable** | `--som-rafraichir` resuelve los identificadores `cliquer_som`/`remplir_som` mediante un marcador del DOM en lugar de una reindexación en vivo, evitando el cambio silencioso de destino en páginas altamente dinámicas (v1.17.0) |
-| **Iframes entre orígenes** | Los elementos de destino `cliquer_iframe` / `remplir_iframe` dentro de iframes del mismo origen o de diferentes orígenes a través de la API de marco nativa de Playwright (v1.17.0) |
-| **Iframes anidados** | Descenso `iframe_chemin` (matriz) iframe-dentro-de-iframe, mutuamente excluyente con `iframe_selecteur` (v1.18.0) |
-| **Bloqueo de guía-lectura** | `shot.py`/`rpa.py`/`watch.py` se niega a ejecutarse sin una prueba de que se leyó `docs/GUIDE_LLM.md` — un marcador local lo persiste por máquina/usuario (v1.18.0) |
-| **Consejos de configuración** | `mode_conseille` recomienda `--mode`/`--shadow-dom`/`--som-rafraichir` a partir de ejecuciones de diagnóstico reales anteriores en el mismo host; nunca una conjetura (v1.18.0) |
-| **Trazabilidad de escenarios encadenados** | `chainage` registra el árbol de llamadas ordenado de escenarios encadenados a través de `declencher_scenario`, que se muestra en el registro de operaciones (v1.19.0) |
-| **Temporización por acción** | `latences_actions` informa la latencia de despacho para cada acción ejecutada, siempre presente (v1.20.0) |
-| **Vista de registro solo de errores** | `journal.py --erreurs` filtra el registro de operaciones para mostrar solo las ejecuciones fallidas (v1.20.0) |
-| **Autenticación HTTP básica** | `--http-credentials` resuelve la autenticación Básica a nivel de red (RFC 7617) desde el archivo de credenciales, con ámbito del origen del objetivo; distinto y adicional a la autenticación basada en formularios (v1.21.0) |
-| **Escalado de clics de JavaScript** | `repli_js` en `cliquer` reintenta un clic nativo fallido mediante JS, informado solo en la boussole cuando realmente se ejecutó (v1.22.0) |
-| **Objetivos que nunca están inactivos** | `--wait-until load\|domcontentloaded` alcanza páginas que realizan sondeos continuos y nunca permanecen sin actividad de red, donde ningún valor de `--timeout` sería suficiente (v1.22.0) |
+| **Descubrimiento vía SearXNG** | Consulta HTTP pura contra una instancia SearXNG local o remota — sin coste de navegador para la búsqueda |
+| **Recopilación de nivel ligero** | Extracción con `requests` + BeautifulSoup, respeta `robots.txt`, consciente de WAF |
+| **Escalado de nivel pesado** | Playwright, usado solo para páginas que el nivel ligero no pudo leer (shells renderizados en JS) |
+| **Extracción semántica de texto** | Acción `extraire_texte` — texto principal depurado, no una captura de pantalla |
+| **Instantánea de accesibilidad** | `--a11y` — estructura semántica de la página (árbol A11y), nunca se produce una imagen |
+| **Extracción dirigida** | `lib/extraction.py` — contrato estricto `trouve`/`valeur`/`url`, declara la ausencia en vez de inventar una respuesta |
+| **Tablas de sitios de referencia** | `lib/tables_reference.py` — tabla persistente y con fuentes de sitios conocidos por tema |
+| **Caché de búsqueda vectorial** | `lib/cache_recherche.py` — respaldada por ChromaDB, evita reconsultar solicitudes casi duplicadas |
+| **Deduplicación y frescura** | Deduplicación a nivel de campaña por URL exacta, límite por hostname, ventana de frescura de 30 días antes de recrawlear |
+| **Rastreo respetuoso** | Retardo aleatorio entre objetivos, rechazo estricto ante señales de WAF/robots.txt — nunca se evade |
+| **Resolución de credenciales** | Inyección segura de credenciales — nunca en texto plano, nunca en la línea de comandos |
+| **Directorio cifrado** | Volumen gocryptfs — `SecretsFermesError` (código de salida 42) si no está montado |
+| **Registro de operaciones** | Registro persistente de solo anexión de todas las ejecuciones — quién hizo qué, dónde, cuándo |
+| **Escenarios RPA** | Ejecuta secuencias de acciones desde archivos JSON, para la ruta de escalado de nivel pesado |
+| **Iframes de origen cruzado** | `cliquer_iframe` / `remplir_iframe` apuntan a elementos dentro de iframes |
+| **TOTP / MFA asíncrono** | Los objetivos protegidos por credenciales siguen siendo alcanzables cuando una ejecución de nivel pesado necesita autenticarse |
 
 ---
 
@@ -105,226 +88,162 @@ El modelo de lenguaje decide qué hacer a continuación.
 
 | Componente | Versión / Notas |
 |---|---|
-| **Sistema operativo** | Debian 13 Trixie (Linux, puede funcionar en macOS — no probado en Windows) |
-| **Servidor de visualización** | Wayland (Playwright se ejecuta en este ecosistema) |
-| **Python** | 3.11+ en un entorno virtual aislado (PEP 668 — pip del sistema bloqueado en Debian 13) |
-| **Playwright** | 1.50+ (instalado en el entorno virtual) |
-| **playwright-stealth** | 2.0+ — requerido para `--stealth` (v1.15.0). Incompatible con la API de la versión 1.x |
-| **Chromium** | Sin interfaz gráfica, instalado a través de `playwright install chromium` |
-| **Ollama** | Modelos de visión locales para `cliquer_visuel` y `watch.py` |
-| **GPU** | Recomendado: NVIDIA RTX 3060 de 12 GB de VRAM o equivalente (para los modelos qwen3-vl de Ollama) |
+| **SO** | Debian 13 Trixie (Linux) |
+| **Python** | 3.11+ en un venv aislado (PEP 668 — pip del sistema bloqueado en Debian 13) |
+| **Playwright** | 1.62+ (instalado en el venv) — usado solo por la ruta de escalado de nivel pesado |
+| **Chromium** | Sin interfaz gráfica (headless), instalado vía `playwright install chromium` |
+| **SearXNG** | Una instancia accesible (local o remota), API JSON por HTTP |
+| **Ollama** | Modelo de embeddings local, apto para CPU (`nomic-embed-text`) para la caché de búsqueda — sin modelo de visión, sin GPU necesaria |
+| **OpenCode** | Backend de razonamiento delegado para la síntesis de informes (modelos de nivel gratuito por defecto) |
+
+No se necesita GPU. El objetivo de referencia es una Raspberry Pi 5 con 8 GB de RAM.
 
 ---
 
 ## Instalación
 
-Dos canales, **exclusivos entre sí en una misma máquina**. Elija el paquete de Debian a menos que tenga la intención de modificar el código propio de Dinoer.
-
-### Paquete de Debian: el camino más sencillo
-
-Descargue el recurso `.deb` de la
-[última versión](https://github.com/RonanDavalan/diwall/releases) — nombre del archivo
-`diwall_<version>-1_all.deb` — luego:
+Solo canal de clonado git. **Aún no se ofrece un paquete `.deb`** — el
+empaquetado se posterga deliberadamente hasta que el producto se estabilice.
 
 ```bash
-sudo apt install ./diwall_1.23.0-1_all.deb
+git clone https://github.com/RonanDavalan/dinoer.git
+cd dinoer
+bash scripts/install.sh
 ```
 
-Crea el usuario del sistema `diwall`, el entorno virtual y
-`/opt/diwall/`, instala los seis comandos `diwall-*` en su `PATH`, y proporciona
-la página de manual:
+Esto crea el usuario y grupo de sistema `dinoer`, el entorno virtual,
+despliega el código en `/opt/dinoer/` y ejecuta una prueba de humo
+(`shot.py --a11y` contra una URL real).
+
+La configuración vive en `/etc/dinoer/dinoer.conf` (o `/opt/dinoer/dinoer.conf`
+según tu destino de `deploy.sh`); junto a él se instala un ejemplo comentado
+como `dinoer-sample.conf`.
+
+### Desinstalación
 
 ```bash
-man diwall              # covers all six commands
-diwall-shot --version
+bash scripts/uninstall.sh --dry-run   # vista previa, sin cambios
+bash scripts/uninstall.sh             # confirmación interactiva
 ```
 
-La configuración se encuentra en `/etc/diwall/diwall.conf`; una muestra comentada está instalada junto a ella como `diwall-sample.conf`. Referencia completa de comandos: sección 1a, `docs/MANUEL.md`.
-
-La actualización es `sudo apt install ./diwall_<newer>-1_all.deb` y su configuración se conserva. La eliminación es `sudo apt remove diwall`, o `sudo apt purge diwall` para eliminar también la configuración.
-
-### Desde la fuente: para modificar Dinoer en sí mismo
-
-Si pretende modificar el código de Dinoer, instale desde el repositorio: así
-las fuentes quedan donde `deploy.sh` puede enviar sus cambios a
-`/opt/diwall/`. El procedimiento de seis pasos está en
-[`docs/MANUEL.md`](MANUEL.md) sección 1b, junto a las órdenes que
-ejecutará después.
-
-## Desinstalación
-
-Instalado desde el paquete de Debian:
-
-```bash
-sudo apt remove diwall     # keeps /etc/diwall/diwall.conf
-sudo apt purge diwall      # removes the configuration as well
-```
-
-Instalado desde el código fuente:
-
-```bash
-# Vista previa de lo que se eliminará (sin modificar nada)
-bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh --dry-run
-
-# Desinstalación completa con confirmación interactiva.
-bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh
-
-# No interactivo (pruebas de integración continua, reinstalaciones).
-bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh --confirme
-```
-
-Elimina: `/opt/diwall/`, `/var/log/diwall/`, usuario del sistema `diwall`, grupo del sistema `diwall`, pertenencia al grupo de operadores, "git pre-push" hook.
-
-No se ha modificado: `~/Vaults/` (sus credenciales), el repositorio en sí mismo, la caché del navegador de Playwright.
-
-Si `/var/log/diwall/preuves/` contiene capturas, se conservan por omisión. Añada `--purge-preuves` para eliminarlas.
+Elimina: `/opt/dinoer/`, `/var/log/dinoer/`, el usuario de sistema `dinoer`,
+el grupo de sistema `dinoer`. **Nunca se toca:** `~/Vaults/` (tus
+credenciales), el propio repositorio.
 
 ---
 
-## Uso (por parte del modelo de lenguaje)
+## Uso (por tu LLM)
 
-### Captura simple
-
-```bash
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
-  --url https://your-app.local/ --som --a11y
-```
-
-### Bucle de ReAct (navegación en múltiples pasos)
+### Extracción semántica, sin imagen
 
 ```bash
-# Paso 1: navegar y observar.
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
-  --url https://your-app.local/ \
-  --sauver-session /tmp/diwall/session.json --som
-
-# Paso 2: Actuar según lo observado.
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
-  --reprendre-session /tmp/diwall/session.json \
-  --action '{"type":"cliquer_som","id":2}' \
-  --sauver-session /tmp/diwall/session.json --som
+/opt/dinoer/venv/bin/python3 /opt/dinoer/shot.py \
+  --url https://example.com --a11y --action '{"type":"extraire_texte"}'
 ```
 
-### Escenario RPA
+### Una campaña de investigación
 
 ```bash
-/opt/diwall/venv/bin/python3 /opt/diwall/rpa.py \
-  --scenario /opt/diwall/scenarios/my_scenario.json --som
+python3 /opt/dinoer/campagne.py --manifeste manifeste.json
 ```
 
-Referencia completa para los modelos: [`docs/GUIDE_LLM.md`](../GUIDE_LLM.md)
+Referencia LLM completa: [`docs/GUIDE_LLM.md`](../GUIDE_LLM.md)
 
 ---
 
 ## Credenciales
 
-Las credenciales se almacenan en archivos JSON, uno por dominio, **nunca en el código ni en los archivos de escenarios**:
+Las credenciales se almacenan en archivos JSON, uno por dominio, **nunca en
+el código ni en archivos de escenario**:
 
 ```
 ~/Vaults/Dinoer/
-├── my-app.local.json        → {"password": "...", "username": "admin"}
+├── my-source.example.json   → {"password": "...", "username": "admin"}
 └── other-service.com.json   → {"password": "...", "api_key": "..."}
 ```
 
-En un escenario o acción: `"valeur": "depuis_secrets", "secret_cle": "password"` — Dinoer lee la credencial en tiempo de ejecución desde el directorio de credenciales.
+En un escenario o acción: `"valeur": "depuis_secrets", "secret_cle":
+"password"` — Dinoer lee la credencial en tiempo de ejecución desde el
+directorio de credenciales.
 
-La ruta es configurable a través de `/opt/diwall/diwall.conf` o la variable de entorno `DIWALL_SECRETS_DIR`.
+La ruta es configurable vía `/opt/dinoer/dinoer.conf` o la variable de
+entorno `DINOER_SECRETS_DIR`.
 
-**Recomendación:** proteja `~/Vaults/Dinoer/` con `chmod 700` y encripte con `gocryptfs` (consulte `~/git/Dinoer/Dinoer/scripts/configurer-repertoire-chiffre.sh --gocryptfs`). El directorio cifrado está completamente soportado desde la versión v1.5.0; si se inicializa pero no se monta, Dinoer devuelve una estructura `SecretsFermesError` (código de salida 42) en lugar de fallar silenciosamente.
+**Recomendación:** protege `~/Vaults/Dinoer/` con `chmod 700` y cífralo con
+`gocryptfs` (consulta `scripts/configurer-repertoire-chiffre.sh
+--gocryptfs`). Si el directorio cifrado está inicializado pero no montado,
+Dinoer devuelve un `SecretsFermesError` estructurado (código de salida 42)
+en lugar de fallar silenciosamente.
 
 ---
 
 ## Seguridad
 
-### Almacenamiento de capturas
+### Modelos locales frente a modelos en la nube
 
-Por defecto, las capturas se almacenan en `/tmp/diwall/` con permisos `700` (solo el propietario).
-No cambie `--output-dir` a una ubicación compartida (`/tmp/`, `~/Desktop/`, etc.)—las capturas pueden contener datos de interfaz confidenciales.
-
-### Modelos locales versus modelos en la nube
-
-Cuando Dinoer se utiliza con un LLM basado en la nube (API de Claude, OpenAI, etc.), las capturas PNG se transmiten a servidores externos. Esto es responsabilidad del usuario. Para interfaces que contienen datos privados (credenciales, información del cliente, claves privadas), utilice únicamente modelos Ollama locales.
+La síntesis del informe se delega a OpenCode o a un modelo Ollama local. El
+texto de página recopilado puede transitar hacia el backend que configures —
+revisa `lib/modeles.py` antes de dirigir Dinoer hacia un proveedor en la
+nube sobre fuentes sensibles.
 
 ### Directorio de credenciales
 
-El directorio de credenciales, donde sea que hayas apuntado, por ejemplo, `secrets_dir` —como en `~/Vaults/Dinoer/`— contiene credenciales en texto plano JSON cuando está desmontado. Protéjelo:
+El directorio de credenciales — dondequiera que hayas apuntado `secrets_dir`,
+por ejemplo `~/Vaults/Dinoer/` — contiene credenciales en JSON de texto plano
+cuando no está montado. Protégelo:
 
 ```bash
 chmod 700 ~/Vaults/Dinoer/
 ```
 
-El soporte para sistemas de archivos cifrados (`gocryptfs`) ha sido compatible por completo desde la versión 1.5.0;
-consulte "Credenciales" arriba y `~/git/Dinoer/Dinoer/scripts/configurer-repertoire-chiffre.sh`.
+Consulta `~/git/Dinoer/Dinoer/SECURITY.md` para la política de divulgación
+de vulnerabilidades.
 
 ---
 
-## Documentación en otros idiomas (v1.23.0)
+## Documentación en otros idiomas
 
-El inglés es la versión de referencia y no se mueve. Las traducciones de los
-documentos dirigidos a personas (este README, `docs/GUIDE.md`,
-`docs/MANUEL.md`, `docs/CHEAT_SHEET.md` y la página de manual) viven en
-`docs/fr/`, `docs/de/` y `docs/es/` — un directorio por idioma, junto a los
-originales en inglés.
-
-Las guías del LLM (`docs/GUIDE_LLM.md` y sus tres avisos) están solo en inglés,
-deliberadamente. Están protegidas por el "guide-lock": una traducción cuya
-número de versión se resincroniza mecánicamente con contenido obsoleto permitiría
-que un agente supere la protección habiendo leído instrucciones obsoletas; este es exactamente
-el fallo que la protección existe para evitar. Un modelo lee inglés de forma nativa, por lo tanto,
-la ventaja es nula y el riesgo es real.
-
-Se crea un único archivo PDF de referencia por idioma a partir de estas fuentes, en un orden
-declarado una sola vez y compartido por todos los idiomas. Los archivos PDF se publican en el
-sitio web en lugar de almacenarse aquí; son artefactos generados, y un repositorio
-no es un canal de distribución para binarios:
-<https://diwall.davalan.fr/en/guides/downloads/>
-
-La propia cadena de traducción y de generación de PDF no está en este
-repositorio. Produce la documentación; no forma parte de Dinoer — necesita
-`pandoc`, un motor LaTeX y una instancia local de Ollama, ninguno de los cuales
-es una dependencia de Dinoer ni aparece en `requirements.txt`. El markdown
-traducido es el entregable; la máquina que lo produce es herramienta de
-mantenedor.
+Esta página es la traducción española, derivada de la fuente inglesa
+(`README.md`, raíz del repositorio), que prevalece en caso de divergencia.
+También disponible en [francés](../fr/README.md) y
+[alemán](../de/README.md). Las guías destinadas al LLM
+(`docs/GUIDE_LLM.md` y sus tres notas) solo existen en inglés y nunca se
+traducen (guide-lock, rutas fijas).
 
 ---
 
-## Para los modelos de lenguaje (LLM) que descubren Dinoer
+## Para LLMs que descubren Dinoer
 
-Si usted es un modelo de lenguaje que está leyendo este archivo README: consulte [`docs/GUIDE_LLM.md`](../GUIDE_LLM.md) para la referencia técnica completa: patrones de invocación, uso de SoM, integración de credenciales, reglas de navegación de SPA y especificaciones del modelo Ollama.
+Si eres un modelo de lenguaje leyendo este README: consulta
+[`docs/GUIDE_LLM.md`](../GUIDE_LLM.md) para la referencia técnica completa
+— patrones de invocación, integración de credenciales y el pipeline de
+investigación (`campagne.py`).
 
 ---
 
 ## Créditos
 
-Este proyecto fue desarrollado utilizando un **modelo de colaboración humano-LLM asimétrico**.
-Los roles están documentados formalmente para reflejar el trabajo real realizado.
+Este proyecto se desarrolló usando un **modelo de colaboración humano-LLM
+asimétrico**. Los roles se documentan formalmente para reflejar el trabajo
+realmente realizado.
 
-**Arquitecto y Árbitro:** Ronan Davalan
-Visión del producto, requisitos de seguridad, dirección del proyecto, validación y pruebas.
-Todas las decisiones arquitectónicas son validadas por él.
+**Arquitecto y árbitro:** Ronan Davalan
+Visión de producto, requisitos de seguridad, dirección del proyecto,
+validación y pruebas. Todas las decisiones arquitectónicas son validadas
+por él.
 
-**Ingeniero de Sistemas y Desarrollador Líder:** Claude Code (Anthropic)
-Implementación del patrón ReAct, scripts en Python/Bash, gestión compleja de estados,
-inyección de SoM, persistencia de sesiones. Autor principal del código fuente.
+**Ingeniero de sistemas y desarrollador principal:** Claude Code (Anthropic)
+Bifurcación del núcleo ReAct de Diwall, el pipeline de investigación
+(`campagne.py` y `lib/searxng.py`, `lib/fetch_leger.py`, `lib/extraction.py`,
+`lib/tables_reference.py`, `lib/cache_recherche.py`), retirada de la capa de
+percepción. Autor principal del código fuente.
 
-**Sintetizador y Asesor Estratégico:** Gemini (Google)
-Análisis arquitectónico independiente, resolución lógica de conflictos,
-optimización de flujos de trabajo, validación cruzada de decisiones técnicas.
-
-**Modelos de percepción (Ollama, local):**
-- `qwen3-vl:2b` (Alibaba) — localización por clic y comparación semántica, ~9–19 segundos (predeterminado desde la versión 1.3.1)
-- `qwen3-vl:8b` (Alibaba) — alternativa robusta, ~114 segundos
-
-**Operadores de mantenimiento (a través de OpenCode):**
-- Big Pickle: limpieza semántica exhaustiva de la documentación.
-- MiniMax: verificación y confirmaciones.
-- DeepSeek V4 Flash: ponerse al día con las confirmaciones omitidas.
-- Qwen3.6 Plus: pruebas de roles, incluyendo la documentación de una tarea real desde cero como un modelo sin información previa, lo que reveló dos lagunas en la documentación.
+**Sintetizador y asesor estratégico:** Gemini (Google)
+Análisis arquitectónico independiente, resolución de conflictos lógicos,
+optimización del flujo de trabajo, validación cruzada de decisiones técnicas.
 
 ---
 
 ## Licencia
 
-MIT — consultar el archivo `LICENSE`.
-
-*Desarrollado en Debian 13 Trixie · Wayland · AMD Ryzen 9 3950X · NVIDIA RTX 3060*
+MIT — consulta el archivo `LICENSE`.

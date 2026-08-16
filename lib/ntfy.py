@@ -53,14 +53,47 @@ def publier_attente(topic: str, url_page: str, url_ntfy: str = None) -> None:
     """
     import requests
     base = (url_ntfy or _ntfy_url()).rstrip("/")
+    # Publication via l'API JSON de ntfy (POST sur la racine, pas sur
+    # {base}/{topic}) plutôt que les en-têtes HTTP `Title`/`Priority`/`Tags` :
+    # un en-tête HTTP doit être latin-1 pur (http.client) — un titre contenant
+    # un caractère hors de cette plage (ex. « — ») levait UnicodeEncodeError
+    # avant tout envoi, jamais exercé en pratique jusqu'ici. Un essai
+    # d'encodage pourcentage du seul en-tête a évité le crash mais laissait le
+    # titre affiché tel quel côté client ntfy (jamais décodé automatiquement,
+    # vérifié en conditions réelles le 12/08/2026) — le corps JSON, en UTF-8
+    # natif, n'a pas cette contrainte et reste conforme à l'API publique ntfy.
     requests.post(
-        f"{base}/{topic}",
-        data=b"Code MFA attendu",
-        headers={
-            "Title": "Dinoer — Code 2FA requis",
-            "Priority": "high",
-            "Tags": "key",
+        base,
+        json={
+            "topic": topic,
+            "message": "Code MFA attendu",
+            "title": "Dinoer — Code 2FA requis",
+            "priority": 4,
+            "tags": ["key"],
         },
+        timeout=10,
+    )
+
+
+def notifier(topic: str, titre: str, message: str, url_ntfy: str = None) -> None:
+    """Envoi d'une notification push générique — distinct de `publier_attente()`
+    (MFA, message fixe, priorité haute) : un titre et un message arbitraires,
+    priorité par défaut, aucune boucle de réception associée (fire-and-forget).
+
+    Régression trouvée le 12/08/2026 : `campagne.py` importe cette fonction
+    depuis sa passe de synthèse (rapport de campagne prêt) mais elle avait
+    disparu de ce fichier, perdue pendant la reconstruction Diwall→Dinoer du
+    09/08/2026 — le mécanisme n'avait encore jamais été exercé (aucun topic
+    configuré dans les campagnes précédentes), donc jamais levé d'exception
+    visible malgré l'`ImportError` de fait.
+    """
+    import requests
+    base = (url_ntfy or _ntfy_url()).rstrip("/")
+    # API JSON de ntfy, même raison que `publier_attente()` ci-dessus (en-tête
+    # HTTP `Title` restreint à latin-1, titre/message potentiellement non-ASCII).
+    requests.post(
+        base,
+        json={"topic": topic, "message": message, "title": titre},
         timeout=10,
     )
 

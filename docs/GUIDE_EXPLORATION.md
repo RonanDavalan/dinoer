@@ -1,6 +1,8 @@
 # Dinoer — Exploration and mapping guide
 
-Version 1.2 — July 2026 (v1.17.1) — iframe and highly-dynamic-page considerations
+Version 1.3 — August 2026 (v1.23.0) — surface realigned to the Dinoer
+reconstruction: no screenshot, no Set-of-Mark; the map is drawn from
+`a11y_tree` and `evaluer`.
 
 **This document is for language models using Dinoer.**
 
@@ -27,44 +29,37 @@ The solution: **two distinct modes, two distinct objectives.**
 
 **Typical invocations:**
 
-Light exploration — check structure without PNG (fast, ~2 s saved):
+Read the page state and accessibility tree (read-only):
 ```bash
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
-  --url https://target.local/ \
-  --mode fast
+/opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
+  --url https://target.local/ --a11y
 ```
 
-Full exploration — annotated PNG + accessibility tree:
+Read the page state, then extract a precise DOM value:
 ```bash
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
-  --url https://target.local/ \
-  --som --a11y
+/opt/dinoer/venv/bin/python /opt/dinoer/shot.py \
+  --url https://target.local/ --actions /tmp/explore.json
 ```
-
-Web Components application (Angular, Lit, Stencil):
-```bash
-/opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
-  --url https://target.local/ \
-  --som --a11y --shadow-dom
-```
+where `/tmp/explore.json` holds read-only `evaluer` actions.
 
 **What to extract:**
 - `boussole.url_courante` + `boussole.titre_page` → confirmation of effective URL and page title
-- `capture_som` → annotated PNG with numeric IDs on interactive elements
-- `elements_som` → JSON list of elements (tag, role, text, id)
-- `a11y_tree` → YAML accessibility tree (fields, buttons, headings, structure)
+- `a11y_tree` → accessibility tree (fields, buttons, headings, structure)
+- `evaluations` → values pulled from the DOM via `evaluer`
+- `etat.pret_a_agir` + `etat.raisons` → frictions perceived before you act
 
 **What to look for:**
 1. Selectors for form fields (login, password, etc.)
-2. SoM IDs or stable attributes (`name`, `id`, `aria-label`, `data-*`)
+2. Stable attributes (`name`, `id`, `aria-label`, `data-*`) over generated ones
 3. Blocking elements (cookie banners, overlays, sticky headers)
 4. Navigation behaviour (SPA or full HTTP reload?)
-5. If the interface is an Angular/Lit SPA: presence of Shadow Roots (activate `--shadow-dom`)
-6. Presence of `<iframe>` elements (same or cross-origin) — note the frame's own CSS
-   selector for `cliquer_iframe`/`remplir_iframe` (v1.17.0). SoM does not number
-   iframe content.
-7. If the page mutates frequently (live counters, async content insertion) between
-   capture and action: plan on `--som-rafraichir` (v1.17.0) for the execution scenario.
+5. Presence of `<iframe>` elements (same or cross-origin) — note the frame's own CSS
+   selector for `cliquer_iframe`/`remplir_iframe` (v1.17.0). Frame content is not
+   reachable by selector from the top document — target it through the frame
+   primitives.
+6. If the page mutates frequently (live counters, async content insertion): plan
+   on order-stable selectors, or re-read the tree with a fresh `--a11y` call
+   right before the mutating action.
 
 **Expected output**: a JSON scenario file in `scenarios/` or
 `_CADRE/SPECIFICATIONS/PROCEDURES_LLM/instance/`.
@@ -82,27 +77,26 @@ After exploration, the procedure is locked into a scenario file.
   "url": "https://target.local/control/login/",
   "intention": "Administrator login with stored credentials",
   "actions": [
-    {"type": "remplir_som", "id": 1, "valeur": "depuis_secrets", "secret_cle": "username"},
-    {"type": "remplir_som", "id": 2, "valeur": "depuis_secrets", "secret_cle": "password"},
-    {"type": "cliquer_som", "id": 3},
-    {"type": "pause",        "ms": 2000},
-    {"type": "capturer",     "nom": "post-login"}
+    {"type": "remplir", "selecteur": "input[name=\"username\"]", "valeur": "depuis_secrets", "secret_cle": "username"},
+    {"type": "remplir", "selecteur": "input[name=\"password\"]", "valeur": "depuis_secrets", "secret_cle": "password"},
+    {"type": "cliquer", "selecteur": "button[type=submit]"},
+    {"type": "attendre_selecteur_present", "selecteur": ".user-logged-in"}
   ]
 }
 ```
 
-**Writing rules:**
+**Selector priority (all CSS-based — there is no element numbering):**
 
 | Priority | Selector | When to use |
 |---|---|---|
-| 1 | SoM ID | Element visible in the first capture |
-| 2 | `[name=…]`, `[aria-label=…]`, `[id=…]` | Stable attribute, survives reloads |
+| 1 | `[name=…]`, `[id=…]`, `[aria-label=…]`, `[data-*]` | Stable attribute, survives reloads |
+| 2 | `input[type=password]`, `button[type=submit]` | Typed, unambiguous, survives translations |
 | 3 | `:has-text("…")` | Last resort, fragile under translation |
 
 **What to avoid:**
-- Cross-session SoM IDs (not reusable between invocations — REX friction #27)
 - Positional selectors (`:first-child`, `:nth-child`) — fragile
 - Framework-generated random IDs
+- Writing a fresh CSS selector from memory instead of reading it from the tree
 
 ---
 
@@ -112,8 +106,8 @@ After exploration, the procedure is locked into a scenario file.
 
 **Invocation:**
 ```bash
-/opt/diwall/venv/bin/python3 /opt/diwall/rpa.py \
-  --scenario /opt/diwall/scenarios/pretix_login.json --som
+/opt/dinoer/venv/bin/python /opt/dinoer/rpa.py \
+  --scenario /opt/dinoer/scenarios/pretix_login.json
 ```
 
 **Zero fumbling.** The scenario was validated in exploration. If the scenario
@@ -127,19 +121,17 @@ do not improvise in-line.
 ### Cookie banner / blocking overlay
 
 In exploration, note the CSS class of the overlay. Add it to the scenario
-with `nettoyer_overlay` **before** any action and before SoM generation.
+with `nettoyer_overlay` **before** any action:
 
 ```json
 {"type": "nettoyer_overlay", "selecteur": ".cookie-consent-banner, #gdpr-overlay"}
 ```
 
-**Important:** `nettoyer_overlay` requires an explicit selector. Never
-activate in `watch.py` scenarios (would mask visual regressions).
+**Important:** `nettoyer_overlay` requires an explicit selector.
 
 ### Waiting in modern applications (SPAs)
 
-Replace arbitrary `pause` with semantic wait primitives
-*(available in v1.9)* :
+Replace arbitrary `pause` with semantic wait primitives:
 
 ```json
 {"type": "attendre_url",               "motif": "/dashboard"},
@@ -148,8 +140,10 @@ Replace arbitrary `pause` with semantic wait primitives
 {"type": "attendre_reseau_calme",      "timeout_ms": 10000}
 ```
 
-Until v1.9, `{"type": "pause", "ms": 2000}` after a submit remains the
-established workaround (REX friction #16).
+`attendre_url` matches a **substring** (FR-55 pitfall): always pair it with
+`attendre_selecteur_present` after a submit so a partial match on the login URL
+does not short-circuit your wait. After a form submission, wait on a selector
+that only exists post-login — never on the URL alone.
 
 ### Django application with sudo redirects
 
@@ -165,7 +159,7 @@ to the dashboard (REX friction #50). Pass the URL directly via `--url`.
 ## Semantic memory — Linking scenario and documentation
 
 **Separation of concerns:**
-Dinoer provides the **mechanics** (`/opt/diwall/skills/`, `journal.py --exporter-skill`).
+Dinoer provides the **mechanics** (`/opt/dinoer/skills/`, `journal.py --exporter-skill`).
 The **semantic memory** of validated scenarios belongs to the project using Dinoer,
 in its own `_CADRE/SPECIFICATIONS/PROCEDURES_LLM/`.
 
@@ -197,11 +191,9 @@ The reference template is `SKILL_TEMPLATE.md` in `_CADRE/SPECIFICATIONS/PROCEDUR
 
 Before writing a scenario:
 
-- [ ] `shot.py --mode fast` run on the target URL to verify URL and title (boussole)
-- [ ] `shot.py --som --a11y` run for the full visual map
-- [ ] If Angular / Lit / Web Components: re-run with `--shadow-dom` for elements inside Shadow Roots
+- [ ] `shot.py --a11y` run on the target URL to verify URL, title and structure (boussole)
+- [ ] `evaluer` probes run for the values the task actually needs (prices, counts, states)
 - [ ] If `<iframe>` elements are present: note their CSS selector for `cliquer_iframe`/`remplir_iframe`
-- [ ] Annotated PNG read and elements identified
 - [ ] Stable selectors noted (attributes `name`, `id`, `aria-label`)
 - [ ] Blocking overlays spotted and their CSS selectors noted
 - [ ] SPA or full-HTTP behaviour determined (`boussole.url_courante` vs `a11y_tree` heading)

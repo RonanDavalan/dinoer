@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/RonanDavalan/diwall/main/scenarios/schema.json",
+  "$schema": "https://raw.githubusercontent.com/RonanDavalan/dinoer/main/scenarios/schema.json",
   "nom": "interoperabilite_fixture_locale",
   "description": "Fixture de non-regression structurelle v1.18.0 : iframe imbrique (iframe_chemin), Shadow DOM ouvert, formulaire. Cible servie localement — voir scenarios/interoperabilite/README.md pour lancer le serveur.",
   "url": "http://localhost:8642/index.html",

@@ -17,7 +17,16 @@ escaladable).
 
 Dépendances optionnelles : requests, beautifulsoup4 (non requises pour
 l'import du module).
+
+Volet C (`TACHE_volet_c_ameliorations_recherche.md`, 12/08/2026) ajoute la
+lecture des PDF : `pdftotext` (paquet système `poppler-utils`), détecté à
+l'exécution (`shutil.which`), jamais une dépendance pip nouvelle — un PDF
+sans `pdftotext` disponible dégrade proprement en `refusee`, jamais une
+exception, avec un avertissement `stderr` une seule fois par processus.
 """
+import shutil
+import subprocess
+import sys
 from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
 
@@ -52,23 +61,91 @@ _LOCUTIONS_COQUILLE_JS = (
     "javascript doit être activé",
 )
 
+_TIMEOUT_PDFTOTEXT_S = 30
+_AVERTI_PDFTOTEXT_ABSENT = False
+
 
 def _robots_autorise(url: str, user_agent: str) -> bool | None:
     """True/False si robots.txt tranche, None si illisible (statut 'inconnu' —
     traité comme autorisé, cohérent avec `chemin_autorise_robots()` de
     Sentinelle : un robots.txt absent ou inaccessible n'est pas une interdiction).
+
+    Fetch via `requests` avec `user_agent` — jamais `RobotFileParser.read()`,
+    qui délègue en interne à `urllib.request` avec le user-agent par défaut
+    de Python (`Python-urllib/x.y`), distinct de celui réellement utilisé pour
+    la requête de contenu. Bug trouvé en reproduisant un cas réel
+    (`deconcarneauapontaven.com`, campagne du 12/08/2026) : ce site répond
+    403 au user-agent nu de `urllib` — ce qui fait basculer `RobotFileParser`
+    en `disallow_all=True` — tout en répondant 200 avec un contenu qui
+    n'interdit rien à un user-agent de navigateur déclaré.
     """
+    import requests
+
     parsed = urlparse(url)
     robots_url = f"{parsed.scheme}://{parsed.netloc}/robots.txt"
     parser = RobotFileParser(robots_url)
     try:
-        parser.read()
-    except Exception:
+        resp = requests.get(robots_url, headers={"User-Agent": user_agent}, timeout=10)
+    except requests.exceptions.RequestException:
+        return None
+    if resp.status_code in (401, 403):
+        parser.disallow_all = True
+    elif 200 <= resp.status_code < 300:
+        parser.parse(resp.text.splitlines())
+    else:
+        # robots.txt absent (404) ou erreur serveur : traité comme autorisé,
+        # même doctrine que `RobotFileParser.read()` sur un fichier introuvable.
         return None
     try:
         return parser.can_fetch(user_agent, url)
     except Exception:
         return None
+
+
+def _traiter_pdf(url: str, contenu: bytes) -> dict:
+    """Palier léger étendu aux PDF (volet C §1) : `pdftotext -` lit le flux
+    binaire depuis stdin, écrit le texte sur stdout — aucun fichier
+    temporaire. Ne tente ni titre ni détection WAF (hors périmètre d'un
+    flux binaire, `_detecter_waf` attend du HTML).
+
+    Un PDF sans texte extractible (scanné/image, aucune couche texte) ou
+    dont le texte extrait tombe sous `_SEUIL_TEXTE_INSUFFISANT` retourne
+    `refusee`/`pdf_illisible` — **jamais** `insuffisante_legere` : contrairement
+    à une coquille JavaScript, l'escalade au palier lourd (Playwright)
+    n'aide en rien ici, un navigateur ne lit pas mieux un PDF scanné qu'un
+    `pdftotext` sans couche OCR (décision tranchée dans la fiche, pas une
+    omission).
+    """
+    global _AVERTI_PDFTOTEXT_ABSENT
+
+    chemin_pdftotext = shutil.which("pdftotext")
+    if not chemin_pdftotext:
+        if not _AVERTI_PDFTOTEXT_ABSENT:
+            print(
+                "⚠ Dinoer : pdftotext introuvable — les sources PDF ne seront pas "
+                "lues (dégradation, aucune campagne interrompue). Installer : "
+                "apt install poppler-utils",
+                file=sys.stderr,
+            )
+            _AVERTI_PDFTOTEXT_ABSENT = True
+        return {"statut": "refusee", "url": url, "titre": None, "texte": None,
+                "raison": "pdf_sans_pdftotext"}
+
+    try:
+        resultat = subprocess.run(
+            [chemin_pdftotext, "-", "-"], input=contenu,
+            capture_output=True, timeout=_TIMEOUT_PDFTOTEXT_S,
+        )
+    except subprocess.TimeoutExpired:
+        return {"statut": "echec_transitoire", "url": url, "titre": None, "texte": None,
+                "raison": "timeout_pdftotext"}
+
+    texte = resultat.stdout.decode("utf-8", errors="ignore").strip()
+    if len(texte) < _SEUIL_TEXTE_INSUFFISANT:
+        return {"statut": "refusee", "url": url, "titre": None,
+                "texte": texte or None, "raison": "pdf_illisible"}
+
+    return {"statut": "visitee", "url": url, "titre": None, "texte": texte, "raison": None}
 
 
 def recuperer(
@@ -81,15 +158,22 @@ def recuperer(
     toujours le diagnostic (machine à états, DINOER_RESEARCH.md §5).
 
     Retourne `{"statut", "url", "titre", "texte", "raison"}` :
-      - `"visitee"`             : texte exploitable, `texte`/`titre` renseignés.
-      - `"refusee"`             : robots.txt interdit, ou refus HTTP (403/429/404),
-                                  ou WAF détecté même sur 200 (§6) — jamais à
-                                  escalader vers le palier lourd.
+      - `"visitee"`             : texte exploitable, `texte`/`titre` renseignés
+                                  (`titre` toujours `None` pour un PDF, volet C §1).
+      - `"refusee"`             : robots.txt interdit, refus HTTP (403/429/404),
+                                  WAF détecté même sur 200 (§6), ou PDF sans
+                                  `pdftotext` disponible (`raison:
+                                  "pdf_sans_pdftotext"`) ou sans texte extractible
+                                  (`raison: "pdf_illisible"`, volet C §1) — jamais
+                                  à escalader vers le palier lourd : un navigateur
+                                  ne lit pas mieux un PDF scanné que `pdftotext`.
       - `"insuffisante_legere"` : 200 OK mais corps quasi vide après nettoyage
-                                  (coquille SPA probable) — candidate légitime
-                                  à l'escalade vers le palier lourd.
-      - `"echec_transitoire"`   : timeout, coupure réseau — retentable, jamais
-                                  mémorisé comme définitif (§7.3).
+                                  (coquille SPA probable, HTML uniquement) —
+                                  candidate légitime à l'escalade vers le palier
+                                  lourd.
+      - `"echec_transitoire"`   : timeout (réseau ou `pdftotext`), coupure réseau
+                                  — retentable, jamais mémorisé comme définitif
+                                  (§7.3).
     """
     import requests
     from bs4 import BeautifulSoup
@@ -112,7 +196,11 @@ def recuperer(
         return {"statut": "refusee", "url": url, "titre": None, "texte": None,
                 "raison": f"http_{resp.status_code}"}
 
-    if "html" not in resp.headers.get("Content-Type", "").lower():
+    content_type = resp.headers.get("Content-Type", "").lower()
+    if "pdf" in content_type or url.lower().split("?")[0].endswith(".pdf"):
+        return _traiter_pdf(url, resp.content)
+
+    if "html" not in content_type:
         return {"statut": "refusee", "url": url, "titre": None, "texte": None,
                 "raison": "contenu_non_html"}
 

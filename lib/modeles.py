@@ -1,5 +1,10 @@
-"""Collecte des métadonnées modèles pour `dinoer_meta.modeles_utilises`, et
-raisonnement déporté via OpenCode (FONDATION_DINOER.md §3).
+"""Collecte des métadonnées modèles (format `modeles_utilises[]`, non relié à
+`dinoer_meta` — retiré de `shot.py` le 12/08/2026, plomberie orpheline de la
+purge vision du 09/08, `_CADRE/MEMOIRE/ADDENDUM_2026_08_12.md`), et
+raisonnement déporté via OpenCode (FONDATION_DINOER.md §3). Les trois
+collecteurs ci-dessous n'ont aujourd'hui aucun appelant dans le dépôt —
+conservés comme utilitaires purs, prêts pour un futur branchement côté
+`campagne.py` si la traçabilité du pipeline de recherche est spécifiée.
 
 - pour un modèle Ollama, interroge l'API HTTP locale `POST /api/show`
   pour récupérer `details.quantization_level` et le `digest`,

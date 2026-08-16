@@ -219,14 +219,17 @@ _AVERTISSEMENT_DERIVE = (
 _legacy_session_warned = False
 
 
-def _construire_dinoer_meta(profil, horodatage, modeles_appeles, url_finale):
+def _construire_dinoer_meta(profil, horodatage, url_finale):
     """Construit le bloc dinoer_meta v1.3 pour la sortie JSON.
 
-    Renvoie un dict prêt à injecter sous la clé `dinoer_meta` du
-    JSON de sortie. Si la traçabilité modèles est désactivée dans
-    le profil, la clé `modeles_utilises` est omise (§5.4 spec 33_).
+    Renvoie un dict prêt à injecter sous la clé `dinoer_meta` du JSON de
+    sortie. `shot.py` est un pur dispatcher de primitives Playwright — il
+    n'invoque lui-même aucun modèle depuis le retrait de la couche vision
+    (`FONDATION_DINOER.md` §4) ; la clé `modeles_utilises` a été retirée le
+    12/08/2026, plomberie orpheline de cette même purge (jamais peuplée,
+    `_CADRE/MEMOIRE/ADDENDUM_2026_08_12.md`).
     """
-    meta = {
+    return {
         "version_shot": __version__,
         "horodatage_iso": horodatage,
         "hostname_executant": socket.gethostname(),
@@ -234,23 +237,6 @@ def _construire_dinoer_meta(profil, horodatage, modeles_appeles, url_finale):
         "profil_actif": profil.descripteur(),
         "url_au_moment_capture": url_finale,
     }
-    if not profil.tracabilite_modeles_active:
-        return meta
-
-    from lib.modeles import collecter_modele_ollama, collecter_modele_claude
-    modeles_utilises = []
-    for entree in modeles_appeles:
-        tag = entree["_tag"]
-        role = entree["role"]
-        if entree["mode_llm"] == "local":
-            modeles_utilises.append(collecter_modele_ollama(
-                tag, role,
-                inclure_hash=profil.tracabilite_inclure_hash,
-            ))
-        else:
-            modeles_utilises.append(collecter_modele_claude(tag, role))
-    meta["modeles_utilises"] = modeles_utilises
-    return meta
 
 
 def _construire_etat(auth_status, respect, derive_session, erreurs_js,
@@ -731,7 +717,7 @@ def _rediger_valeurs_secrets(obj, valeurs):
 
 
 def executer_actions(page, actions, timeout,
-                     modeles_appeles=None, secrets_chemin=None,
+                     secrets_chemin=None,
                      min_action_delay_ms=0, max_pages_par_run=0, max_actions_par_run=0,
                      t_debut=None, no_evaluer=False, operation_id=None, progress=None,
                      valeurs_secrets_resolues=None):
@@ -748,8 +734,6 @@ def executer_actions(page, actions, timeout,
     evaluations = []
     extraction_texte = None
     latences_actions = []
-    if modeles_appeles is None:
-        modeles_appeles = []
     pages_visitees = 0
     actions_executees = 0
     plafond_atteint = None
@@ -1047,7 +1031,7 @@ def executer_actions(page, actions, timeout,
         respect["waf_bloquants"] = waf_bloquants
     if actions_executees > 0:
         respect["indice_agressivite"] = round(actions_ecriture / actions_executees, 3)
-    return (evaluations, modeles_appeles, respect,
+    return (evaluations, respect,
             latences_actions, dernier_code_http, repli_js_utilise, extraction_texte)
 
 
@@ -1147,7 +1131,6 @@ def main():
 
     from lib.profil_operateur import charger_profil
     profil = charger_profil()
-    modeles_appeles = []
 
     # ── Validation ────────────────────────────────────────────────────────────
     if not args.url and not args.reprendre_session:
@@ -1426,11 +1409,10 @@ def main():
             # (avant la fermeture implicite par la sortie du bloc `with`) —
             # dernière occasion de sauvegarder la session pour un checkpoint.
             try:
-                (evaluations, modeles_appeles, respect,
+                (evaluations, respect,
                  latences_actions, dernier_code_http_actions,
                  repli_js_utilise, extraction_texte) = executer_actions(
                     page, actions, args.timeout,
-                    modeles_appeles=modeles_appeles,
                     secrets_chemin=getattr(args, "secrets", None),
                     min_action_delay_ms=conf_nav["min_action_delay_ms"],
                     max_pages_par_run=conf_nav["max_pages_par_run"],
@@ -1516,7 +1498,7 @@ def main():
             "duree_ms": int((time.time() - t0) * 1000),
             "horodatage": horodatage,
             "dinoer_meta": _construire_dinoer_meta(
-                profil, horodatage, modeles_appeles, url_finale_sanitisee,
+                profil, horodatage, url_finale_sanitisee,
             ),
         }
         if dom_stats is not None:
@@ -1619,9 +1601,40 @@ def main():
         )
 
     except Exception as e:
+        # Répertoire chiffré non configuré : dinoer.conf absent ou sans secrets_dir,
+        # code de sortie 43 — CODE_SORTIE déclaré sur la classe depuis sa création
+        # mais jamais lu avant ce câblage (arbitrage Ronan, 13/08/2026).
+        from lib.repertoire_chiffre import SecretsFermesError, SecretsNonConfigureError
+        if isinstance(e, SecretsNonConfigureError):
+            url_cible_sanitisee = _filtrer_url(url_cible)
+            result = {
+                "succes": False,
+                "erreur": "secrets_non_configure",
+                "message": _filtrer_chaine(str(e)),
+                "code_sortie_recommande": SecretsNonConfigureError.CODE_SORTIE,
+                "http_status": http_status,
+                "duree_ms": int((time.time() - t0) * 1000),
+                "horodatage": horodatage,
+                "dinoer_meta": _construire_dinoer_meta(
+                    profil, horodatage, url_cible_sanitisee,
+                ),
+                "boussole": _boussole(operation_id),
+            }
+            if not _filtre_evaluer_actif:
+                result["boussole"]["filtre_evaluer_actif"] = False
+            result = _rediger_valeurs_secrets(result, valeurs_secrets_resolues)
+            if _CHAMPS_REDIGES[0]:
+                result["boussole"]["champs_rediges"] = _CHAMPS_REDIGES[0]
+            print(json.dumps(result, ensure_ascii=False))
+            _journaliser_run(result, actions, args.intention, url_cible, "echec",
+                             erreur=f"SecretsNonConfigureError: {result['message']}", operation_id=operation_id,
+                             source_scenario=args.source_scenario, chainage=chainage,
+                             secret_resolu=bool(valeurs_secrets_resolues),
+                             secrets_chemin=getattr(args, "secrets", None))
+            sys.exit(SecretsNonConfigureError.CODE_SORTIE)
+
         # Répertoire chiffré fermé : erreur distincte, pas de tentative Playwright (inutile),
         # code de sortie 42 par symétrie avec Phase 7bis.
-        from lib.repertoire_chiffre import SecretsFermesError
         if isinstance(e, SecretsFermesError):
             # LOT 1 (§1b) : cette branche reçoit url_cible (args.url d'origine),
             # pas url_finale — calculée localement, pas de variable de la
@@ -1637,7 +1650,7 @@ def main():
                 "duree_ms": int((time.time() - t0) * 1000),
                 "horodatage": horodatage,
                 "dinoer_meta": _construire_dinoer_meta(
-                    profil, horodatage, modeles_appeles, url_cible_sanitisee,
+                    profil, horodatage, url_cible_sanitisee,
                 ),
                 "boussole": _boussole(operation_id),
             }
@@ -1673,7 +1686,7 @@ def main():
             "duree_ms": int((time.time() - t0) * 1000),
             "horodatage": horodatage,
             "dinoer_meta": _construire_dinoer_meta(
-                profil, horodatage, modeles_appeles, url_finale_sanitisee,
+                profil, horodatage, url_finale_sanitisee,
             ),
         }
         # v1.17.0, item 2 — progression partielle pour les checkpoints rpa.py.

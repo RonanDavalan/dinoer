@@ -1,13 +1,18 @@
 # Security Policy
 
-Diwall handles credentials (via the encrypted secrets directory) and drives
-a real browser session on behalf of an LLM. A vulnerability here has a real
-cost for whoever runs it — this policy exists so it gets reported before it
-gets exploited.
+Dinoer handles credentials (via the encrypted secrets directory) and, on its
+heavy-tier escalation path, drives a real browser session. A vulnerability
+here has a real cost for whoever runs it — this policy exists so it gets
+reported before it gets exploited.
+
+**Not yet applicable in practice (11/08/2026) :** no public release of
+Dinoer exists yet — this policy is written ahead of the first release, per
+`SECURITE_DIVULGATION_RESPONSABLE.md` doctrine (declare before the first
+incident, not after).
 
 ## Supported versions
 
-Only the latest published release is supported. Diwall does not maintain
+Only the latest published release is supported. Dinoer does not maintain
 parallel maintenance branches; a fix lands in the next release, not as a
 backport to an older tag.
 
@@ -15,10 +20,10 @@ backport to an older tag.
 
 **Do not open a public GitHub issue.** A public issue discloses the
 vulnerability before a fix exists, exposing everyone currently running
-Diwall.
+Dinoer.
 
-Report privately via **GitHub Security Advisories**:
-<https://github.com/ronandavalan/diwall/security/advisories/new>
+Report privately via **GitHub Security Advisories** on the Dinoer
+repository once it is public. Until then, contact the maintainer directly.
 
 If that path is unavailable to you, open a regular issue asking for an
 alternate private contact — do not include vulnerability details in it.
@@ -34,8 +39,9 @@ alternate private contact — do not include vulnerability details in it.
 ## Scope
 
 This policy covers the code in this repository: `shot.py`, `rpa.py`,
-`watch.py`, `journal.py`, and everything under `lib/`. It does not cover:
+`campagne.py`, `journal.py`, and everything under `lib/`. It does not cover:
 
 - Unofficial forks or modified copies.
 - Versions predating the current release — see "Supported versions" above.
-- The `diwall.davalan.fr` website, which is a separate, unrelated codebase.
+- Diwall, the sibling project this repository was forked from — a separate
+  codebase with its own security policy.

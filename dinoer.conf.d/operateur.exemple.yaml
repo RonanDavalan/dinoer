@@ -28,13 +28,6 @@ auto_confirmer:
   - ecriture_journal_dinoer
   - invocation_ollama_locale
 
-# Enrichissement dinoer_meta — activé par défaut.
-# Désactivable si vous ne voulez pas que le bloc modeles_utilises
-# soit ajouté au JSON de sortie.
-tracabilite_modeles:
-  active: true
-  inclure_hash_ollama: true
-
 # Verrous inviolables (liste rouge §3.1) : NE PAS représenter ici.
 # Ils sont codés en dur dans lib/profil_operateur.py et ne peuvent
 # être désactivés par aucun profil. Documenter un champ non

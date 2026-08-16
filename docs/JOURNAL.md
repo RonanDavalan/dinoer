@@ -4,6 +4,277 @@ History of decisions and discoveries by session, in reverse chronological order.
 
 ---
 
+## 2026-08-13 — `sys.exit(43)` wired for `SecretsNonConfigureError`
+
+`SecretsNonConfigureError.CODE_SORTIE = 43` had been declared on the class
+since its creation but never read anywhere: the exception fell through to
+the generic `except Exception` handler in `shot.py` and exited `1`,
+indistinguishable from any other unhandled error (found during the docs
+resync of 2026-08-12, see previous entries). Ronan arbitrated in favor of
+wiring the code rather than rewriting the (already correct) documentation
+that describes it — the class already carried the intent, this was a
+missed wire-up, not a design question.
+
+A dedicated branch was added in `shot.py`, mirroring the existing
+`SecretsFermesError` (42) branch. Verified in real conditions (disposable
+venv, cached Chromium): a `remplir`/`depuis_secrets` scenario run with
+`DINOER_CONF` pointing at a nonexistent file now exits `43` with
+`code_sortie_recommande: 43` in the JSON result (previously `1`).
+Non-regression checked: a plain run with no secrets involved still exits
+`0`. Commit `a2e968b`.
+
+Documentation resynced the same session (go-ahead given right after):
+`CHEAT_SHEET.md`, `MANUEL.md`, `dinoer.1.md` (EN + FR + DE + ES, 12 files)
+had the stale "reserved but not wired, exits 1" caveat removed.
+`GUIDE_LLM.md` needed no change — its exit-code table never carried that
+caveat, so it was already accurate once the code caught up. Mechanical
+check: zero remaining occurrence of the caveat phrasing (and its DE/ES/FR
+equivalents) across all 12 files. Commit `8aff8a2`.
+
+---
+
+## 2026-08-12 (night, late) — robots.txt fetch bug, ntfy notifier restored, i18n cache reconciled
+
+Three unrelated fixes triggered by one investigation: why the territorial
+campaign (previous entries) never found `deconcarneauapontaven.com`, an
+official tourism-office source later surfaced by a Perplexity comparison.
+
+- **`lib/fetch_leger.py::_robots_autorise()`** — root cause found by
+  reproducing the real case: SearXNG *did* rank the domain first; the
+  domain was dropped later, at the `robots.txt` check. `RobotFileParser.read()`
+  delegates its own fetch to `urllib.request` with Python's bare default
+  user-agent, distinct from the one actually used for the content request.
+  This particular site returns 403 to that bare user-agent, which makes
+  `RobotFileParser` fall back to `disallow_all=True` — even though the real
+  `robots.txt` (verified with `curl`, both with and without a declared
+  user-agent) forbids nothing relevant. Fixed by fetching `robots.txt` with
+  `requests` and the same declared user-agent. Verified: `can_fetch()` now
+  `True` for the real URL, `recuperer()` now returns `visitee` with 4871
+  characters of real content (was `refusee`/`robots_interdit`). Non-regression
+  checked against a real `Disallow: /wp-admin/` rule (still `False`) and a
+  domain with no reachable `robots.txt` (still `None`/allowed). Commit `50b69b0`.
+- **`lib/ntfy.py::notifier()`** — found missing while wiring an operator
+  notification channel: `campagne.py`'s end-of-run notification imports
+  `notifier` from this module, but the function had been dropped from the
+  file during the Diwall→Dinoer reconstruction (09/08) — silent, since no
+  campaign had a topic configured yet to actually exercise the path. Restored,
+  plus two bugs found testing it against a real `ntfy.ada.local` instance:
+  a non-ASCII title (em dash) raised `UnicodeEncodeError` in the `Title`
+  HTTP header (`http.client` requires latin-1), and the mitigation first
+  tried (percent-encoding the header) avoided the crash but was never
+  decoded client-side, verified in a real round trip. Both `notifier()` and
+  `publier_attente()` (MFA) now use ntfy's JSON publish endpoint instead of
+  HTTP headers, which carries UTF-8 natively. Commit `271387b`.
+- **`i18n-empreintes/` reconciled** — turned out to be the *Diwall* segment
+  cache, copied wholesale (`grep -rl "Dinoer" i18n-empreintes/` → 0 files;
+  `grep -rl "Diwall"` → 18), never Dinoer's own state going stale as
+  previously assumed. Set aside as a reversible backup
+  (`i18n-empreintes.diwall-backup-2026-08-12/`) rather than merged — no reuse
+  value against Dinoer's substantially rewritten English sources, and its
+  132-entry `arbitrages.json` outranks everything including `--forcer`,
+  a real (if low-probability) cross-product contamination risk. Segment
+  alignment verified 1:1 (count and type) across all 15 document×language
+  pairs before writing anything; two apparent code-block mismatches checked
+  by hand and confirmed to be harmless comment line-wrap differences, not
+  structural drift. Rebuilt from the already-existing Lot C translations
+  (`docs/{fr,de,es}/*.md`), 1398 entries. Mechanical proof, not just
+  intent: `traduire.py --langue {fr,de,es}` replayed end-to-end afterwards
+  — 0 translated, 0 rejected, 100% reused, no Ollama call needed. Side
+  effect caught by exhaustive diff (not assumed harmless): `recomposer()`'s
+  blank-line normalization touched `GUIDE.md`/`MANUEL.md` in all three
+  languages (never run through this pipeline before) — verified to be pure
+  whitespace, zero content change, before committing (`7d9bd6d`).
+  `i18n-outillage/manifeste.json` also needed one line fixed
+  (`docs/diwall.1.md` → `docs/dinoer.1.md`, orphaned since the 09/08
+  manpage rename postdated the 02/08 rsync copy from Diwall) — outside git
+  (factory-floor tooling), no commit.
+
+**Territorial campaign report updated** (`campagnes_dev/.../rapport_final_cible.md`,
+outside git per `DINOER_RESEARCH.md` §4.2): 2 pages added from the now-reachable
+domain (47 → 49), one wholly new multi-day event (Les Concerts de
+Saint-Mathieu), one real gap filled (Festival Consonances' second day,
+Pont-Aven, previously missing despite being inside the window), one date
+correction cross-checked against the official PDF (Filets Bleus parade
+17:30, not 17:00). OpenCode extraction timed out repeatedly on the full
+PDF text (53k characters) even on a reduced window — content was
+transcribed directly from the already-verified `pdftotext` output instead
+of forcing another model call.
+
+---
+
+## 2026-08-12 (night) — Volet C: PDF support, event fusion, temporal pre-filter
+
+Follow-up to the territorial pipeline run (previous entry): operator review
+found a real blind spot (PDF sources silently dropped, `pdftotext` never
+considered) plus an external analysis (Gemini) proposing two more levers.
+Both external levers were checked against the real campaign data before
+being spec'd — see `_CADRE/SPECIFICATIONS/PROCEDURES_LLM/TACHE_volet_c_ameliorations_recherche.md`
+for the full write-up. Two real design mistakes were caught by testing
+against real data before commit, not assumed correct from the spec:
+
+- **`mentionne_fenetre_probable()`** (`lib/extraction.py`) — first version
+  required both a year motif and a month motif to be present anywhere in
+  the text (never adjacent, to survive the `Le\n12\naoût\n2026` multi-line
+  case already known from the territorial run). Testing it against all 43
+  real corpus entries found a real false negative anyway:
+  `mairie-benodet.fr/agenda-des-evenements/` is a calendar widget that
+  never spells out "août" and never writes "2026" anywhere on the page —
+  dates are rendered as bare `15/08`, `16/08`, etc. Fixed twice: the year
+  requirement now only rejects a page that explicitly names a *different*
+  year (bare absence of any year is not rejected), and the month motif
+  list must include numeric forms (`/08`, not just `août`/`aout`) since
+  spelled-out month names are not universal on real sites. Re-verified:
+  0 false negatives on the 43-entry corpus, 20 sources correctly flagged
+  for skipping.
+- **PDF via `pdftotext`** (`lib/fetch_leger.py`) — optional system
+  dependency (`poppler-utils`), detected at runtime (`shutil.which`),
+  degrades to `refusee`/`pdf_sans_pdftotext` with a one-time stderr warning
+  if absent, never an exception. `subprocess.run(["pdftotext", "-", "-"])`
+  reads/writes via stdin/stdout, no temp file. A PDF with no extractable
+  text (scanned/image) or below the usual length threshold is `refusee`/
+  `pdf_illisible` — deliberately never `insuffisante_legere`: Playwright
+  escalation cannot help a missing text layer. Verified against 2 real
+  PDFs from the territorial campaign (61k and 49k characters extracted,
+  content matches the source documents) and against the graceful-degradation
+  path (`shutil.which` monkeypatched to simulate a missing binary).
+- **`fusionner_evenements()`** (`lib/extraction.py`, new) — single
+  `invoquer_opencode()` call clusters a list of positive `extraire_cible()`
+  results that describe the same real event across different pages, always
+  preserving every source URL per merged event (never dropping a citation).
+  The originally proposed mechanism (hash the raw page text before the
+  extraction call) was rejected before implementation: verified against the
+  real corpus that the three actual duplicate groups (Locmaria concert
+  found on 3 different Saint-Yvi pages, Festival des Filets Bleus on 2 jds.fr
+  pages, a Bénodet concert on 2 mairie pages) never share identical raw
+  text — a pre-extraction hash would have caught none of them. Verified
+  end-to-end: replayed on the 15 real positive extractions, reproduces
+  exactly the 11 distinct events found manually, without incorrectly
+  merging the two genuinely different Pont-l'Abbé events found on
+  different pages of the same site.
+
+Bounded backfill applied to the 12/08 campaign itself (not a new SearXNG
+query — same already-collected corpus): 4 of the 5 previously-lost PDF
+sources re-fetched through the real (fixed) `lib/fetch_leger.py`, real
+text extracted (61415/77603/49304/49225 characters), all 4 genuinely
+negative for the 11-20 August window (the Festival de Cornouaille itself
+runs 23-26 July; the Quimper Cornouaille PDF is an unrelated 2022
+relocation guide) — not a further loss, a confirmed absence. One PDF
+(Bénodet council convocation) has no extractable text layer at all
+(`pdf_illisible`, likely scanned). Report's "Sources non résolues" section
+also fixed to use clickable Markdown links throughout, not just in the
+events section — a real inconsistency found while reviewing the operator's
+feedback.
+
+**Comment tester / comment lancer :**
+```bash
+python3 -m py_compile lib/extraction.py lib/fetch_leger.py
+python3 -c "
+import sys; sys.path.insert(0,'.')
+from lib.fetch_leger import recuperer
+r = recuperer('https://www.elliant.bzh/wp-content/uploads/2025/04/MAIR054-2025020139-BM-avril-2-2.pdf')
+print(r['statut'], len(r['texte'] or ''))"   # -> visitee, ~61000+
+```
+Full campaign artifacts (updated corpus, report) outside git by design:
+`~/git/Dinoer/campagnes_dev/spectacles-sud-finistere-2026-08-11-20/`.
+
+---
+
+## 2026-08-12 (evening) — First real run of the territorial research scenario; anti-ban gap found and fixed in `campagne.py`
+
+First PHASE_EXECUTION + PHASE_VALIDATION run of `PIPELINE_RECHERCHE_TERRITORIALE.md`
+(concerts/spectacles within 30 km of Concarneau, 11-20 August 2026 window),
+green-lit by the operator. No new primitives — pure orchestration of
+`lib/searxng.py`, `lib/fetch_leger.py`, `lib/selection_candidats.py`,
+`lib/tables_reference.py`, `campagne.py`, `lib/extraction.py`, all already
+delivered (volet B, 09/08/2026).
+
+Real, verified 30 km commune list (haversine on `geo.api.gouv.fr`
+coordinates, departments 29+56, not an estimate): 57 communes. 16 discovery
+queries (SearXNG + `selectionner_meilleur()`) qualified 13 reference
+domains for theme `spectacles_sud_finistere`. `campagne.py` collected 43
+pages across those domains; per-source targeted extraction (`extraire_cible()`
+called once per collected page, isolated in a single-line corpus each —
+the existing contract is single-result, the scenario needs per-source
+granularity) found 15 positive hits, deduplicated to 11 distinct events
+across 9 communes.
+
+**Real bug found and fixed during this run:** the anti-ban delay in
+`campagne.py` (`delai_min_secondes`/`delai_max_secondes`) only applied
+between two *retained* page fetches, never between two `lib/searxng.py::rechercher()`
+calls themselves. A cible with zero eligible results skipped the delay
+entirely, so a short burst of "empty" discovery/collection queries fired
+back-to-back — this is exactly what happened here (16 discovery + 13
+initial collection queries in a short window) and got Brave/DuckDuckGo/
+Startpage/Wikipedia (the engines behind `searxng.ada.local`) to suspend
+this instance for rate-limiting. Root-caused, waited out the suspension,
+confirmed the fix empirically (an 18 s spacing between distinct SearXNG
+calls resolved it on a manual retry), then applied the same `time.sleep()`
+call at all three `rechercher()` call sites in `campagne.py` (`"produit"`,
+`"table_reference"`, `"query"` cible types). Commit `50047b5`.
+
+**Comment tester / comment lancer :**
+```bash
+python3 -m py_compile campagne.py && python3 -c "import campagne"
+git -C ~/git/Dinoer/Dinoer show 50047b5 --stat
+```
+Full execution artifacts (corpus, per-source extraction results, final
+report) are outside git by design (`DINOER_RESEARCH.md` §4.2 — campaign
+artifacts are never versioned): `~/git/Dinoer/campagnes_dev/spectacles-sud-finistere-2026-08-11-20/`.
+Detailed method, real query lists and full results in
+`_CADRE/MEMOIRE/ADDENDUM_2026_08_12.md`.
+
+---
+
+## 2026-08-12 — Notice-version resync, dead `29_PHASE9`/`watch.py`/`vision.py` references removed
+
+Cleanup pass on debt inherited from the 08-11/08-12 documentation rewrite,
+executed in two governance-declared phases (PHASE_DOCUMENTATION then
+PHASE_EXECUTION), with mechanical checks after each edit.
+
+`notice-version` in the three LLM notices (`GUIDE_LLM_INTERACTIONS.md`,
+`GUIDE_LLM_SESSIONS.md`, `GUIDE_LLM_MONITORING.md`) bumped `1.2` → `1.3`,
+matching `GUIDE_LLM.md` since the 08-12 rewrite pass. Verified: `grep -rn
+"notice-version" docs/GUIDE_LLM*.md` — all four files aligned.
+
+`scripts/deploy.sh` still listed `watch.py` and `lib/vision.py` in
+`CODE_FILES` and the closing `chmod`, plus a stale comment — both files were
+removed from the repo when the vision/SoM layer was purged (09/08,
+`FONDATION_DINOER.md` §4). The existence guards (`[ ! -f "$src" ]`,
+`2>/dev/null || true`) meant the script never actually failed on this —
+unlike the `install.sh` smoke test fixed on 08-12 — but the references were
+misleading. Removed; `bash -n scripts/deploy.sh` confirms syntax is intact.
+
+Reconnaissance for `dinoer_meta.modeles_utilises` (flagged dead in the
+08-12 ADDENDUM) found the field has no legitimate call site left in
+`shot.py` at all — the only real model invocations
+(`lib/modeles.py::invoquer_opencode`) happen in `campagne.py`'s deep-research
+pipeline, which builds no `dinoer_meta` and never calls
+`collecter_modele_opencode()`. Resolved as the same 09/08 vision-purge debt,
+not a design fork: removed `modeles_appeles`/`tracabilite_modeles_active`
+from `shot.py::_construire_dinoer_meta()` and its four threading sites,
+`tracabilite_modeles_active`/`tracabilite_inclure_hash` from
+`lib/profil_operateur.py::ProfilOperateur` (never read once the guard was
+gone), the now-permanently-dead `modeles_utilises` branch in
+`lib/journal.py::enregistrer_operation()`, and the stale
+`tracabilite_modeles:` block in `dinoer.conf.d/operateur.exemple.yaml`.
+`lib/modeles.py`'s three collectors (`collecter_modele_ollama/claude/opencode`)
+are kept as unused pure utilities — a future `campagne.py` tracing branch
+stays possible, but is a new feature, not this fix. Validated with a real
+run (disposable venv, cached Chromium, `--guide-version 1.3`,
+`https://example.com`): `succes: true`, `dinoer_meta` produced without
+`modeles_utilises`, no regression.
+
+**Comment tester / comment lancer :**
+```bash
+grep -rn "notice-version" ~/git/Dinoer/Dinoer/docs/GUIDE_LLM*.md
+grep -c "watch\.py\|vision\.py" ~/git/Dinoer/Dinoer/scripts/deploy.sh   # → 0
+bash -n ~/git/Dinoer/Dinoer/scripts/deploy.sh                          # → syntax OK
+grep -rn "modeles_appeles\|tracabilite_modeles" ~/git/Dinoer/Dinoer/*.py ~/git/Dinoer/Dinoer/lib/*.py   # → aucune occurrence
+python3 -m py_compile shot.py lib/profil_operateur.py lib/journal.py lib/modeles.py
+```
+
+---
+
 ## 2026-08-11 — `extraire_texte` primitive implemented, closing the heavy-tier gap
 
 The missing primitive identified in `FONDATION_DINOER.md` §6 and flagged
