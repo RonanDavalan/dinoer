@@ -19,10 +19,21 @@ jobs:
           pip install -r requirements.txt
           playwright install --with-deps chromium
 
+      - name: Install dev dependencies (test suite only)
+        run: pip install -r requirements-dev.txt
+
       - name: Compile check — every Python file must parse
         run: |
           find . -name '*.py' -not -path './.git/*' -print0 \
             | xargs -0 python3 -m py_compile
+
+      - name: Run test suite
+        # test_extraction_fusion.py is a ground-truth test against a real
+        # campaign corpus that lives in the buffer directory
+        # (~/git/Dinoer/campagnes_dev/), never committed to this public
+        # repo — it skips itself cleanly when that local data is absent,
+        # as it always is on a fresh CI checkout.
+        run: pytest tests/ -v
 
       - name: Validate scenario JSON files against schema.json
         run: |

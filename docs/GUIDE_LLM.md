@@ -1,6 +1,22 @@
 # Dinoer — LLM Guide (index)
 
-<!-- notice-version: 1.3 -->
+<!-- notice-version: 1.6 -->
+Version 1.6 — August 2026. Counts revisions, not Dinoer releases. Changed:
+documented `opencode.jsonc` (project-local permission override) — without
+it, the reasoning backend can silently leave the collected corpus and
+research live via its own `websearch`/`webfetch` tools, verified in a real
+campaign run.
+
+Version 1.5 — August 2026. Counts revisions, not Dinoer releases. Changed:
+documented the two optional manifest fields that reorder the automatic
+synthesis context (`motifs_annee`/`motifs_mois` temporal pre-filter,
+`sujet_synthese` semantic ranking) in the Research pipeline section.
+
+Version 1.4 — August 2026. Counts revisions, not Dinoer releases. Changed:
+added the extraction/fusion recipe (open question over narrow trove/valeur/url,
+`fusionner_evenements()` for multi-page duplicates, why an open question
+beats a strict fact lookup) to the Research pipeline section.
+
 Version 1.3 — August 2026. Counts revisions, not Dinoer releases. Changed:
 full rewrite for the public repo (Dinoer-native surface only): SoM/PNG/watch.py
 removed, real action table (18 verbs), real boussole keys (`respect`), real
@@ -266,6 +282,33 @@ never wired automatically into a scenario.
 
 ---
 
+## Containing the reasoning backend — `opencode.jsonc`
+
+`invoquer_opencode()` (`lib/modeles.py`) runs OpenCode with whatever
+permissions its **global** config grants (`~/.config/opencode/opencode.jsonc`)
+— on a machine where that config has `websearch`/`webfetch` set to `allow`
+(common default for general OpenCode use), the model can silently leave the
+corpus `construire_contexte()` built for it and research live on its own,
+via a built-in `websearch` tool distinct from `bash`. Verified 14/08/2026:
+on a real campaign, the model did exactly this — 12 `websearch` calls,
+sourcing content never present in `collecte.jsonl`, discovered only by
+capturing the full JSON event stream (not just the final text) and
+inspecting `tool_use` events. The final answer was rich and largely
+accurate, but no longer reproducible from the corpus alone.
+
+Fix: this repository's own `opencode.jsonc` (project-local, overrides the
+global one for any `opencode run` invoked from this directory) sets
+`"websearch": "deny"`, `"webfetch": "deny"`, `"bash": "allow"` — verified to
+correctly refuse both tools (the model reports it has no such tool rather
+than blocking). **Known residual gap, not fully closed**: `bash` stays
+`allow` (required for scenarios that ask the model to `curl` a notification,
+e.g. ntfy) — a model can still reach the live web through it (verified: a
+model denied `websearch` immediately used `bash curl` against a public
+weather API instead). Not a structural guarantee, a reduced surface — state
+this precisely to an operator, never claim the corpus is fully sealed.
+
+---
+
 ## Research pipeline — `campagne.py`
 
 Campaign research (`campagne.py`): a manifest (`--manifeste file.json`,
@@ -279,3 +322,54 @@ only when a page needs hands. Uses `lib/searxng.py` (search), `lib/cache_recherc
 `campagne.py --extraire-cible "<demande>" --id-campagne <id>`. Full detail:
 `campagne.py --help` (the module docstring documents the manifest, target
 types and artefacts).
+
+## Extraction recipe — open question beats narrow trove/valeur/url
+
+`--extraire-cible "<demande>"` accepts any natural-language request — it is
+not limited to a single fact lookup. On the reference campaign
+(`spectacles-sud-finistere-2026-08-11-20`), a narrow question (trouve/valeur/url
+for one specific fact) surfaced fewer, thinner results than an open question
+that let the delegated model judge for itself whether it was reading a
+one-off fact or a multi-day event (17/47 positive extractions, richer
+content, vs. a narrower baseline — see
+`_CADRE/SPECIFICATIONS/CARACTERISATION_DINOER.md` §7 for the full
+comparison). Prefer an open, descriptive `<demande>` over a strict
+fact-lookup phrasing when the source might describe a structured event
+rather than a single fact.
+
+For multiple positive extractions describing the same real event across
+different pages, `lib/extraction.py::fusionner_evenements()` groups them —
+call it on the filtered positive results before writing a final report,
+rather than consolidating by hand. A single source can legitimately describe
+several distinct events (an agenda page listing a concert, a workshop, a
+guided tour on different dates) — the same source index is then cited in
+each matching group, never treated as an error. Free-form reasoning before
+the model's final JSON answer measurably improves grouping quality on this
+task; forcing an immediate JSON-only answer produced short, under-reasoned
+output on a real corpus (verified 13/08/2026).
+
+## Synthesis relevance — two optional manifest fields, both reorder-only
+
+The automatic report (`construire_contexte()`/`rediger_rapport()`, no
+`--extraire-cible` involved) concatenates the collected corpus in file-write
+order, truncated at 60000 chars — with no relevance ranking by default, the
+most useful pages can fall outside that budget on a large corpus. Two
+independent, optional manifest fields fix this, both reorder pages before
+truncation, never exclude them outright:
+
+- `"motifs_annee": ["2026"]`, `"motifs_mois": ["août", "aout", "/08", "-08-"]`
+  — coarse pass, zero model call: pages that clearly don't mention the
+  requested window are pushed to the end (include numeric date forms, not
+  just the month name — some agenda widgets never spell it out).
+- `"sujet_synthese": "<a sentence describing what the report is about>"` —
+  fine pass, one grouped Ollama embedding call (`lib/vector.py::embed()`,
+  a few seconds, nothing persisted to disk): pages are ranked by cosine
+  similarity to this sentence. **Needed in addition to the coarse pass, not
+  instead of it** — on the reference campaign, the coarse pass alone let a
+  real event PDF pass as "probable" but still leave it ranked 27th of 29
+  probable pages (still truncated out); the semantic pass alone correctly
+  ranked it inside the budget. Measured, not assumed — see session 3 of
+  `_CADRE/SPECIFICATIONS/PROCEDURES_LLM/TACHE_fiabilisation_synthese_campagne.md`.
+
+Both default to absent — an existing manifest with neither field keeps the
+exact pre-13/08/2026 behaviour.

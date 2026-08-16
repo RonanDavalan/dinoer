@@ -8,10 +8,19 @@ DEST="/opt/dinoer"
 GROUPE="dinoer"
 
 # Fichiers de code à déployer (relatifs à REPO)
+# Liste vérifiée contre lib/*.py sur disque le 14/08/2026 (test à froid sur
+# une machine de test du parc) : campagne.py et neuf modules lib/ (le pipeline de recherche profonde
+# complet, livré 09-13/08/2026, plus lib/sanitisation.py) manquaient — une
+# installation vierge par ce canal plantait au premier `import` de shot.py
+# (ModuleNotFoundError: lib.sanitisation) et campagne.py, documenté comme
+# fonctionnalité produit dans le README, n'était même pas présent dans
+# /opt/dinoer/. Même classe de bug que celle déjà corrigée le 07/08/2026 sur
+# le canal .deb (debian/dinoer.install) — jamais reportée ici.
 CODE_FILES=(
     shot.py
     rpa.py
     journal.py
+    campagne.py
     lib/__init__.py
     lib/journal.py
     lib/modeles.py
@@ -21,6 +30,15 @@ CODE_FILES=(
     lib/vector.py
     lib/preflight_guide.py
     lib/securite_url.py
+    lib/sanitisation.py
+    lib/searxng.py
+    lib/fetch_leger.py
+    lib/synthese.py
+    lib/extraction.py
+    lib/selection_candidats.py
+    lib/tables_reference.py
+    lib/cache_recherche.py
+    lib/validation_scenario.py
 )
 
 # Répertoires de code — mode 755 (lisibles par tous)

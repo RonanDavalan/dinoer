@@ -47,3 +47,6 @@ playwright-stealth==2.0.3
 # Not required for the default Ollama-only deployment, not installed in the
 # reference venv — floor, not a tested exact pin like the rest of this file.
 # anthropic>=0.40
+
+# Test suite dependencies (pytest, etc.) live in requirements-dev.txt — never
+# installed in /opt/dinoer/venv. See tests/ for usage.

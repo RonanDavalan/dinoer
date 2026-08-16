@@ -84,6 +84,31 @@ resolución de credenciales) — nada de su capa de percepción.
 
 ---
 
+## Calidad del informe: borrador automático vs. investigación supervisada
+
+El informe de fin de ejecución de `campagne.py` (`lib/synthese.py::rediger_rapport()`)
+es un **borrador de trabajo**, no el resultado final: concatena el corpus
+recopilado en el orden del archivo, truncado a 4000 caracteres/página y 60 000
+en total — sin priorización por relevancia. En un corpus grande y ruidoso, eso
+deja pasar páginas genéricas o fuera de tema antes que las fuentes reales, y
+puede descartar silenciosamente las páginas más relevantes tras el umbral de
+truncado.
+
+El informe que ha demostrado superar a una herramienta de búsqueda generalista
+(Perplexity) en una tarea de investigación real **no** se produjo con una sola
+ejecución de `campagne.py`. Vino de un operador que repitió `campagne.py
+--extraire-cible` — decenas de llamadas de extracción individuales y abiertas
+contra el mismo corpus recopilado, cada una dejando que el modelo delegado
+juzgara por sí mismo si leía un hecho puntual o un evento de varios días —
+seguidas de una consolidación manual de los resultados. Véase
+[`docs/GUIDE_LLM.md`](../GUIDE_LLM.md) para el patrón de extracción exacto.
+
+Para un resumen rápido y no crítico, el informe automático basta como punto de
+partida. Para un informe fiable sin supervisión, use en su lugar el patrón de
+extracción dirigida en bucle.
+
+---
+
 ## Requisitos
 
 | Componente | Versión / Notas |

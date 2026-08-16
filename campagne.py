@@ -37,10 +37,26 @@ Format du manifeste (JSON) :
     "delai_min_secondes": 4.5,
     "delai_max_secondes": 8.5,
     "revisite_apres_jours": 30,
-    "max_candidats_produit": 5
+    "max_candidats_produit": 5,
+    "motifs_annee": ["2026"],
+    "motifs_mois": ["août", "aout", "/08", "-08-"],
+    "sujet_synthese": "spectacles, concerts, festivals et animations culturelles en aout 2026 dans le Sud Finistere"
   }
 Seuls "id_campagne" et "cibles" sont requis ; les autres champs reprennent
 les défauts documentés dans DINOER_RESEARCH.md §7-9 s'ils sont absents.
+
+"motifs_annee"/"motifs_mois"/"sujet_synthese" (optionnels, session 3 de
+TACHE_fiabilisation_synthese_campagne.md, 13/08/2026) : deux passages de
+repositionnement des pages dans le contexte de synthèse
+(`lib.synthese.construire_contexte()`), avant troncature, tous deux absents
+par défaut (aucun effet sur la synthèse si non fournis) :
+  - "motifs_annee"/"motifs_mois" — passage grossier, textuel pur, relègue en
+    fin de liste les pages qui ne mentionnent manifestement pas la fenêtre
+    temporelle demandée (`lib.extraction.mentionne_fenetre_probable()`).
+  - "sujet_synthese" — passage fin, classement par similarité cosinus
+    (`lib.vector.embed()`, Ollama local) à l'intérieur du groupe retenu par
+    le passage précédent. Mesuré nécessaire en complément du seul pré-filtre
+    textuel (insuffisant seul sur le corpus de référence de la fiche).
 
 Cible de type "produit" (volet B, fonctionnalité 2 — `lib/selection_candidats.py`,
 TACHE_volet_b_recherche_avancee.md §2) : au lieu de retenir tous les résultats
@@ -632,18 +648,38 @@ def main() -> None:
         f"palier lourd. Corpus : {chemin_corpus}"
     )
 
-    # Synthèse finale — context stuffing (DINOER_RESEARCH.md §11, version
-    # simplifiée actée par l'opérateur le 28/07/2026 : pas de retrieval vectoriel
-    # dans ce lot). Isolée dans un bloc best-effort large et volontaire : le
-    # corpus déjà écrit sur disque ci-dessus reste la valeur produite par la
-    # campagne, un échec de synthèse (OpenCode indisponible, contexte vide)
-    # ne doit jamais l'invalider ni faire échouer la commande — même
-    # discipline que `lib/journal.py::enregistrer_operation()`.
+    # Synthèse finale — context stuffing (DINOER_RESEARCH.md §11). Deux passages
+    # de repositionnement câblés le 13/08/2026 (session 3, `TACHE_fiabilisation_
+    # synthese_campagne.md`), tous deux optionnels, champs du manifeste :
+    #   - `motifs_annee`/`motifs_mois` : passage grossier, textuel pur, relègue
+    #     les pages qui ne mentionnent manifestement pas la fenêtre demandée.
+    #   - `sujet_synthese` : passage fin, similarité cosinus (`lib/vector.py`,
+    #     Ollama local) — mesuré nécessaire en complément du seul pré-filtre
+    #     textuel (insuffisant sur le corpus de référence, table de vérité de
+    #     la fiche), coût négligeable (quelques secondes, usage ponctuel en
+    #     mémoire, aucune collection ChromaDB persistée).
+    # Isolée dans un bloc best-effort large et volontaire : le corpus déjà
+    # écrit sur disque ci-dessus reste la valeur produite par la campagne, un
+    # échec de synthèse (OpenCode indisponible, contexte vide) ne doit jamais
+    # l'invalider ni faire échouer la commande — même discipline que
+    # `lib/journal.py::enregistrer_operation()`.
     try:
         from lib.synthese import construire_contexte, ecrire_rapport, rediger_rapport
 
         repertoire_campagne = os.path.dirname(chemin_corpus)
-        contexte, sources = construire_contexte(chemin_corpus)
+        contexte, sources, pages_repoussees = construire_contexte(
+            chemin_corpus,
+            motifs_annee=manifeste.get("motifs_annee"),
+            motifs_mois=manifeste.get("motifs_mois"),
+            sujet_synthese=manifeste.get("sujet_synthese"),
+        )
+        if pages_repoussees:
+            print(
+                f"⚠ pré-filtre temporel : {len(pages_repoussees)} page(s) reléguée(s) "
+                f"en fin de liste (fenêtre demandée non mentionnée) : "
+                f"{', '.join(p['url'] or p['titre'] for p in pages_repoussees)}",
+                file=sys.stderr,
+            )
         if not sources:
             print("⚠ corpus vide — synthèse non tentée.", file=sys.stderr)
         else:

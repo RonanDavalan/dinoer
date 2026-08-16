@@ -131,7 +131,7 @@ def extraire_cible(
     if format_sortie not in _FORMATS_VALIDES:
         raise ValueError(f"format_sortie inconnu : {format_sortie!r} (attendu {_FORMATS_VALIDES})")
 
-    contexte, sources = construire_contexte(chemin_corpus)
+    contexte, sources, _ = construire_contexte(chemin_corpus)
     if not sources:
         resultat = {"trouve": False, "valeur": None, "url": None, "raison": "corpus_vide"}
         return _serialiser(resultat, format_sortie, cible)
@@ -204,24 +204,38 @@ _PROMPT_GABARIT_FUSION = """Tu compares une liste de descriptions d'événements
 différentes, pour regrouper celles qui décrivent le même événement réel (même date, même lieu, même \
 intitulé), même si le texte diffère d'une page à l'autre.
 
+Une description peut, à elle seule, mentionner plusieurs événements distincts (par exemple une page \
+d'agenda qui liste un concert, un atelier et une visite guidée à des dates différentes) — c'est un cas \
+normal, pas une erreur à éviter. Dans ce cas, cite son indice dans CHAQUE groupe correspondant à un \
+événement qu'elle décrit réellement : un même indice peut légitimement apparaître dans plusieurs groupes. \
+Pour un tel groupe, "evenement_canonique" ne reprend que les détails propres à CET événement précis \
+(date, lieu, intitulé, programme) — jamais la description source entière ni les autres événements \
+qu'elle mentionne par ailleurs.
+
 Descriptions (numérotées à partir de 0) :
 {descriptions}
+
+Avant de répondre, compare méthodiquement les descriptions entre elles : pour chaque paire qui pourrait \
+décrire le même événement, vérifie explicitement la date, le lieu et l'intitulé. Écris ce raisonnement \
+librement, aussi long que nécessaire — il ne sera pas noté, seule ta conclusion finale compte.
 
 Ne regroupe que les descriptions qui décrivent RÉELLEMENT le même événement — jamais deux événements \
 simplement proches en date ou au même endroit. Une description qui ne correspond à aucune autre reste \
 seule : ne l'invente pas dans un groupe.
 
-Réponds UNIQUEMENT par un objet JSON strict, sans texte ni balise Markdown autour, au format exact :
+Termine ta réponse par ta conclusion finale, un objet JSON strict, sans rien après, au format exact :
   {{"groupes": [{{"indices": [0, 3], "evenement_canonique": "<description fusionnée, factuelle, sans invention>"}}]}}
 Les indices non mentionnés dans aucun groupe restent des événements séparés — ne les liste pas ici.
 """
 
 
 class FusionIntrouvableError(RuntimeError):
-    """Sortie du modèle non parseable, indices dupliqués ou hors bornes —
-    distincte d'une absence de regroupement légitime (`"groupes": []`),
-    qui n'est pas une erreur : c'est le modèle qui n'a pas respecté le
-    contrat de sortie, pas les événements qui sont tous distincts."""
+    """Sortie du modèle non parseable ou indice hors bornes — distincte
+    d'une absence de regroupement légitime (`"groupes": []`), qui n'est pas
+    une erreur : c'est le modèle qui n'a pas respecté le contrat de sortie,
+    pas les événements qui sont tous distincts. Un indice répété dans
+    plusieurs groupes n'est plus une erreur (13/08/2026) : une description
+    peut légitimement décrire plusieurs événements réels (page d'agenda)."""
 
 
 def fusionner_evenements(resultats: list[dict], modele: str | None = None) -> list[dict]:
@@ -238,7 +252,11 @@ def fusionner_evenements(resultats: list[dict], modele: str | None = None) -> li
     URL source d'origine est toujours conservée, groupée ou non (jamais une
     seule URL retenue au détriment des autres : l'utilisateur doit pouvoir
     remonter à toutes les pages qui mentionnent un événement, pas
-    seulement la première).
+    seulement la première). Un même indice source (et son URL) peut
+    apparaître dans plusieurs groupes du résultat (13/08/2026) : une
+    description issue d'une seule page peut légitimement décrire plusieurs
+    événements réels distincts (page d'agenda) — ce n'est jamais une
+    duplication à éliminer.
 
     Écarté après vérification contre des données réelles (voir la fiche) :
     une empreinte de hachage sur le texte brut des pages avant l'appel
@@ -267,7 +285,11 @@ def fusionner_evenements(resultats: list[dict], modele: str | None = None) -> li
     kwargs = {"modele": modele} if modele else {}
     brut = invoquer_opencode(prompt, **kwargs)
 
-    correspondance = re.search(r"\{.*\}", brut["texte"], re.DOTALL)
+    # Ancré sur "groupes" (pas la première accolade venue) : le prompt
+    # autorise désormais un raisonnement libre avant la conclusion
+    # (13/08/2026, efficacité du prompt — cf. fiche), qui peut contenir des
+    # accolades sans rapport avec la réponse finale.
+    correspondance = re.search(r'\{\s*"groupes"\s*:.*\}', brut["texte"], re.DOTALL)
     if not correspondance:
         raise FusionIntrouvableError(
             f"réponse OpenCode sans objet JSON identifiable : {brut['texte'][:200]!r}"
@@ -297,8 +319,11 @@ def fusionner_evenements(resultats: list[dict], modele: str | None = None) -> li
                 raise FusionIntrouvableError(
                     f"indice hors bornes dans un groupe : {indice!r} (attendu 0..{len(positifs) - 1})"
                 )
-            if indice in indices_couverts:
-                raise FusionIntrouvableError(f"indice {indice!r} présent dans plusieurs groupes")
+            # Un indice peut légitimement apparaître dans plusieurs groupes
+            # (13/08/2026) : une description peut décrire plusieurs
+            # événements réels distincts (page d'agenda) — `indices_couverts`
+            # sert seulement, plus bas, à repérer les indices jamais
+            # mentionnés dans aucun groupe, jamais à interdire un partage.
             indices_valides.append(indice)
             indices_couverts.add(indice)
 

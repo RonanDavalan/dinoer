@@ -82,6 +82,31 @@ identifiants) — sans aucune de sa couche de perception.
 
 ---
 
+## Qualité du rapport : brouillon automatique vs. recherche supervisée
+
+Le rapport de fin de course de `campagne.py` (`lib/synthese.py::rediger_rapport()`)
+est un **brouillon de travail**, pas le livrable poli : il concatène le corpus
+collecté dans l'ordre du fichier, tronqué à 4000 caractères/page et 60 000 au
+total — aucune priorisation par pertinence. Sur un corpus large et bruité, ça
+laisse passer des pages génériques ou hors-sujet avant les vraies sources, et
+peut faire disparaître silencieusement les pages les plus pertinentes derrière
+le seuil de troncature.
+
+Le rapport qui a démontré sa supériorité sur un outil de recherche généraliste
+(Perplexity) sur une tâche de recherche réelle n'a **pas** été produit par une
+seule exécution de `campagne.py`. Il vient d'un opérateur bouclant `campagne.py
+--extraire-cible` — des dizaines d'appels d'extraction individuels et ouverts
+contre le même corpus collecté, chacun laissant le modèle délégué juger
+lui-même s'il lisait un fait ponctuel ou un événement sur plusieurs jours —
+suivis d'une consolidation manuelle des résultats. Voir
+[`docs/GUIDE_LLM.md`](../GUIDE_LLM.md) pour le motif d'extraction exact.
+
+Pour un résumé rapide et non critique, le rapport automatique suffit comme
+point de départ. Pour un rapport fiable sans supervision, utilisez le motif
+d'extraction ciblée en boucle.
+
+---
+
 ## Prérequis
 
 | Composant | Version / remarques |

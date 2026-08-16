@@ -606,7 +606,7 @@ décomposition avait pris 1,1 s et silencieusement échoué.
 **Suggestion** : signaler explicitement dans le JSON de retour de `--reprendre-session`
 si l'URL chargée diffère de l'URL active à la sauvegarde (heuristique faible mais
 utile), ou documenter clairement que l'état DOM n'est pas restauré dans
-`GUIDE_LLM.md` / `26_GUIDE_CLAUDE_SESSION_DIWALL.md`.
+`GUIDE_LLM.md` / `26_GUIDE_CLAUDE_SESSION_DINOER.md`.
 
 ## 21. SoM dynamique : la position d'un contrôle ajouté dépend du nombre d'éléments listés
 
@@ -740,7 +740,7 @@ agent externe** : porter explicitement les exigences suivantes.
 Ces trois règles, simples, suffisent à fermer la classe d'erreur. Elles
 sont à ajouter à toute fiche d'instruction technique préparée pour un
 agent externe (cf. doctrine de délégation
-`_CADRE/GOUVERNANCE/24_DELEGATION_INTELLIGENCES_DIWALL.md`).
+`_CADRE/GOUVERNANCE/24_DELEGATION_INTELLIGENCES_DINOER.md`).
 
 ## Synthèse session 7
 
@@ -753,7 +753,7 @@ de credential est circonscrite (fichier non commité, historique git
 intact) ; la rotation reste à effectuer côté humain. Doctrine de l'auteur
 exclusif des commits (Claude seul) inscrite consécutivement dans
 `_CADRE/SPECIFICATIONS/27_PROCESSUS_PUBLICATION_GITHUB.md` et
-`_CADRE/GOUVERNANCE/24_DELEGATION_INTELLIGENCES_DIWALL.md`.
+`_CADRE/GOUVERNANCE/24_DELEGATION_INTELLIGENCES_DINOER.md`.
 
 ---
 

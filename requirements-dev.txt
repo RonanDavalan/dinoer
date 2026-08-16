@@ -1,0 +1,10 @@
+# Dinoer — dépendances de développement (tests uniquement)
+#
+# Jamais installé dans /opt/dinoer/venv (cible Raspberry Pi) : ce fichier
+# n'est pas listé dans install.sh/deploy.sh ni dans debian/dinoer.install.
+# Installer en plus de requirements.txt pour lancer la suite de tests :
+#
+#     pip install -r requirements.txt -r requirements-dev.txt
+#     pytest tests/ -v
+
+pytest==8.3.5

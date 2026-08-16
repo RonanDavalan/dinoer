@@ -37,6 +37,33 @@ scenario, never hard-coded in a module. See
 
 ---
 
+## Positioning: what Dinoer competes on, and what it doesn't
+
+Dinoer does not compete with general-purpose search assistants (Perplexity
+and similar) on discovery breadth, volume, or price. A real test (14 August
+2026, reputation research on a real subject) measured this directly rather
+than assuming it: on 28 pages collected by Dinoer's own SearXNG-driven
+discovery, three sources a single unprepared Perplexity query surfaced
+immediately (a LinkedIn profile, a project page, a stock-photo credit) were
+entirely absent — traced to SearXNG queries aimed at the wrong kind of
+search (company directories, not the terms that would have surfaced those
+pages), not a ranking or truncation defect downstream. A generalist search
+backend with authenticated, cookie-backed engines behind it has structural
+reach that an unauthenticated local SearXNG instance does not.
+
+What the same test did verify, on the same corpus, measured rather than
+assumed: **a traceable, reproducible synthesis of a locked corpus.** Every
+claim in a Dinoer report is attributable to a page actually collected to
+disk (`collecte.jsonl`/`operations.jsonl`) — with zero dependency on
+whatever a third-party search backend did while producing the answer. A
+direct check of the delegated model's full event stream during synthesis
+(not just its final text) confirmed zero external `websearch`/`webfetch`
+calls reached the corpus during report generation. That is the actual
+value proposition: know precisely where an answer came from, not find more
+than a generalist tool would.
+
+---
+
 ## Architecture
 
 ```
@@ -78,6 +105,32 @@ resolution) — none of its perception layer.
 | **RPA scenarios** | Execute action sequences from JSON files, for the heavy-tier escalation path |
 | **Cross-origin iframes** | `cliquer_iframe` / `remplir_iframe` target elements inside iframes |
 | **TOTP / async MFA** | Credential-gated targets can still be reached when a heavy-tier run needs to authenticate |
+
+---
+
+## Report quality: automatic draft vs. supervised research
+
+`campagne.py`'s own end-of-run report (`lib/synthese.py::rediger_rapport()`)
+is a **working draft**, not the polished deliverable: it concatenates the
+collected corpus in file order, truncated at 4000 characters/page and 60,000
+total — no relevance ranking. On a large, noisy corpus this reliably admits
+generic or off-topic pages ahead of the actual sources, and can silently drop
+the most relevant ones past the truncation point.
+
+On one real research task (a local events listing, see "Positioning" above
+for a task where the result went the other way), the report quality
+demonstrably outperformed a general-purpose search tool (Perplexity) — but
+that report was **not** produced by a single `campagne.py` run. It came
+from an operator looping `campagne.py --extraire-cible` — dozens of
+individual, open-ended extraction calls against the same collected corpus,
+each one letting the delegated model judge for itself whether it was
+reading a one-off fact or a multi-day event — followed by manual
+consolidation of the results. See [`docs/GUIDE_LLM.md`](docs/GUIDE_LLM.md)
+for the exact extraction pattern.
+
+If you need a quick, non-critical summary, the automatic report is fine as a
+starting point. If you need a report you can trust unsupervised, use the
+targeted, looped extraction pattern instead.
 
 ---
 

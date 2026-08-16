@@ -86,6 +86,32 @@ Credential-Auflösung) — nichts von dessen Wahrnehmungsschicht.
 
 ---
 
+## Berichtsqualität: automatischer Entwurf vs. betreute Recherche
+
+Der Abschlussbericht von `campagne.py` selbst (`lib/synthese.py::rediger_rapport()`)
+ist ein **Arbeitsentwurf**, nicht das fertige Ergebnis: Er verkettet das
+gesammelte Korpus in Dateireihenfolge, abgeschnitten bei 4000 Zeichen/Seite und
+60.000 insgesamt — keine Relevanzsortierung. Bei einem großen, verrauschten
+Korpus lässt das zuverlässig generische oder themenfremde Seiten vor den
+eigentlichen Quellen durch und kann die relevantesten Seiten stillschweigend
+hinter der Abschneidegrenze verschwinden lassen.
+
+Der Bericht, der ein allgemeines Suchwerkzeug (Perplexity) bei einer echten
+Rechercheaufgabe nachweislich übertroffen hat, wurde **nicht** durch einen
+einzigen `campagne.py`-Lauf erzeugt. Er entstand, indem ein Bediener
+`campagne.py --extraire-cible` wiederholt aufgerufen hat — Dutzende einzelne,
+offen formulierte Extraktionsaufrufe gegen dasselbe gesammelte Korpus, jeder
+davon überließ dem delegierten Modell selbst die Einschätzung, ob es eine
+einmalige Tatsache oder ein mehrtägiges Ereignis liest — gefolgt von einer
+manuellen Konsolidierung der Ergebnisse. Siehe
+[`docs/GUIDE_LLM.md`](../GUIDE_LLM.md) für das genaue Extraktionsmuster.
+
+Für eine schnelle, unkritische Zusammenfassung reicht der automatische Bericht
+als Ausgangspunkt. Für einen Bericht, dem man ohne Aufsicht vertrauen kann,
+nutzen Sie stattdessen das wiederholte, gezielte Extraktionsmuster.
+
+---
+
 ## Voraussetzungen
 
 | Komponente | Version / Anmerkungen |
