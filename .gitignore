@@ -1,0 +1,58 @@
+# Config machine — ne jamais versionner
+diwall.conf
+
+# Profils opérateur nominaux (v1.3) — seul operateur.exemple.yaml est versionné
+diwall.conf.d/operateur.*.yaml
+!diwall.conf.d/operateur.exemple.yaml
+
+# Données générées par watch.py
+references/
+
+# Références structurelles générées localement (--sauver-verifier-reference, v1.18.0)
+scenarios/interoperabilite/ref_*.json
+
+# Captures temporaires
+/tmp/diwall/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+
+# PDF de référence générés par la chaîne i18n du mainteneur (v1.23.0) — sortie
+# reconstructible depuis les sources markdown, jamais commitée. Les traductions
+# i18n/<langue>/**.md et leurs sidecars .segments.json, eux, sont versionnés :
+# sans les empreintes, un autre mainteneur retraduirait tout depuis zéro.
+i18n/pdf/
+
+# Éditeurs
+.vscode/
+.idea/
+*.swp
+*~
+
+# Debian packaging — artefacts de build (dpkg-buildpackage), jamais commités
+debian/.debhelper/
+debian/diwall/
+debian/debhelper-build-stamp
+debian/diwall.substvars
+debian/files
+debian/*.log
+
+# Pages de manuel générées au build par pandoc (v1.22.0) — la source versionnée
+# est debian/diwall.1.md, jamais le roff produit.
+debian/diwall.1
+debian/diwall-shot.1
+debian/diwall-rpa.1
+debian/diwall-watch.1
+debian/diwall-mount-vault.1
+debian/diwall-umount-vault.1
+debian/diwall-monitor-verifier.1
+# Idem pour les traductions (v1.23.0) : leur source versionnée est
+# i18n/<langue>/debian/diwall.1.md. Une page roff commise divergerait en
+# silence de son markdown, ce que la génération au build rend impossible.
+debian/diwall.??.1
+debian/diwall-*.??.1

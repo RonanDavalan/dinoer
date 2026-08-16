@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Compile check — every Python file must parse
+        run: |
+          find . -name '*.py' -not -path './.git/*' -print0 \
+            | xargs -0 python3 -m py_compile
+
+      - name: Validate scenario JSON files against schema.json
+        run: |
+          python3 - <<'PYEOF'
+          import glob, json, sys
+          import jsonschema
+
+          with open("scenarios/schema.json", encoding="utf-8") as f:
+              schema = json.load(f)
+
+          failed = False
+          for path in glob.glob("scenarios/*.json"):
+              if path.endswith("schema.json"):
+                  continue
+              with open(path, encoding="utf-8") as f:
+                  data = json.load(f)
+              try:
+                  jsonschema.validate(data, schema)
+                  print(f"  OK   {path}")
+              except jsonschema.ValidationError as e:
+                  print(f"  FAIL {path}: {e.message}")
+                  failed = True
+
+          sys.exit(1 if failed else 0)
+          PYEOF
+
+      # A fresh runner has no ~/.config/dinoer/guide_state.json — a bare
+      # shot.py call would otherwise fail with guide_non_lu (exit 1, JSON on
+      # stderr). Read live from docs/GUIDE_LLM.md rather than hardcode the
+      # number, which would silently go stale at the next guide-lock bump
+      # (the exact failure this token exists to prevent).
+      #
+      # --no-capture removed 09/08/2026 (Dinoer reconstruction, lot A5): the
+      # capture pipeline it toggled was dropped from shot.py entirely, so
+      # every invocation now behaves as --no-capture did — no flag needed.
+      #
+      # v1.*_validation suites (previously replayed here) were removed from
+      # the repository in the same reconstruction (lot A1) — Dinoer carries
+      # no scenario-suite replay of its own yet. This priming call is kept
+      # as the sole smoke test until a Dinoer-specific suite exists.
+      - name: Prime the guide-lock marker and smoke-test shot.py
+        run: |
+          VERSION=$(grep -oP '(?<=<!-- notice-version: )[0-9]+\.[0-9]+' docs/GUIDE_LLM.md)
+          python3 shot.py --url https://example.com --guide-version "$VERSION"

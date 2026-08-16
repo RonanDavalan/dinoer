@@ -1,0 +1,300 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/RonanDavalan/diwall/main/scenarios/schema.json",
+  "title": "Dinoer scenario",
+  "description": "Formal contract for a Dinoer scenario: a root object with a target URL and a list of typed actions executed sequentially by shot.py and rpa.py.",
+  "type": "object",
+  "required": ["url", "actions"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema":     { "type": "string" },
+    "nom":         { "type": "string" },
+    "description": { "type": "string" },
+    "intention":      { "type": "string" },
+    "auth_indicator": { "type": "string", "minLength": 1,
+                        "description": "CSS selector visible only when authenticated — adds auth_status to shot.py JSON output (v1.9)" },
+    "auth_indicator_negative": { "type": "string", "minLength": 1,
+                                 "description": "CSS selector whose PRESENCE signals unauthenticated state. Used with auth_indicator for ambiguous interfaces where the positive selector is visible even on login pages (v1.14.0)." },
+    "http_credentials": { "type": "boolean",
+                    "description": "Resolve http_username/http_password from the encrypted directory and inject them at browser-context level to answer an HTTP Basic Auth challenge (--http-credentials, v1.21.0). Combinable with the CLI flag (OR). Disabled by default." },
+    "wait_until": { "type": "string", "enum": ["networkidle", "load", "domcontentloaded"],
+                    "description": "When the initial navigation is considered done (--wait-until, v1.22.0). Absent: shot.py's default (networkidle) applies. Use 'load' on a target that never goes network-silent (live statistics, continuous polling), where no --timeout value can ever succeed. The CLI flag takes precedence over this property (it carries a value, unlike the boolean activation flags above)." },
+    "url":         { "type": "string", "format": "uri" },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/Action" }
+    }
+  },
+  "definitions": {
+    "Action": {
+      "oneOf": [
+        { "$ref": "#/definitions/Naviguer" },
+        { "$ref": "#/definitions/Cliquer" },
+        { "$ref": "#/definitions/Remplir" },
+        { "$ref": "#/definitions/Attendre" },
+        { "$ref": "#/definitions/AttendreNavigation" },
+        { "$ref": "#/definitions/Pause" },
+        { "$ref": "#/definitions/Evaluer" },
+        { "$ref": "#/definitions/Defiler" },
+        { "$ref": "#/definitions/AttendreNtfy" },
+        { "$ref": "#/definitions/AttendreUrl" },
+        { "$ref": "#/definitions/AttendreSelecteurPresent" },
+        { "$ref": "#/definitions/AttendreAbsence" },
+        { "$ref": "#/definitions/AttendreReseauCalme" },
+        { "$ref": "#/definitions/NettoyerOverlay" },
+        { "$ref": "#/definitions/DeclencherScenario" },
+        { "$ref": "#/definitions/CliquerIframe" },
+        { "$ref": "#/definitions/RemplirIframe" },
+        { "$ref": "#/definitions/ExtraireTexte" }
+      ]
+    },
+
+    "Naviguer": {
+      "type": "object",
+      "required": ["type", "url"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "naviguer" },
+        "url":  { "type": "string", "format": "uri" }
+      }
+    },
+
+    "Cliquer": {
+      "type": "object",
+      "required": ["type", "selecteur"],
+      "additionalProperties": false,
+      "properties": {
+        "type":      { "const": "cliquer" },
+        "selecteur": { "type": "string", "minLength": 1 },
+        "force":     { "type": "boolean",
+                       "description": "Bypass Playwright interactability checks (visibility, overlap). Use for CSS-hidden containers and showModal() dialogs. Default: false." },
+        "repli_js":  { "type": "boolean",
+                       "description": "Second-level escalation, distinct from force: after a native click (with or without force) fails on an interactability/obstruction error, retry via JS (element.click()). Incompatible with --no-evaluer (rejected at validation, before any browser launch). Default: false." }
+      }
+    },
+
+    "Remplir": {
+      "type": "object",
+      "required": ["type", "selecteur", "valeur"],
+      "additionalProperties": false,
+      "properties": {
+        "type":      { "const": "remplir" },
+        "selecteur": { "type": "string", "minLength": 1 },
+        "valeur":    { "type": "string" },
+        "secret_cle": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "valeur": { "const": "depuis_secrets" } },
+            "required": ["valeur"]
+          },
+          "then": { "required": ["secret_cle"] }
+        }
+      ]
+    },
+
+    "CliquerIframe": {
+      "type": "object",
+      "required": ["type", "selecteur"],
+      "additionalProperties": false,
+      "properties": {
+        "type":             { "const": "cliquer_iframe" },
+        "iframe_selecteur": { "type": "string", "minLength": 1,
+                              "description": "CSS selector of the <iframe> element (same or cross-origin)" },
+        "iframe_chemin":    { "type": "array", "items": { "type": "string", "minLength": 1 },
+                              "minItems": 1,
+                              "description": "Ordered list of CSS selectors, one per nesting level, for an iframe nested inside another iframe (v1.18.0). Mutually exclusive with iframe_selecteur." },
+        "selecteur":        { "type": "string", "minLength": 1,
+                              "description": "CSS selector of the target inside the iframe content" },
+        "force":            { "type": "boolean" }
+      },
+      "oneOf": [
+        { "required": ["iframe_selecteur"] },
+        { "required": ["iframe_chemin"] }
+      ]
+    },
+
+    "RemplirIframe": {
+      "type": "object",
+      "required": ["type", "selecteur", "valeur"],
+      "additionalProperties": false,
+      "properties": {
+        "type":             { "const": "remplir_iframe" },
+        "iframe_selecteur": { "type": "string", "minLength": 1,
+                              "description": "CSS selector of the <iframe> element (same or cross-origin)" },
+        "iframe_chemin":    { "type": "array", "items": { "type": "string", "minLength": 1 },
+                              "minItems": 1,
+                              "description": "Ordered list of CSS selectors, one per nesting level, for an iframe nested inside another iframe (v1.18.0). Mutually exclusive with iframe_selecteur." },
+        "selecteur":        { "type": "string", "minLength": 1,
+                              "description": "CSS selector of the target inside the iframe content" },
+        "valeur":           { "type": "string" },
+        "secret_cle":        { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "valeur": { "const": "depuis_secrets" } },
+            "required": ["valeur"]
+          },
+          "then": { "required": ["secret_cle"] }
+        },
+        {
+          "oneOf": [
+            { "required": ["iframe_selecteur"] },
+            { "required": ["iframe_chemin"] }
+          ]
+        }
+      ]
+    },
+
+    "Attendre": {
+      "type": "object",
+      "required": ["type", "selecteur"],
+      "additionalProperties": false,
+      "properties": {
+        "type":             { "const": "attendre" },
+        "selecteur":        { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "AttendreNavigation": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type":             { "const": "attendre_navigation" }
+      }
+    },
+
+    "Pause": {
+      "type": "object",
+      "required": ["type", "ms"],
+      "additionalProperties": false,
+      "properties": {
+        "type":             { "const": "pause" },
+        "ms":               { "type": "integer", "minimum": 0 }
+      }
+    },
+
+    "Evaluer": {
+      "type": "object",
+      "required": ["type", "script"],
+      "additionalProperties": false,
+      "properties": {
+        "type":     { "const": "evaluer" },
+        "script":   { "type": "string", "minLength": 1 },
+        "attendu":  { "description": "Strict equality assertion (==). Works on any return type (str, int, bool). Mutually exclusive with 'contient' and 'motif'." },
+        "contient": { "type": "string",
+                      "description": "Substring assertion on a string return value (Python 'in'). Mutually exclusive with 'attendu' and 'motif'. Error if return value is not str." },
+        "motif":    { "type": "string",
+                      "description": "Python re.search() regex assertion on a string return value. Mutually exclusive with 'attendu' and 'contient'. Error if return value is not str." }
+      }
+    },
+
+    "Defiler": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type":      { "const": "defiler" },
+        "px":        { "type": "integer" },
+        "selecteur": { "type": "string", "minLength": 1 }
+      },
+      "oneOf": [
+        { "required": ["px"] },
+        { "required": ["selecteur"] }
+      ]
+    },
+
+    "AttendreNtfy": {
+      "type": "object",
+      "required": ["type", "selecteur"],
+      "additionalProperties": false,
+      "properties": {
+        "type":      { "const": "attendre_mfa_ntfy" },
+        "selecteur": { "type": "string", "minLength": 1,
+                       "description": "CSS selector of the field to fill with the code received over ntfy, once it arrives." },
+        "timeout":   { "type": "integer", "minimum": 10, "default": 120 }
+      }
+    },
+
+    "AttendreUrl": {
+      "type": "object",
+      "required": ["type", "motif"],
+      "additionalProperties": false,
+      "properties": {
+        "type":  { "const": "attendre_url" },
+        "motif": { "type": "string", "minLength": 1,
+                   "description": "Sub-string to match in the current URL (wrapped in ** glob pattern)" }
+      }
+    },
+
+    "AttendreSelecteurPresent": {
+      "type": "object",
+      "required": ["type", "selecteur"],
+      "additionalProperties": false,
+      "properties": {
+        "type":      { "const": "attendre_selecteur_present" },
+        "selecteur": { "type": "string", "minLength": 1,
+                       "description": "CSS selector — waits until element is visible (state=visible)" }
+      }
+    },
+
+    "AttendreAbsence": {
+      "type": "object",
+      "required": ["type", "selecteur"],
+      "additionalProperties": false,
+      "properties": {
+        "type":      { "const": "attendre_absence" },
+        "selecteur": { "type": "string", "minLength": 1,
+                       "description": "CSS selector — waits until element is removed from DOM (state=detached)" },
+        "delai_initial_ms": { "type": "integer", "minimum": 0,
+                              "description": "Optional delay (ms) before polling starts — use on first POST submission to let Playwright process the redirect (REX #66)" }
+      }
+    },
+
+    "AttendreReseauCalme": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type":       { "const": "attendre_reseau_calme" },
+        "timeout_ms": { "type": "integer", "minimum": 0,
+                        "description": "Max wait in ms before abort (distinct from the 500ms internal silence threshold)" }
+      }
+    },
+
+    "NettoyerOverlay": {
+      "type": "object",
+      "required": ["type", "selecteur"],
+      "additionalProperties": false,
+      "properties": {
+        "type":      { "const": "nettoyer_overlay" },
+        "selecteur": { "type": "string", "minLength": 1,
+                       "description": "CSS selector of overlays to hide (visibility:hidden). Must be explicit — no auto-detection." }
+      }
+    },
+
+    "ExtraireTexte": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "extraire_texte" }
+      }
+    },
+
+    "DeclencherScenario": {
+      "type": "object",
+      "required": ["type", "scenario"],
+      "additionalProperties": false,
+      "properties": {
+        "type":     { "const": "declencher_scenario" },
+        "scenario": { "type": "string", "minLength": 1,
+                      "description": "Name or path of the sub-scenario to inline. Resolved via the same cascade as --scenario CLI (scenarios/<name>{.json,.yaml,.yml}). Max depth: 5." }
+      }
+    }
+  }
+}

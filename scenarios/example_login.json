@@ -1,0 +1,17 @@
+{
+  "nom": "example_login",
+  "description": "Example scenario — log in to an app",
+  "url": "https://your-app.local/",
+  "actions": [
+    {
+      "type": "remplir",
+      "selecteur": "#password",
+      "valeur": "depuis_secrets",
+      "secret_cle": "password"
+    },
+    {
+      "type": "cliquer",
+      "selecteur": "#login-submit"
+    }
+  ]
+}
