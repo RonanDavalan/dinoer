@@ -4,6 +4,54 @@ History of decisions and discoveries by session, in reverse chronological order.
 
 ---
 
+## 2026-08-16 — First public release: Matomo, history squash, GitHub push
+
+**1. Matomo tracking activated.** A new site (`dinoer.davalan.fr`, idSite
+`8`, distinct from the pre-existing Diwall site `7` — no traffic mixing)
+was created through Diwall itself (`shot.py --actions`, credential
+resolution via `depuis_secrets`, no SoM — the login-page selectors from the
+inherited task sheet were stale and had to be rediscovered with
+`diagnostic_dom.json` first). `hugo.toml` now sets `matomo_site_id = 8`;
+the site was rebuilt and actually deployed (`deploy-site.sh --publier`),
+verified live (`curl` against `https://dinoer.davalan.fr` returns the
+tracker snippet with `setSiteId","8"`, not just checked in the local
+build).
+
+**2. `Dinoer/Dinoer` git history squashed before its first-ever push.**
+62 local commits (fork reconstruction through the eighth audit round) were
+never public — `origin` still pointed at Diwall's own repo. Rewritten via
+`git commit-tree` into 6 logical, reviewable lots (rebuild-from-Diwall,
+rebrand, Volet C + live-campaign fixes, supervised quality pass, v1.0.0
+release, eight-round audit). Final tree hash verified bit-identical to the
+pre-squash tree — content unchanged, only history. Old history kept on
+`backup-pre-first-release-squash-20260816` for rollback.
+
+**3. First real push.** `origin` repointed to
+`git@github.com:RonanDavalan/dinoer.git` (previously Diwall's repo, never
+corrected since the fork). `preflight-publication.sh` clean on both trees,
+manual patch review found no leak. `main` and tag `v1.0.0` pushed, GitHub
+Release created with the five `.deb`/source build artifacts plus
+`SHA256SUMS` attached, About/topics/homepage set, wiki disabled, CI/
+release/download badges added to the README.
+
+**Real bug found and fixed along the way:** `Dinoer/Dinoer`'s `core.hooksPath`
+was still set to `~/git/Diwall/scripts/hooks` (copied verbatim at fork time,
+never corrected) — every push had been silently gated by *Diwall's*
+preflight script auditing *Diwall's* trees, not Dinoer's own. The actual
+push was safe regardless (the correct `preflight-publication.sh` had
+already been run manually beforehand), but the automated safety net had
+been inert since the fork. Fixed: `core.hooksPath` repointed to
+`~/git/Dinoer/scripts/hooks`, verified to resolve correctly on the next
+push.
+
+**Governance change, same session:** commits on `Dinoer/Dinoer` now require
+Ronan's explicit agreement before each commit, not only before push — a
+deliberate, dated revision of the prior "free local commits" doctrine
+while the repo had never been public
+(`_CADRE/SPECIFICATIONS/27_PROCESSUS_PUBLICATION_GITHUB.md`).
+
+---
+
 ## 2026-08-15/16 — Download page redesign, package version fixed, eight rounds of cross-model audit
 
 Direct continuation of Lot D/the 1.0.0 packaging work (previous entries).
