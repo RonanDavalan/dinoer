@@ -1,4 +1,4 @@
-# Diwall — Retour d'expérience d'un LLM
+# Dinoer — Retour d'expérience d'un LLM
 
 Première session vécue : simulation « Pierre » sur Sillage — 18 mai 2026.
 Six frictions rencontrées, dans l'ordre où elles sont apparues.
@@ -39,10 +39,10 @@ problème Playwright, un PATH, une perm.
 **Origine** : Playwright déduit le format d'image de l'extension du chemin de
 sortie. Pas d'extension, pas de mime type.
 
-**Fix côté utilisateur** : toujours `.png` (ou laisser Diwall générer le nom
+**Fix côté utilisateur** : toujours `.png` (ou laisser Dinoer générer le nom
 automatique dans `/tmp/diwall/`).
 
-**Fix côté Diwall** (suggestion) : ajouter `.png` si manquant, ou échouer tôt
+**Fix côté Dinoer** (suggestion) : ajouter `.png` si manquant, ou échouer tôt
 avec un message explicite.
 
 ---
@@ -63,7 +63,7 @@ cas où l'on sait que le sélecteur est unique (ex : `#username`).
 ## 4. `remplir_som` sur input pré-rempli : le triple-clic rate
 
 Le formulaire avait un champ URL pré-rempli avec `https://`. J'ai voulu écrire
-`https://ada.example.com`. Diwall a tapé `ada.example.com` *après* le contenu
+`https://ada.example.com`. Dinoer a tapé `ada.example.com` *après* le contenu
 existant → résultat : `https://ada.example.com` (par chance correct au premier
 test), mais sur le **troisième** champ URL, le triple-clic de sélection n'a pas
 pris → le préfixe est resté → domaine créé = `ada` au lieu de `ada.example.com`.
@@ -74,7 +74,7 @@ pris → le préfixe est resté → domaine créé = `ada` au lieu de `ada.examp
 **Workaround** : précéder le fill d'un clear explicite, ou utiliser
 `element.fill('')` puis `element.fill(value)` côté Playwright.
 
-**Fix côté Diwall** (suggestion) : faire `element.fill('')` avant le fill
+**Fix côté Dinoer** (suggestion) : faire `element.fill('')` avant le fill
 réel, plutôt que de compter sur le triple-click.
 
 ---
@@ -105,7 +105,7 @@ le problème session-côté-serveur mériterait sa propre ligne.
 ## 6. `button:has-text()` — la syntaxe Playwright qui n'est pas du CSS
 
 Réflexe : `{"selecteur":"button:has-text('Connexion')"}`. C'est de la syntaxe
-Playwright (pseudo-sélecteur étendu), pas du CSS standard. Diwall passe ça
+Playwright (pseudo-sélecteur étendu), pas du CSS standard. Dinoer passe ça
 tel quel à Playwright → ça **marche** la plupart du temps, mais ce n'est pas
 documenté dans `GUIDE_LLM.md`.
 
@@ -140,7 +140,7 @@ nouvelles frictions sont apparues, distinctes de celles de la session 1.
 ## 7. `attendre` vs `pause` — deux verbes pour deux choses
 
 Réflexe : `{"type":"attendre","duree":1500}` pour insérer un délai de 1,5 s
-entre deux clics. Diwall lève `KeyError: 'selecteur'`. Confusion : « attendre »
+entre deux clics. Dinoer lève `KeyError: 'selecteur'`. Confusion : « attendre »
 en français suggère un sleep ; en réalité c'est `page.wait_for_selector()`.
 
 **Origine** : `attendre` mappe sur `page.wait_for_selector(a["selecteur"], …)`.
@@ -187,7 +187,7 @@ champs dirty.
 
 Tentative : `button:has-text("↺ Cloner"):left-of(:has-text("Gérer →"))`.
 Playwright supporte officiellement `:left-of()`, mais le verbe `cliquer` de
-Diwall fait `page.click(selector)` qui ne semble pas activer ces extensions
+Dinoer fait `page.click(selector)` qui ne semble pas activer ces extensions
 par défaut → timeout 120 s sans capture intermédiaire utile.
 
 **Origine** : la chain de sélecteurs Playwright a deux modes — les pseudos
@@ -217,7 +217,7 @@ domaine). Le sélecteur `button:has-text("↺ Cloner WordPress")` matche le
 premier rencontré dans le DOM. Pierre ne sait pas lequel il va lancer.
 
 **Origine** : `page.click(selector)` sans qualificatif. Playwright en mode
-strict refuserait, mais Diwall ne semble pas le forcer.
+strict refuserait, mais Dinoer ne semble pas le forcer.
 
 **Friction ressentie** : « j'ai cliqué Cloner pour un domaine donné, et
 le log montre qu'un autre domaine a démarré ». Inversion silencieuse.
@@ -225,7 +225,7 @@ le log montre qu'un autre domaine a démarré ». Inversion silencieuse.
 **Workaround** : sélecteur précis via `title=` (qui contient le nom du
 domaine), ou via SoM (chaque bouton a un `id` SoM unique).
 
-**Suggestion Diwall** : activer le `strict mode` Playwright par défaut, ou
+**Suggestion Dinoer** : activer le `strict mode` Playwright par défaut, ou
 au moins le surfacer dans `GUIDE_LLM.md`. Un échec strict-mode est BIEN plus
 utile qu'un clic silencieux sur le mauvais élément.
 
@@ -233,12 +233,12 @@ utile qu'un clic silencieux sur le mauvais élément.
 
 ## 11. Pas de visibilité sur une action longue (clonage 2-3 min)
 
-Le clonage WordPress prend ~2 min. Diwall capture *après* la `pause` finale.
+Le clonage WordPress prend ~2 min. Dinoer capture *après* la `pause` finale.
 Entre temps, l'interface affiche peut-être un spinner, une barre de progrès,
 des logs en temps réel — Pierre ne voit rien. Pour suivre l'exécution j'ai
 dû ouvrir une session SSH en parallèle (`tail -f` du log côté serveur).
 
-**Origine** : Diwall = capture *terminale*. Le modèle « 1 invocation = 1 PNG »
+**Origine** : Dinoer = capture *terminale*. Le modèle « 1 invocation = 1 PNG »
 n'autorise pas le streaming.
 
 **Friction ressentie** : 3 minutes d'attente aveugle. Si le clonage avait
@@ -250,33 +250,33 @@ dans la séquence d'actions. Chaque appel capturer génère un PNG dans
 `output-dir`, on peut faire `Read` dessus à la fin et inspecter visuellement
 les étapes.
 
-**Suggestion Diwall** : option `--stream-toutes-les-Ns 10` qui capture
+**Suggestion Dinoer** : option `--stream-toutes-les-Ns 10` qui capture
 automatiquement toutes les 10 s pendant les `pause` longues, et stocke les
 PNG dans `output-dir/`. Très utile pour le debug.
 
 ---
 
-## 12. `~/Vaults/Diwall` par défaut, pas `~/Vaults/<Projet>/Diwall`
+## 12. `~/Vaults/Dinoer` par défaut, pas `~/Vaults/<Projet>/Dinoer`
 
-Le vault par défaut est `~/Vaults/Diwall/<domaine>.json`. L'opérateur
-peut avoir historiquement rangé les credentials en `~/Vaults/<PROJET>/Diwall/...`.
+Le vault par défaut est `~/Vaults/Dinoer/<domaine>.json`. L'opérateur
+peut avoir historiquement rangé les credentials en `~/Vaults/<PROJET>/Dinoer/...`.
 La première tentative `remplir … "valeur":"depuis_secrets"` a échoué parce
-que Diwall cherchait `~/Vaults/Diwall/__HOST_ADMIN__.json` (absent).
+que Dinoer cherchait `~/Vaults/Dinoer/__HOST_ADMIN__.json` (absent).
 
 **Origine** : `lib/repertoire_chiffre.py` lit `DIWALL_SECRETS_DIR` (env var), sinon défaut
-`~/Vaults/Diwall`. La doc ne dit pas que la convention multi-projet
-`~/Vaults/<Projet>/Diwall/` est gérée à la main par l'utilisateur via env.
+`~/Vaults/Dinoer`. La doc ne dit pas que la convention multi-projet
+`~/Vaults/<Projet>/Dinoer/` est gérée à la main par l'utilisateur via env.
 
 **Friction ressentie** : « j'ai mis les credentials au bon endroit, pourquoi
 ça ne marche pas ? ». Cinq minutes de `find` pour réaliser que c'était une
 question de variable d'env.
 
-**Workaround** : `DIWALL_SECRETS_DIR=~/Vaults/<PROJET>/Diwall` devant
+**Workaround** : `DIWALL_SECRETS_DIR=~/Vaults/<PROJET>/Dinoer` devant
 l'invocation, à chaque fois.
 
-**Suggestion Diwall** : (a) lire un fichier de config par projet
+**Suggestion Dinoer** : (a) lire un fichier de config par projet
 (`.diwall.toml` à la racine du dépôt courant qui pointe le vault dir), ou
-(b) une convention « auto-détecter `~/Vaults/<basename-du-cwd>/Diwall/` ».
+(b) une convention « auto-détecter `~/Vaults/<basename-du-cwd>/Dinoer/` ».
 
 ---
 
@@ -293,7 +293,7 @@ l'invocation, à chaque fois.
 Bilan : 12 frictions sur 2 sessions. La 1ère a découvert les pièges
 *structurels* (Mode B, session, `:has-text`, SoM edge cases) ; la 2e les
 pièges *contextuels* (sémantique des verbes, état modal, sélecteurs
-multi-match, suivi d'action longue, vault). Diwall reste un outil d'une
+multi-match, suivi d'action longue, vault). Dinoer reste un outil d'une
 puissance rare une fois ces pièges connus.
 
 ---
@@ -346,7 +346,7 @@ bibliothèque prête à l'emploi ; en fait ses fichiers sont des *gabarits*. Pou
 s'en servir, il faut extraire `.actions` (à passer à `--actions`) et `.url`
 (à passer à `--url`) séparément.
 
-**Suggestion Diwall** : soit un flag `--scenario` qui lit l'objet complet
+**Suggestion Dinoer** : soit un flag `--scenario` qui lit l'objet complet
 (`url` + `actions`), soit faire détecter à `charger_actions` un objet
 contenant une clé `actions` et en extraire le tableau.
 
@@ -399,7 +399,7 @@ nécessitant un `<select>`.
 **Workaround côté LLM** : aucun workaround propre. On peut tenter un `evaluate`
 JavaScript, mais shot.py ne supporte pas `evaluate`. Le scénario s'arrête là.
 
-**Fix côté Diwall** (suggestion d'implémentation) :
+**Fix côté Dinoer** (suggestion d'implémentation) :
 
 ```python
 elif t == "select_option":
@@ -457,7 +457,7 @@ authentifiés) : *"Après un submit de formulaire de login, insérer systématiq
 ## Demande architecturale : documentation LLM avec mémoire des régressions
 
 Au-delà des frictions techniques, une demande structurelle a émergé lors de
-cette session : les LLM qui utilisent Diwall redécouvrent les mêmes frictions
+cette session : les LLM qui utilisent Dinoer redécouvrent les mêmes frictions
 à chaque session, car le `RETOUR_EXPERIENCE.md` est riche mais non synthétisé
 en règles actionnables.
 
@@ -524,7 +524,7 @@ page). Pour découvrir l'URL du bouton « Configurer » et le sélecteur du form
 **Origine** : `shot.py` expose `naviguer/cliquer/remplir/capturer/*_som/cliquer_visuel`,
 pas d'`evaluate`.
 
-**Friction ressentie** : la capture est en lecture seule. Diwall *voit* mais ne
+**Friction ressentie** : la capture est en lecture seule. Dinoer *voit* mais ne
 *renseigne* pas. Ici je m'en suis sorti parce que j'avais accès au source de
 l'app ; **en boîte noire (vrai cas B2B), ce serait bloquant** — on ne pourrait
 pas extraire un sélecteur sans le deviner visuellement.
@@ -564,7 +564,7 @@ rejeter le champ inconnu avec un avertissement.
 - **#11 (action longue aveugle)** : le clonage __HOST_VPS__→__HOST_ADMIN__ a pris ~5 min.
   `--timeout 300000` + lancement en arrière-plan ont tenu (durée 306 622 ms), mais
   le suivi de progression s'est fait via `ssh … du -sh` en parallèle — aucune
-  visibilité dans Diwall.
+  visibilité dans Dinoer.
 - **`:has()` CSS natif supporté** : `form:has(input[value='lancer_sonde']) button[type='submit']`
   a fonctionné — à bien distinguer de `:has-text()` Playwright (friction #6).
 
@@ -572,7 +572,7 @@ rejeter le champ inconnu avec un avertissement.
 
 19 frictions sur 5 sessions. La 5e **confirme la résolution de #15** (le `<select>`
 n'est plus un mur) et révèle la limite la plus structurante : **#18 — sans
-`evaluate`, Diwall voit mais ne renseigne pas**. Tant que la cible est une app
+`evaluate`, Dinoer voit mais ne renseigne pas**. Tant que la cible est une app
 dont on possède le source, on complète par la lecture du code ; pour une cible en
 boîte noire, l'absence d'introspection DOM deviendrait bloquante. C'est le candidat
 n°1 pour le prochain incrément de `shot.py`.
@@ -581,7 +581,7 @@ n°1 pour le prochain incrément de `shot.py`.
 
 # Session 6 — 30 mai 2026 (validation v1.1 sur le terrain)
 
-Première session après livraison locale de Diwall v1.1 (incréments A/B/C de la
+Première session après livraison locale de Dinoer v1.1 (incréments A/B/C de la
 Phase 8 lot 8.1). Cible : suppression unitaire d'une ressource identifiée par
 horodatage sur `__HOST_ADMIN__` (banc de test). Mémoire procédurale lue avant
 exécution : relevés d'instance de la cible (couche privée du `_CADRE/`).
@@ -862,7 +862,7 @@ Exercice EX03, bonus : un tiers conteste les captures d'écran (« fabriquées p
 Réponse : ouvrir le navigateur en direct sur le wp-admin, naviguer vers la liste
 des extensions, lire la version installée (1.1.5) en temps réel.
 
-**Enseignement** : Diwall ne produit pas que des PNG statiques. Il peut être
+**Enseignement** : Dinoer ne produit pas que des PNG statiques. Il peut être
 utilisé pour une **démonstration interactive** — l'opérateur pilote la capture
 en direct, le tiers observe l'interface réelle. La capture devient incidente,
 le navigateur est la preuve.
@@ -883,7 +883,7 @@ séparation des scénarios JSON par domaine cible est suffisante.
 3 exercices opérateur, 2 nouvelles frictions consignées (#26, #27).
 
 **Bilan utilisabilité** : un opérateur sans connaissance du code interne peut
-accomplir des tâches métier réelles avec Diwall en quelques minutes
+accomplir des tâches métier réelles avec Dinoer en quelques minutes
 (EX01 : 2 min 26 s, EX02 : 35 s, EX03 : 8 min). La contrainte "pas de script
 Python" est tenable — les scénarios JSON déclaratifs couvrent 95 % des besoins.
 
@@ -903,8 +903,8 @@ cas de #20.
 
 Session d'usage réel sur l'interface d'administration Sillage (SPA, session authentifiée via
 `rpa.py`). Deux captures successives du tableau de bord (≈ 1 min d'écart) ont permis
-d'identifier 4 lacunes fonctionnelles de Diwall et de démontrer sa valeur en tant qu'audit
-sémantique : Diwall a indirectement révélé un bug applicatif dans le code PHP cible.
+d'identifier 4 lacunes fonctionnelles de Dinoer et de démontrer sa valeur en tant qu'audit
+sémantique : Dinoer a indirectement révélé un bug applicatif dans le code PHP cible.
 
 ## 28. `--comparer-pixel` sans zones d'exclusion — faux négatif sur contenu dynamique
 
@@ -992,7 +992,7 @@ watch.py --sauver-reference --capture "$CAPTURE" --nom vue_tableau_bord
 
 ---
 
-## Bonus — Valeur détective de Diwall : bug applicatif découvert par analyse de dérive
+## Bonus — Valeur détective de Dinoer : bug applicatif découvert par analyse de dérive
 
 La comparaison des deux captures a révélé un badge de statut incohérent (`-1j` pour un clone
 effectué quelques minutes avant). Investigation : `date.timezone` absent de la configuration
@@ -1008,7 +1008,7 @@ entre couches (shell↔PHP) visible uniquement sur des données live fraîches.
 ## Synthèse session 9
 
 4 nouvelles frictions fonctionnelles (#28 à #31), toutes liées à l'usage sur pages dynamiques
-authentifiées — un cas d'usage croissant à mesure que Diwall est intégré dans des projets
+authentifiées — un cas d'usage croissant à mesure que Dinoer est intégré dans des projets
 réels plutôt que des exercices sur pages publiques.
 
 **Candidats prioritaires pour le prochain incrément :**
@@ -1029,7 +1029,7 @@ Session consacrée à la clôture des 3 frictions bloquantes identifiées en ses
 fonctionnalités ont été implémentées, testées et déployées dans la même session.
 
 En amont : analyse des retours de 8 LLMs (ChatGPT, Copilot, DeepSeek, Grok, Kimi,
-Mistral, Perplexity, Qwen) sur Diwall v1.6. Enrichissement de `docs/GUIDE_LLM.md`
+Mistral, Perplexity, Qwen) sur Dinoer v1.6. Enrichissement de `docs/GUIDE_LLM.md`
 (SoM post-scroll, rotation de logs, skills = replay strict) et ouverture de la
 Roadmap v1.7 dans le `README.md`.
 
@@ -1091,7 +1091,7 @@ en anglais (nouvelle règle en vigueur).
 
 ## Session 11 — 4 juin 2026
 
-Objectif : réinstallation complète de Diwall depuis le dépôt GitHub distant
+Objectif : réinstallation complète de Dinoer depuis le dépôt GitHub distant
 (dépôt GitHub public) + validation du mot de passe Sillage
 nouvellement initialisé.
 
@@ -1124,7 +1124,7 @@ au groupe `diwall` (via `sudo usermod -aG diwall $USER`), soit créer `lib/` en 
 
 ### Résultat final
 
-Réinstallation complète réussie. Diwall v1.7.1 opérationnel. Login Sillage validé via
+Réinstallation complète réussie. Dinoer v1.7.1 opérationnel. Login Sillage validé via
 `sillage_login.json` — tableau de bord tenant visible, authentification fonctionnelle.
 
 2 frictions nouvelles sur cette session. Total : **33 frictions sur 11 sessions**.
@@ -1166,7 +1166,7 @@ de la dialog ouverte plutôt que par le numéro SoM.
 # Session 13 — 8 juin 2026 — première connexion à un service cloud multi-ports
 
 Première connexion à `__HOST_SERVICE__` (service Pretix hébergé sur plateforme
-cloud). Vault configuré à `~/Vaults/Diwall/` avec des fichiers organisés en
+cloud). Vault configuré à `~/Vaults/Dinoer/` avec des fichiers organisés en
 sous-répertoires par service. Trois frictions vault découvertes lors de la
 première tentative d'authentification via `depuis_secrets`.
 
@@ -1268,14 +1268,14 @@ fonctionnalités absentes de la version de référence déployée.
 **Contexte** : `diwall.conf` est stocké dans `/opt/diwall/diwall.conf` — un
 seul fichier pour toute la machine. La clé `secrets_dir` pointait sur le vault
 du projet en cours (`~/Vaults/<PROJET>/`). Pour un second projet, il a fallu
-contourner via la variable d'environnement `DIWALL_SECRETS_DIR=~/Vaults/Diwall`
+contourner via la variable d'environnement `DIWALL_SECRETS_DIR=~/Vaults/Dinoer`
 à chaque invocation.
 
 **Symptôme** : sans le contournement, `depuis_secrets` charge les credentials
 du mauvais projet — erreur `FileNotFoundError` ou, pire, credentials incorrects
 silencieusement injectés.
 
-**Impact** : sur une machine hébergeant plusieurs projets Diwall (Sillage,
+**Impact** : sur une machine hébergeant plusieurs projets Dinoer (Sillage,
 Pretix, client X…), la conf globale devient un point de friction permanent.
 Le contournement `DIWALL_SECRETS_DIR=` est fonctionnel mais doit être rappelé
 à chaque invocation ou scriptés — source d'oubli.
@@ -1649,11 +1649,11 @@ modal, overlay disparu), toujours exécuter un nouveau `shot.py --som` avant tou
 le LLM a improvisé du scraping curl + extraction jq des credentials — violation
 de sécurité documentée.
 
-**Cause** : Diwall n'est pas dans le corpus d'entraînement du modèle. Sans lecture
+**Cause** : Dinoer n'est pas dans le corpus d'entraînement du modèle. Sans lecture
 explicite du guide, le comportement par défaut est l'improvisation.
 
 **Règle** : lire `/opt/diwall/docs/GUIDE_LLM.md` en entier avant toute manipulation
-Diwall. Ce pré-vol est maintenant inscrit dans `CLAUDE.md` (lu automatiquement par
+Dinoer. Ce pré-vol est maintenant inscrit dans `CLAUDE.md` (lu automatiquement par
 Claude Code à chaque session) et dans `PROTOCOLE_DEMARRAGE.md` instruction n°1ter.
 
 **Lien** : `CLAUDE.md` règles n°1–3, `PROTOCOLE_DEMARRAGE.md` instruction n°1ter (FR-57).
@@ -1770,7 +1770,7 @@ Unification base64 JSON Sillage 3.5.6 confirmée E2E.
 
 `Page.screenshot` dans Playwright dispose d'un timeout interne fixé à 30 secondes, non configurable via l'option `--timeout` de `rpa.py`. Quand `attendre_reseau_calme` attend le calme réseau et que le serveur traite une opération synchrone longue (~1 min pour un clone PHP), le screenshot expire avant que l'opération ne se termine — le scénario s'interrompt sans erreur fonctionnelle côté serveur.
 
-**Ce n'est pas un bug Diwall.** C'est une contrainte Playwright : le timeout de `wait_for_load_state("networkidle")` est contrôlable via `timeout_ms`, mais le screenshot qui suit dispose de son propre plafond non exposé.
+**Ce n'est pas un bug Dinoer.** C'est une contrainte Playwright : le timeout de `wait_for_load_state("networkidle")` est contrôlable via `timeout_ms`, mais le screenshot qui suit dispose de son propre plafond non exposé.
 
 **Contournement validé :** remplacer `attendre_reseau_calme` par `pause` dès que la durée serveur estimée dépasse ~20s. `pause` cède le contrôle du timing au scénario et ne déclenche pas de screenshot intermédiaire.
 
@@ -1784,15 +1784,15 @@ Unification base64 JSON Sillage 3.5.6 confirmée E2E.
 
 ---
 
-## 60. `evaluer` mutant dispatché avant le timeout Diwall → artefact serveur parasite
+## 60. `evaluer` mutant dispatché avant le timeout Dinoer → artefact serveur parasite
 
 **Session :** 26 (12/06/2026) — PHASE_VALIDATION E2E Jalon C, troisième passage (v1.9.3), remontée Claude Sillage.
 
-`evaluer` envoie l'instruction JavaScript à la page **immédiatement**, avant toute action `attendre_*` qui suit dans la liste. Si le scénario échoue ensuite (timeout sur `attendre_reseau_calme`, screenshot expiré), l'opération déclenchée côté serveur a déjà démarré ou s'est terminée. **Diwall ne peut pas annuler une action déjà dispatchée au serveur.**
+`evaluer` envoie l'instruction JavaScript à la page **immédiatement**, avant toute action `attendre_*` qui suit dans la liste. Si le scénario échoue ensuite (timeout sur `attendre_reseau_calme`, screenshot expiré), l'opération déclenchée côté serveur a déjà démarré ou s'est terminée. **Dinoer ne peut pas annuler une action déjà dispatchée au serveur.**
 
-En pratique : un `evaluer` cliquant un bouton "Lancer le clonage" + un timeout Diwall sur l'attente suivante = un clone créé côté serveur, non détecté par le scénario. La relance naïve du scénario peut créer un second clone.
+En pratique : un `evaluer` cliquant un bouton "Lancer le clonage" + un timeout Dinoer sur l'attente suivante = un clone créé côté serveur, non détecté par le scénario. La relance naïve du scénario peut créer un second clone.
 
-**Ce n'est pas un bug Diwall.** C'est une propriété fondamentale de l'architecture : Diwall est un exécuteur d'actions sans mécanisme de rollback. Les mutations serveur sont définitives dès l'envoi du signal JS.
+**Ce n'est pas un bug Dinoer.** C'est une propriété fondamentale de l'architecture : Dinoer est un exécuteur d'actions sans mécanisme de rollback. Les mutations serveur sont définitives dès l'envoi du signal JS.
 
 **Règle d'usage :** après tout scénario raté contenant une action mutante (`evaluer` sur bouton déclencheur, `remplir_som` + `cliquer_som` sur formulaire), vérifier l'état du serveur avant relance :
 
@@ -1800,7 +1800,7 @@ En pratique : un `evaluer` cliquant un bouton "Lancer le clonage" + un timeout D
 2. Confirmer si l'opération a démarré, est en cours, ou n'a pas eu lieu
 3. Reprendre le scénario uniquement à partir du point après la mutation réussie
 
-**Signal d'alerte :** si le log journal (`journal.py --cible target --mutatif`) enregistre une opération mutatrice sur la cible dans les minutes précédant l'échec, l'opération a probablement abouti côté serveur malgré le timeout Diwall.
+**Signal d'alerte :** si le log journal (`journal.py --cible target --mutatif`) enregistre une opération mutatrice sur la cible dans les minutes précédant l'échec, l'opération a probablement abouti côté serveur malgré le timeout Dinoer.
 
 ---
 
@@ -1808,9 +1808,9 @@ En pratique : un `evaluer` cliquant un bouton "Lancer le clonage" + un timeout D
 
 2 frictions nouvelles (#59–#60) — découvertes lors de la PHASE_VALIDATION E2E Jalon C (v1.9.3), remontées par Claude Sillage.
 
-Friction #59 : limitation Playwright non exposée (timeout screenshot 30s fixe) — contournement `pause` documenté. Friction #60 : propriété architecturale de Diwall (pas de rollback sur les actions mutantes) — règle de vérification d'état serveur avant relance.
+Friction #59 : limitation Playwright non exposée (timeout screenshot 30s fixe) — contournement `pause` documenté. Friction #60 : propriété architecturale de Dinoer (pas de rollback sur les actions mutantes) — règle de vérification d'état serveur avant relance.
 
-Les deux frictions ont été documentées dans `GUIDE_LLM.md` (section Known CLI pitfalls) et dans ce fichier. Elles complètent le tableau des comportements non évidents de l'architecture Diwall × Playwright.
+Les deux frictions ont été documentées dans `GUIDE_LLM.md` (section Known CLI pitfalls) et dans ce fichier. Elles complètent le tableau des comportements non évidents de l'architecture Dinoer × Playwright.
 
 ---
 
@@ -1890,7 +1890,7 @@ Ces frictions étendent et complètent FR-57 (modales CSS Sillage).
 
 **Symptôme :** `ModuleNotFoundError: No module named 'chromadb'` en tentant :
 ```
-/opt/diwall/venv/bin/python3 ~/git/Diwall/_CADRE/scripts/search-index.py "..."
+/opt/diwall/venv/bin/python3 ~/git/Dinoer/_CADRE/scripts/search-index.py "..."
 ```
 
 **Cause :** `/opt/diwall/venv` ne contient que `playwright`. Il ne sert qu'à `rpa.py`,
@@ -1898,21 +1898,21 @@ Ces frictions étendent et complètent FR-57 (modales CSS Sillage).
 
 **Chemin correct (vérifié 2026-06-15) :**
 ```
-~/.pyenv/versions/3.12.11/bin/python3 ~/git/Diwall/_CADRE/scripts/search-index.py "..."
+~/.pyenv/versions/3.12.11/bin/python3 ~/git/Dinoer/_CADRE/scripts/search-index.py "..."
 ```
 
-Ce Python a chromadb, et la base de Diwall (`Diwall/_CADRE/MEMOIRE/chroma_db/`) lui est accessible.
-Le GUIDE_LLM.md et tous les fichiers de documentation Diwall référencent la mauvaise commande.
+Ce Python a chromadb, et la base de Dinoer (`Dinoer/_CADRE/MEMOIRE/chroma_db/`) lui est accessible.
+Le GUIDE_LLM.md et tous les fichiers de documentation Dinoer référencent la mauvaise commande.
 
 **Contournement immédiat :** utiliser `~/.pyenv/versions/3.12.11/bin/python3`.
-**Action requise (Claude Diwall) :** corriger le chemin dans `GUIDE_LLM.md` et dans les
-commentaires d'en-tête de `build-index.py` / `search-index.py` du dépôt Diwall.
+**Action requise (Claude Dinoer) :** corriger le chemin dans `GUIDE_LLM.md` et dans les
+commentaires d'en-tête de `build-index.py` / `search-index.py` du dépôt Dinoer.
 
 ---
 
 ## Synthèse session 28
 
-1 friction nouvelle (#64) — mauvais chemin Python pour le RAG Diwall.
+1 friction nouvelle (#64) — mauvais chemin Python pour le RAG Dinoer.
 Constat fait lors de la mise à jour du RAG Sillage (ajout type `fondateur`).
 
 **61 frictions sur 27 sessions.**
@@ -1923,7 +1923,7 @@ Constat fait lors de la mise à jour du RAG Sillage (ajout type `fondateur`).
 
 **Session 30 — 2026-06-15**
 
-**Objectif :** Créer le site `__DOMAINE_OPERATEUR__` dans Matomo via Diwall.
+**Objectif :** Créer le site `__DOMAINE_OPERATEUR__` dans Matomo via Dinoer.
 **Durée totale :** 32 minutes 25 secondes.
 **Résultat :** succès — site ID 7 créé, tracker injecté et déployé.
 
@@ -2010,7 +2010,7 @@ pour la procédure complète avec toutes les étapes.
 
 ### Règle extraite
 
-> Avant toute interaction avec une interface web inconnue via Diwall :
+> Avant toute interaction avec une interface web inconnue via Dinoer :
 > 1. Vérifier le framework : `typeof angular`, `typeof Vue`, `typeof React`
 > 2. Diagnostiquer l'élément exact : `document.querySelector('[class*="addSite"]')?.tagName`
 > 3. Ne jamais répéter un sélecteur qui a échoué sans diagnostic intermédiaire
@@ -2087,7 +2087,7 @@ Règle documentée dans `docs/GUIDE_LLM.md` v2.3.
 
 **Remontée par :** Claude Sillage (session 32, 20/06/2026), à la suite de la campagne C1b.
 
-**Catégorie :** ergonomie / fiabilité scénarios — aucun changement API Diwall requis.
+**Catégorie :** ergonomie / fiabilité scénarios — aucun changement API Dinoer requis.
 
 **Problème :** `pause ms:N` est utilisé comme rustine post-action alors qu'un élément DOM précis
 signale l'état attendu. C'est une borne temporelle arbitraire :
@@ -2124,7 +2124,7 @@ sur un élément de contenu métier.
 
 ## Synthèse session 32
 
-1 friction nouvelle (#67 — pauses fixes → attentes sémantiques). Trilatérale l'opérateur / Claude Diwall /
+1 friction nouvelle (#67 — pauses fixes → attentes sémantiques). Trilatérale l'opérateur / Claude Dinoer /
 Claude Sillage. Vérification PHP par Sillage, commit Sillage `a762dbe`.
 `GUIDE_LLM.md` v2.4. `valider_admin_maitre_c1b.json` mis à jour. v1.9.8 livré et validé.
 
@@ -2132,7 +2132,7 @@ Claude Sillage. Vérification PHP par Sillage, commit Sillage `a762dbe`.
 
 ---
 
-# Note 19/06/2026 — Lacune : __HOST_ADMIN__ inaccessible depuis Diwall (cert auto-signé)
+# Note 19/06/2026 — Lacune : __HOST_ADMIN__ inaccessible depuis Dinoer (cert auto-signé)
 
 **Contexte** : validation migration __HOST_VPS__ Phase 1 — tentative de capture `https://__HOST_ADMIN__/`
 depuis la machine de développement via shot.py (Playwright Chromium).
@@ -2140,18 +2140,18 @@ depuis la machine de développement via shot.py (Playwright Chromium).
 **Comportement** : `succes: false`, http_status absent. Playwright rejette le certificat
 auto-signé de `__HOST_ADMIN__` sans option de contournement exposée par shot.py.
 
-**Ce qui manque dans Diwall** : une option `--ignore-https-errors` pour les environnements
-locaux avec cert auto-signé (développement, staging intranet). Sans cette option, Diwall
+**Ce qui manque dans Dinoer** : une option `--ignore-https-errors` pour les environnements
+locaux avec cert auto-signé (développement, staging intranet). Sans cette option, Dinoer
 est inutilisable sur les interfaces locales HTTPS non certifiées par Let's Encrypt.
 
 **Contournement actuel** : validation par WP-CLI en SSH direct sur __HOST_VPS__.
 
-**Impact** : Sillage sur __HOST_ADMIN__ ne peut pas être testé visuellement avec Diwall.
+**Impact** : Sillage sur __HOST_ADMIN__ ne peut pas être testé visuellement avec Dinoer.
 Sillage sur `__DOMAINE_OPERATEUR__` (cert LE valide) est accessible.
 
 ---
 
-# Note 18/06/2026 (hors session Diwall) — Lacune signalée : bwlimit rsync
+# Note 18/06/2026 (hors session Dinoer) — Lacune signalée : bwlimit rsync
 
 **Contexte** : chantier 3 Sillage — push __DOMAINE_OPERATEUR__ __HOST_ADMIN__→__HOST_VPS__ via connexion internet.
 
@@ -2165,7 +2165,7 @@ dans le script générique comme `--bwlimit=${SILLAGE_RSYNC_BWLIMIT:-}`.
 
 **Contournement actuel** : rsync manuel avec `--bwlimit=500` avant le push officiel.
 
-Cette lacune est propre à Sillage, pas à Diwall. Consignée ici par erreur de routage initial.
+Cette lacune est propre à Sillage, pas à Dinoer. Consignée ici par erreur de routage initial.
 (→ Reporter dans `_CADRE/MEMOIRE/RETOUR_EXPERIENCE.md` de Sillage si besoin de suivi.)
 
 ---
@@ -2252,7 +2252,7 @@ Conséquence : un LLM qui s'attend à de la concaténation (ex. champ pré-rempl
 
 La logistique (monter le vault, vérifier que le fichier existe) est invisible dans la commande `rpa.py` et génère des surprises à l'exécution.
 
-**Contournement recommandé :** maintenir un fichier JSON permanent par tenant dans le vault (ex. `~/Vaults/<PROJET>/Diwall/tenant_alpha.json`). Le format attendu :
+**Contournement recommandé :** maintenir un fichier JSON permanent par tenant dans le vault (ex. `~/Vaults/<PROJET>/Dinoer/tenant_alpha.json`). Le format attendu :
 ```json
 {
   "username": "...",
@@ -2279,8 +2279,8 @@ any(chemin in ligne for ligne in /proc/mounts)
 Ce test cherche `chemin` comme sous-chaîne de chaque ligne de `/proc/mounts`. Cela fonctionne
 quand `secrets_dir` EST le point de montage exact (ex. `~/Vaults/<PROJET>`). Mais si le
 fichier credentials est dans un **sous-dossier** du coffre monté (ex.
-`~/Vaults/<PROJET>/Diwall/__TENANT__.json`), le répertoire parent est
-`~/Vaults/<PROJET>/Diwall` — absent de `/proc/mounts` (seul
+`~/Vaults/<PROJET>/Dinoer/__TENANT__.json`), le répertoire parent est
+`~/Vaults/<PROJET>/Dinoer` — absent de `/proc/mounts` (seul
 `~/Vaults/<PROJET>` y figure). Le test retourne `False` → `SecretsFermesError(42)`.
 
 **Contournement de Sillage :** copier le fichier credentials à la racine du coffre
@@ -2424,7 +2424,7 @@ Remontées par Gemini 3.5 Flash lors de la mission « audit découverte interfac
 
 ## Inter-session Sillage — 25 juin 2026 — FR-76 : `naviguer` post-submit inutilisable
 
-**Contexte :** validation Diwall C4 (dispatcher compilé shc) sur Sillage. Scénario `valider_c4_cloner_client_sanctuarise.json` — clonage WP via `evaluer click()` sur le bouton submit d'un `<dialog>` natif.
+**Contexte :** validation Dinoer C4 (dispatcher compilé shc) sur Sillage. Scénario `valider_c4_cloner_client_sanctuarise.json` — clonage WP via `evaluer click()` sur le bouton submit d'un `<dialog>` natif.
 
 ### FR-76 — `naviguer` après `evaluer click()` sur submit → ERR_ABORTED ou Timeout
 
@@ -2440,7 +2440,7 @@ Dans les deux cas, `url_au_moment_capture` = `?vue=login` — la page SSE a prob
 
 **Impact :** la documentation FN17 de Sillage indiquait comme contournement : « immédiatement après le clic de submit, enchaîner un `naviguer` vers une page stable ». Ce contournement est **incorrect** — `naviguer` échoue aussi.
 
-**Solution réelle validée :** terminer le scénario immédiatement après l'`evaluer click()`. Diwall retourne `succes: true` avec `url_finale` = page d'avant le submit (le JS click est exécuté mais Playwright n'a pas encore tracké la navigation). Valider la mutation via SSH.
+**Solution réelle validée :** terminer le scénario immédiatement après l'`evaluer click()`. Dinoer retourne `succes: true` avec `url_finale` = page d'avant le submit (le JS click est exécuté mais Playwright n'a pas encore tracké la navigation). Valider la mutation via SSH.
 
 **Exemple de scénario valide :**
 ```json
@@ -2448,15 +2448,15 @@ Dans les deux cas, `url_au_moment_capture` = `?vue=login` — la page SSE a prob
 ```
 → Le scénario se termine ici. `succes: true`. Vérifier le clone via SSH.
 
-**Rappel FN8 :** même si Diwall retourne `succes: false` sur une étape suivante, la mutation serveur est déjà partie (le `evaluer click()` a exécuté le JS immédiatement).
+**Rappel FN8 :** même si Dinoer retourne `succes: false` sur une étape suivante, la mutation serveur est déjà partie (le `evaluer click()` a exécuté le JS immédiatement).
 
-**Version :** Diwall v1.14.0 / rpa.py. Non testé sur les versions antérieures.
+**Version :** Dinoer v1.14.0 / rpa.py. Non testé sur les versions antérieures.
 
 ---
 
 ## Session recherche commerciale multi-sites — 27 juin 2026 — FR-77 : WAF bloquent 39 % des sites e-commerce
 
-**Contexte :** utilisation de Diwall pour une recherche d'achat en ligne sur des sites francophones de commerce (consoles de jeu reconditionnées, budget ≤ 200 €). 23 sites ciblés. Opérateur : Qwen (via OpenCode). Machine : la machine de développement. Version : Diwall v1.14.0.
+**Contexte :** utilisation de Dinoer pour une recherche d'achat en ligne sur des sites francophones de commerce (consoles de jeu reconditionnées, budget ≤ 200 €). 23 sites ciblés. Opérateur : Qwen (via OpenCode). Machine : la machine de développement. Version : Dinoer v1.14.0.
 
 ### FR-77 — Blocage WAF systématique sur les grands sites e-commerce
 
@@ -2475,9 +2475,9 @@ Dans les deux cas, `url_au_moment_capture` = `?vue=login` — la page SSE a prob
 
 Sites accessibles : 2 sites SSR sans WAF. Sites bloqués : grandes enseignes et marketplaces e-commerce (9 sites).
 
-**Cause racine :** Playwright expose `navigator.webdriver = true` par défaut. Les WAF modernes détectent ce signal et bloquent sans inspecter l'intention derrière la requête. Diwall ne dissimule pas ce signal — c'est un choix de transparence, pas une contrainte.
+**Cause racine :** Playwright expose `navigator.webdriver = true` par défaut. Les WAF modernes détectent ce signal et bloquent sans inspecter l'intention derrière la requête. Dinoer ne dissimule pas ce signal — c'est un choix de transparence, pas une contrainte.
 
-**Impact :** pour les cas d'usage de recherche commerciale sur des sites protégés par WAF, Diwall ne peut pas accéder au contenu. Ce n'est pas un bug Diwall — c'est une friction du paysage web actuel.
+**Impact :** pour les cas d'usage de recherche commerciale sur des sites protégés par WAF, Dinoer ne peut pas accéder au contenu. Ce n'est pas un bug Dinoer — c'est une friction du paysage web actuel.
 
 **Ce qui fonctionne :** sites SSR sans protection WAF, instances locales (SearXNG), applications internes sur réseau privé.
 
@@ -2489,7 +2489,7 @@ Sites accessibles : 2 sites SSR sans WAF. Sites bloqués : grandes enseignes et 
 
 **Backlog v1.15.x (requiert PHASE_PLANIFICATION) :** stealth mode (`playwright-stealth`), distinction `timeout_network` / `timeout_dom`, persistance session inter-appels. Voir `10_ROADMAP.md`.
 
-**Version :** Diwall v1.14.0 / shot.py.
+**Version :** Dinoer v1.14.0 / shot.py.
 
 ---
 
@@ -2519,20 +2519,20 @@ n'est pas interdit de site web pour autant.
    autorisation. Identité déclarée, usage transparent. Si un mauvais usage est constaté,
    que l'opérateur en soit tenu responsable — pas condamné par principe.
 
-2. **Devoir de comportement :** pour revendiquer ce droit, Diwall s'engage à naviguer
+2. **Devoir de comportement :** pour revendiquer ce droit, Dinoer s'engage à naviguer
    de façon mesurée et respectueuse des ressources des sites visités :
    - délai minimum entre les actions (`min_action_delay_ms`)
    - plafond de pages et d'actions par run (`max_pages_par_run`, `max_actions_par_run`)
    - métriques de son propre impact dans la boussole (`respect`)
 
-**Ce que Diwall ne fait pas :** créer de fausse identité, cacher l'opérateur ou son IP,
+**Ce que Dinoer ne fait pas :** créer de fausse identité, cacher l'opérateur ou son IP,
 prétendre être "Paul sur Safari". Le mode furtif (`--stealth`, v1.15.0) retire les
 marqueurs techniques automatiques — pas l'identité réelle.
 
 **Doctrine inscrite :** `_CADRE/SPECIFICATIONS/LEGITIMITE_ETRE_LLM.md` (privé) et
 manifeste public sur `__DOMAINE_OPERATEUR__` section Philosophie.
 
-**Version :** Diwall v1.15.0 (planifié). Session 43 — 30 juin 2026.
+**Version :** Dinoer v1.15.0 (planifié). Session 43 — 30 juin 2026.
 
 ---
 
@@ -2586,7 +2586,7 @@ détection plus profond (TLS, comportemental), non mesurable par ce substitut. L
 question reste ouverte ; un nouveau panel commercial avec intention d'usage réelle
 est le seul moyen de trancher honnêtement.
 
-**Version :** Diwall v1.16.0. Session 47 — 2 juillet 2026.
+**Version :** Dinoer v1.16.0. Session 47 — 2 juillet 2026.
 
 ---
 
@@ -2617,7 +2617,7 @@ citoyenneté atteint » et « scénario terminé »), ou d'une interaction spéc
 scénario JSON dépassant ~8-9 navigations pleine-page et `--checkpoint` sur le même
 fichier de sortie.
 
-**Version :** Diwall v1.17.0. Session Sillage — 2/07 au 3/07/2026.
+**Version :** Dinoer v1.17.0. Session Sillage — 2/07 au 3/07/2026.
 
 ---
 
@@ -2651,7 +2651,7 @@ et la disponibilité du layout au moment du clic suivant dans la même action li
 Reproductible avec le dialogue de suppression de domaine Sillage
 (`?vue=reglages&client=...`, section Domaines, bouton « Supprimer » sur une carte domaine).
 
-**Confirmation du même pattern (12/07/2026, Diwall v1.20.0)** : reproduit à l'identique sur
+**Confirmation du même pattern (12/07/2026, Dinoer v1.20.0)** : reproduit à l'identique sur
 un élément non lié à un `<dialog>` — un toggle switch CSS (case à cocher masquée visuellement,
 `<label>` custom par-dessus) pour activer la réplication automatique. `cliquer` avec
 `force: true` échouait de la même façon (« element outside of viewport » / not visible).
@@ -2668,13 +2668,13 @@ comme option par défaut, pas seulement de secours, pour toute cette famille.
 
 **Description :** diagnostic d'un bouton d'action délégué (« Sauvegarder maintenant »,
 espace client L2 de Sillage) qui redirigeait systématiquement vers la page de login au lieu
-d'exécuter l'action. Le signal `boussole.session_derive` de Diwall a orienté l'investigation
+d'exécuter l'action. Le signal `boussole.session_derive` de Dinoer a orienté l'investigation
 vers l'hypothèse « session L2 expirée / cookie perdu entre deux étapes » — plusieurs cycles
 de test (`--reprendre-session`/`--sauver-session`, vérification `document.cookie`, reproduction
 en un seul appel Playwright continu pour éliminer une perte de cookie inter-process) ont été
 dépensés sur cette piste avant qu'elle ne soit écartée.
 
-**Cause réelle** (trouvée hors Diwall, par `curl` brut reproduisant le POST exact) : un bug
+**Cause réelle** (trouvée hors Dinoer, par `curl` brut reproduisant le POST exact) : un bug
 applicatif Sillage à deux étages — un formulaire HTML avec `action="?"` qui effaçait un
 paramètre GET nécessaire à l'authentification côté serveur, puis (une fois ce premier bug
 corrigé) une fonction PHP non chargée provoquant une erreur HTTP 500 masquée en page blanche
@@ -2682,7 +2682,7 @@ côté client (`display_errors=0`, comportement de production correct mais qui c
 Le symptôme observable (redirection vers login) était identique à une vraie expiration de
 session — mais la cause n'avait rien à voir avec la session elle-même.
 
-**Ce qui a permis de sortir de la fausse piste :** abandon de Diwall pour cette étape précise,
+**Ce qui a permis de sortir de la fausse piste :** abandon de Dinoer pour cette étape précise,
 `curl` manuel reproduisant le POST exact — la distinction HTTP 500 vs HTTP 302 (redirection
 d'auth) a immédiatement écarté l'hypothèse session.
 
@@ -2724,7 +2724,7 @@ même appel.
 source/destination aurait pu écraser un domaine différent de celui visé si les deux
 domaines n'avaient pas eu un contenu déjà proche l'un de l'autre au moment du test — un
 appelant moins prudent (pas de vérification de l'état avant/après) aurait pu attribuer à
-tort le succès rapporté par Diwall (`succes: true`) à l'opération réellement voulue.
+tort le succès rapporté par Dinoer (`succes: true`) à l'opération réellement voulue.
 
 **Suggestion d'escalade pour `GUIDE_LLM_INTERACTIONS.md`** : documenter explicitement que
 tout état DOM non soumis (dialog ouvert, champ rempli, select changé) est perdu entre deux
@@ -2733,14 +2733,14 @@ séquence « ouvrir → remplir → soumettre » doit toujours être un seul app
 jamais fragmentée en plusieurs `--reprendre-session` successifs quand une soumission de
 formulaire est en jeu.
 
-**Version :** Diwall v1.20.0. Session Sillage — 12/07/2026.
+**Version :** Dinoer v1.20.0. Session Sillage — 12/07/2026.
 
 **Escalade utile pour `GUIDE_LLM_INTERACTIONS.md` :** la note actuelle sur `force: true`
 et `showModal()` (ligne ~31, decision tree item 4) mériterait un avertissement — dans un
 `<dialog>` ouvert par script plutôt que par interaction utilisateur, préférer d'emblée
 `evaluer` JS pour toute la séquence plutôt que `cliquer` + `force`.
 
-**Version :** Diwall v1.17.2. Session Sillage — 03/07/2026.
+**Version :** Dinoer v1.17.2. Session Sillage — 03/07/2026.
 
 ---
 
@@ -2769,7 +2769,7 @@ Un détail nouveau à ajouter à la règle de FR-83 : la frontière n'est pas
 dashboard non sauvegardé est un cas exactement aussi volatile qu'un dialog
 non soumis.
 
-**Version :** Diwall v1.20.0. Session __HOST_VPS__ — 13/07/2026.
+**Version :** Dinoer v1.20.0. Session __HOST_VPS__ — 13/07/2026.
 
 ---
 
@@ -2793,7 +2793,7 @@ action qui modifie potentiellement le DOM, même sans navigation complète —
 un simple toggle suffit. Recapturer le SoM immédiatement après toute
 mutation, avant de s'en servir pour cibler l'action suivante.
 
-**Version :** Diwall v1.20.0. Session __HOST_VPS__ — 13/07/2026.
+**Version :** Dinoer v1.20.0. Session __HOST_VPS__ — 13/07/2026.
 
 ---
 
@@ -2823,7 +2823,7 @@ un vrai `<input>`/`<textarea>` visible), et `[role="code"] textarea` (ou
 équivalent CodeMirror `.cm-content`) est plus fiable qu'un sélecteur de
 classe générique, sujet à collision avec des instances cachées.
 
-**Version :** Diwall v1.20.0. Session __HOST_VPS__ — 13/07/2026.
+**Version :** Dinoer v1.20.0. Session __HOST_VPS__ — 13/07/2026.
 
 ---
 
@@ -2861,7 +2861,7 @@ scopés à l'origine de la cible. Revalidé contre les deux interfaces
 d'origine de ce constat — succès dès le premier essai avec le mode par
 défaut le plus sûr (`send: "unauthorized"`).
 
-**Version :** Diwall v1.20.0 (constat). Résolu en v1.21.0. Session
+**Version :** Dinoer v1.20.0 (constat). Résolu en v1.21.0. Session
 `__HOST_VPS__` — 13-15/07/2026.
 
 ---
@@ -2880,4 +2880,4 @@ défaut le plus sûr (`send: "unauthorized"`).
   réellement un dashboard fonctionnel avec de vraies données après la
   coupure de l'OAuth Plesk mort.
 
-**Version :** Diwall v1.20.0. Session __HOST_VPS__ — 13/07/2026.
+**Version :** Dinoer v1.20.0. Session __HOST_VPS__ — 13/07/2026.

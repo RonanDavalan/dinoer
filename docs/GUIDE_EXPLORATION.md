@@ -1,8 +1,8 @@
-# Diwall — Exploration and mapping guide
+# Dinoer — Exploration and mapping guide
 
 Version 1.2 — July 2026 (v1.17.1) — iframe and highly-dynamic-page considerations
 
-**This document is for language models using Diwall.**
+**This document is for language models using Dinoer.**
 
 It describes the "Exploration before Execution" protocol: how to map an unknown
 interface soberly, then automate it without improvisation.
@@ -165,12 +165,12 @@ to the dashboard (REX friction #50). Pass the URL directly via `--url`.
 ## Semantic memory — Linking scenario and documentation
 
 **Separation of concerns:**
-Diwall provides the **mechanics** (`/opt/diwall/skills/`, `journal.py --exporter-skill`).
-The **semantic memory** of validated scenarios belongs to the project using Diwall,
+Dinoer provides the **mechanics** (`/opt/diwall/skills/`, `journal.py --exporter-skill`).
+The **semantic memory** of validated scenarios belongs to the project using Dinoer,
 in its own `_CADRE/SPECIFICATIONS/PROCEDURES_LLM/`.
 
 For each validated scenario, create a `SKILL_<name>.md` file in the `_CADRE/`
-of the **user project** (not in Diwall's `_CADRE/`):
+of the **user project** (not in Dinoer's `_CADRE/`):
 
 **`SKILL_pretix_login.md`** (in your project's _CADRE):
 ```markdown
@@ -208,4 +208,4 @@ Before writing a scenario:
 - [ ] If auth_indicator needed: test `--auth-indicator <sel>` [+ `--auth-indicator-negative <sel>` if selector is ambiguous]
 - [ ] Credentials verified for this domain (`urlparse(url).hostname`)
 - [ ] JSON scenario written and saved in `scenarios/`
-- [ ] `SKILL_<name>.md` file created in the user project's `_CADRE/` (not in Diwall's `_CADRE/`)
+- [ ] `SKILL_<name>.md` file created in the user project's `_CADRE/` (not in Dinoer's `_CADRE/`)

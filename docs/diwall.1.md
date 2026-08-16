@@ -1,4 +1,4 @@
-% DIWALL(1) | Diwall commands
+% DIWALL(1) | Dinoer commands
 %
 % July 2026
 
@@ -22,7 +22,7 @@ diwall - visual perception and RPA toolkit for LLM agents
 
 # DESCRIPTION
 
-Diwall gives an LLM agent eyes and hands on web interfaces it cannot
+Dinoer gives an LLM agent eyes and hands on web interfaces it cannot
 otherwise see or operate: screenshots, Set-of-Mark annotation and an
 accessibility tree on one side, Playwright-driven actions on the other.
 Every command prints a single JSON object on standard output, designed to
@@ -57,7 +57,7 @@ captures against it — pixel diff locally, or a description by a local vision
 model. Used for detecting visual regressions without a human looking.
 
 **diwall-monter-secrets**, **diwall-demonter-secrets**
-: Mount and unmount the gocryptfs-encrypted credentials directory. Diwall refuses
+: Mount and unmount the gocryptfs-encrypted credentials directory. Dinoer refuses
 to resolve any credential while it is closed, exiting with status 42
 rather than falling back to anything weaker.
 
@@ -75,7 +75,7 @@ stated otherwise. This is a selection, not the full list.
 : Mandatory proof that **/opt/diwall/docs/GUIDE_LLM.md** was read. Without it
 — and without a still-valid local marker — the command refuses to run and
 exits 1. The expected value is the *notice-version* comment on line 3 of that
-guide. This is the one place where Diwall is not opt-in.
+guide. This is the one place where Dinoer is not opt-in.
 
 **--version**
 : Print the installed version as JSON and exit, without starting a browser.

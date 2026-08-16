@@ -1,4 +1,4 @@
-# Development journal — Diwall
+# Development journal — Dinoer
 
 History of decisions and discoveries by session, in reverse chronological order.
 
@@ -83,8 +83,8 @@ Commit: `2ce3e64`
 ## 2026-08-07 — Partner sync: Sillage's own docs corrected for the vault->secrets rename
 
 Closing item of the vault-vocabulary chantier: Sillage's own project
-documentation cited Diwall's pre-04/08/2026 contract (`depuis_vault`,
-`vault_cle`, `VaultFermeError`, and the generic word describing Diwall's
+documentation cited Dinoer's pre-04/08/2026 contract (`depuis_vault`,
+`vault_cle`, `VaultFermeError`, and the generic word describing Dinoer's
 encrypted directory) in 25 files across its two private repositories.
 Corrected in both — none of it touches this repository, cited here for the
 record since the partner-synchronization law requires the correction to be
@@ -94,9 +94,9 @@ The correction stayed narrow on purpose. Sillage runs several of its own,
 entirely unrelated systems that happen to share the word "vault"/"coffre" —
 a credential-signing vault for its own licence infrastructure, a local
 Plasma Vault holding machine configuration, a testers' prompt/response
-archive. None of those are Diwall's contract, and none were touched. The one
+archive. None of those are Dinoer's contract, and none were touched. The one
 thing this session corrected across both repositories, deliberately, was
-wherever Sillage's prose was actually describing Diwall's own mechanism.
+wherever Sillage's prose was actually describing Dinoer's own mechanism.
 
 Not pushed — this note documents work committed in Sillage's own
 repositories, not in this one.
@@ -126,7 +126,7 @@ afterward. Worth remembering for the next sweep of this kind — a static
 asset does not show up in a content-directory search.
 
 Decision: no version bump — the site lives outside this repository, no
-Diwall code changed. Committed and validated (`preflight-publication.sh`
+Dinoer code changed. Committed and validated (`preflight-publication.sh`
 green, Hugo build clean, zero dangling link to the old slug) in the site's
 own repository, not pushed — publication waits on written validation across
 sessions 83-86, per the "two channels publish together" law.
@@ -151,13 +151,13 @@ release preflight).
 
 Same audit closed the last open item of an earlier documentation chantier
 (session 63): the operator guide now opens with an ASCII diagram of the
-capture loop — browser, the three parallel views Diwall extracts from the
+capture loop — browser, the three parallel views Dinoer extracts from the
 DOM, and the compass — instead of describing it in prose alone.
 
 A partner project (Sillage) hardcodes this same guide-read token in two of
 its own documents. Both were found and corrected in the partner's own
 repository, in the same session, so the token bump does not silently break
-its next Diwall invocation.
+its next Dinoer invocation.
 
 Two full package-installation cycles (fresh purge-and-install, and upgrade
 in place over the previously active version) were run to validate the
@@ -171,7 +171,7 @@ Commit: `7c05cc4`
 ## 2026-08-07 — Filesystem permissions and hardening, closed with a real install cycle
 
 Two more lots of the sanitisation project landed: tighter file permissions
-on the data Diwall writes to disk (visual references, ChromaDB, the
+on the data Dinoer writes to disk (visual references, ChromaDB, the
 `--output` path), and a set of smaller hardening items — a regex timeout on
 assertion matching so a hostile page can't hang the process with a
 catastrophic-backtracking pattern, a decompression-bomb guard on image
@@ -181,12 +181,12 @@ one of them.
 
 Two items from the plan were deliberately not applied, and said so in the
 code rather than silently dropped. Lowering the base64-detection threshold
-turned out to re-flag exactly the kind of filename Diwall itself generates
+turned out to re-flag exactly the kind of filename Dinoer itself generates
 (`capture_<timestamp>`) as a false positive — the same regression a fix
 from the day before had corrected, this time caught before it shipped by
 testing against real generated filenames instead of trusting the plan's
 number. A second chmod, on a directory shared by every service account
-running Diwall, was left out for the same reason: applied literally it
+running Dinoer, was left out for the same reason: applied literally it
 would have broken that sharing for no security gain, since the directory
 holding the actual sensitive files was already locked down.
 
@@ -245,7 +245,7 @@ restricted. Worth remembering for whoever runs the next one of these.
 ## 2026-08-07 — Six independent audits kept finding the same leak under different names
 
 A redaction function existed and worked correctly — but only one of the two
-channels that carry Diwall's output called it. The persistent operations log
+channels that carry Dinoer's output called it. The persistent operations log
 redacted a cookie value, a bearer token, a URL's query string before writing
 it to disk. Standard output — what the LLM agent actually reads — did not.
 An `evaluer` action that read `document.cookie` on an authenticated page, an
@@ -625,7 +625,7 @@ regardless of who invoked the install, so the browser location silently
 depended on where root's home directory happened to be. Second: asking
 Playwright to install its own system library dependencies from inside
 that same `postinst` deadlocks, because that call spawns its own package
-manager transaction while the one already installing Diwall still holds
+manager transaction while the one already installing Dinoer still holds
 the lock. Both are fixed now — a browser path pinned independently of
 `$HOME`, and the required libraries declared as ordinary package
 dependencies instead of installed by a nested call that could never have
@@ -719,7 +719,7 @@ completeness, referenced images, and a cosine-similarity gate on meaning. All
 of them were green. Human review then found four families of defects, and none
 of the six could have caught any of them.
 
-**A heading stopped being a heading.** `## Why Diwall — what you actually
+**A heading stopped being a heading.** `## Why Dinoer — what you actually
 delegate` came back in Spanish without its hashes, as ordinary prose. The
 document was one section short, and so was the generated PDF. The text was
 translated, the tags were intact, the register was right: every net passes a
@@ -935,7 +935,7 @@ what is already written.
 
 The governance scripts of this repository — publication check, coherence
 check, pre-push hook, package build, translation chain — are no longer
-distributed. They serve to maintain Diwall, not to use it.
+distributed. They serve to maintain Dinoer, not to use it.
 
 This is a cleanup, and it presents itself as one. Nine files are affected;
 the eight scripts a user actually needs stay exactly where they were:
@@ -955,9 +955,9 @@ nothing sensitive in the seventeen scripts.
 result: the translated markdown under `i18n/`, its segment fingerprints, and
 the manifest declaring the order of the reference PDFs. The machine that
 produces them needs `pandoc`, a LaTeX engine and a local Ollama instance —
-none of which was ever a Diwall dependency, and none of which a packager or a
+none of which was ever a Dinoer dependency, and none of which a packager or a
 fork needs. The `README.md` reproduction command changed accordingly: it now
-demonstrates Diwall itself against a fixture versioned in this repository,
+demonstrates Dinoer itself against a fixture versioned in this repository,
 rather than the maintainer script that generated the illustration.
 
 The v1.23.0 validation suite (`scenarios/v1.23.0_validation/`) tests that
@@ -1052,7 +1052,7 @@ either. What catches it is a literal: the instruction describes the tag shape
 as `[[[xxx]]]`, and real tags are always numeric — that string can reach an
 answer exactly one way.
 
-And from the single heading `## Uninstalling Diwall`, the German run produced
+And from the single heading `## Uninstalling Dinoer`, the German run produced
 a complete invented Windows uninstall procedure, control panel and all. It was
 caught only because the invention happened to mention `/usr/local`, a path the
 second net could compare against the source. Invented prose without a path
@@ -1206,7 +1206,7 @@ zero segments awaiting arbitration.
 
 An arbitration may also target a fenced block, and only a human can: some
 blocks are ASCII diagrams whose content is prose, not code
-(`LLM acts → Diwall captures → …`). Those blocks still never reach a model.
+(`LLM acts → Dinoer captures → …`). Those blocks still never reach a model.
 
 **What the checks caught on their author.** Writing arbitrations by hand
 removes the code-masking safety net, and both remaining nets fired on this
@@ -1231,7 +1231,7 @@ documented only in the LLM notices, so an operator reading the reference table
 could not find it. And installation now leads with the Debian package rather
 than burying it under a manual six-step procedure as an "alternative": one
 `apt install` line is the simple path, and building from source is for
-modifying Diwall itself.
+modifying Dinoer itself.
 
 **The register drifted, and fixing it naively made things far worse.** The
 first Spanish build mixed 20 `tú` with 29 `usted` inside one document. Nothing
@@ -1381,7 +1381,7 @@ succeeds by the normal path — not by the error fallback, which yields neither
   "import json,sys; print(json.load(sys.stdin)['respect'])"
 
 # Construire le paquet et le ranger dans paquets/<version>/
-bash ~/git/Diwall/Diwall/scripts/construire-paquet.sh
+bash ~/git/Dinoer/Dinoer/scripts/construire-paquet.sh
 man diwall
 ```
 
@@ -1393,7 +1393,7 @@ man diwall
 `cliquer` action, distinct from `force: true` and not a replacement for it —
 a second-level escalation, tried only when a native click (with or without
 `force`) still fails on an interactability/obstruction error. On failure,
-Diwall retries via `page.eval_on_selector(selecteur, "el => el.click()")`.
+Dinoer retries via `page.eval_on_selector(selecteur, "el => el.click()")`.
 `boussole.repli_js_utilise: true` appears only when the escalation actually
 ran, never just because the flag is set (same discipline as `stealth_actif`).
 Rejected at scenario validation (`arguments_incompatibles`, exit 2, before any
@@ -1461,11 +1461,11 @@ in place).
 
 ## 2026-07-14/15 — Session 55 (v1.21.0 — HTTP Basic Auth + guide hygiene + demonstration cases)
 
-**Context:** triggered by a field report from a partner project (`__HOST_VPS__`) — Diwall
+**Context:** triggered by a field report from a partner project (`__HOST_VPS__`) — Dinoer
 had no way to answer an HTTP Basic Auth challenge (RFC 7617), the common
 authentication wall in front of self-hosted admin interfaces (Grafana,
 Prometheus, and similar) behind a reverse proxy. The same investigation
-surfaced a deeper documentation problem: a model had asserted Diwall could
+surfaced a deeper documentation problem: a model had asserted Dinoer could
 not fill an authentication form at all — false, but revealing that the
 mandatory `--guide-version` lock only gates tool *execution*, never
 conversational claims about the tool.
@@ -1494,7 +1494,7 @@ conversational claims about the tool.
 **Guide hygiene:**
 
 - Non-presumption rule (`CLAUDE.md` Règle n°7, `docs/GUIDE_LLM.md`): never
-  affirm a Diwall capability is absent, never presume one exists, without
+  affirm a Dinoer capability is absent, never presume one exists, without
   checking the action tables first.
 - `docs/GUIDE_LLM.md` compressed from 413 to 250 lines — the budget already
   promised in `CLAUDE.md` but silently exceeded across 8 prior version
@@ -1634,7 +1634,7 @@ adding the same exclusions `.gitignore` already declares for those paths.
 
 ```bash
 # Suite de tests v1.20.0 (journal.py --erreurs, latences_actions)
-# depuis la racine du dépôt source ~/git/Diwall/Diwall/
+# depuis la racine du dépôt source ~/git/Dinoer/Dinoer/
 /opt/diwall/venv/bin/python3 scenarios/v1.20.0_validation/verifier.py
 
 # journal.py --erreurs en conditions reelles
@@ -1646,10 +1646,10 @@ adding the same exclusions `.gitignore` already declares for those paths.
   --guide-version 3.8
 
 # Preflight avant toute publication
-cd ~/git/Diwall/Diwall && bash scripts/preflight-publication.sh
+cd ~/git/Dinoer/Dinoer && bash scripts/preflight-publication.sh
 ```
 
-**Statut : PHASE_EXECUTION + PHASE_VALIDATION closes. `_CADRE/` et `Diwall/`
+**Statut : PHASE_EXECUTION + PHASE_VALIDATION closes. `_CADRE/` et `Dinoer/`
 non encore commités — commit et décision push/release à la charge de la
 suite de session (voir ADDENDUM du jour).**
 
@@ -1829,7 +1829,7 @@ surfaced the read-lock friction firsthand.
   zero LLM call. Silent on a stable run, an `ntfy` push on regression.
   Repetition over time is left to cron/systemd-timer, not an internal loop.
 - **Interoperability fixtures:** `scenarios/interoperabilite/` — `example.com`
-  as a neutral witness plus a fully Diwall-controlled local HTML fixture
+  as a neutral witness plus a fully Dinoer-controlled local HTML fixture
   (nested iframe, open Shadow DOM component, form), for structural
   non-regression that does not depend on third-party sites remaining
   unchanged.
@@ -1917,7 +1917,7 @@ copies that directory to `/opt/diwall/`. `README.md`, `docs/GUIDE.md`, and
 relative path (correct only if already `cd`'d into the repo root, never
 stated), one (`docs/MANUEL.md`, vault mount instructions) as
 `/opt/diwall/scripts/monter-repertoire-chiffre.sh` — a path that does not exist. All
-occurrences now use the absolute path `~/git/Diwall/Diwall/scripts/<script>.sh`,
+occurrences now use the absolute path `~/git/Dinoer/Dinoer/scripts/<script>.sh`,
 consistent with the rest of the documentation.
 
 ---
@@ -2043,7 +2043,7 @@ discipline already in place.
 - **Item C — WAF detection:** `_detecter_waf()` (403/429 or keyword match)
   checked on the initial navigation and every `naviguer` action. Counted in
   `citoyennete.waf_bloquants` (root and boussole, via the existing duplication).
-  Signal only — no exception, ever (session 47 arbitration: Diwall perceives,
+  Signal only — no exception, ever (session 47 arbitration: Dinoer perceives,
   it does not moralize about access).
 - **Item D — `erreurs_console`:** `page.on("console", ...)` filtered to
   `type == "error"`, root-level list, always present. Distinct from `erreurs_js`
@@ -2199,7 +2199,7 @@ Preflight exit 0.
 - `CLAUDE.md`: Rule n°6 added — every `password` field in a scenario must use `depuis_secrets`.
 - `scripts/preflight-publication.sh`: scope extended to `scenarios/*.json`, dummy credential pattern added.
 - `docs/GUIDE_LLM.md`: WAF note added — e-commerce sites protected by Cloudflare/CloudFront
-  return 403 systematically; web landscape friction, not a Diwall constraint.
+  return 403 systematically; web landscape friction, not a Dinoer constraint.
 - `docs/RETOUR_EXPERIENCE.md`: FR-77 — REX commercial search session (23 sites, 8.7% accessible,
   39% WAF blocking).
 - `__version__`: 1.14.0 → 1.14.1 in shot.py / rpa.py / journal.py.
@@ -2420,7 +2420,7 @@ Complete PHASE_EXECUTION, spec `V1_10_0_SECRETS_MULTICOFFRE.md` (Items A–D):
   (`verifier_cles_fichier` if `--secrets`, `verifier_cles` otherwise); propagation to shot.py subprocess.
 
 - `docs/GUIDE_LLM.md` v2.5 — section "Multi-vault and explicit credential files":
-  use cases, syntax, Diwall JSON format, T3 coverage, T1 doctrine + honest limit,
+  use cases, syntax, Dinoer JSON format, T3 coverage, T1 doctrine + honest limit,
   T4 limit, T6 perception surface.
 
 - `__version__` → `1.10.0` on `shot.py`, `rpa.py`, `journal.py`.
@@ -2440,7 +2440,7 @@ Preflight exit 0. Smoke tests 3/3.
 Consistent with honest limit T1 (tmpfs = active mount). Test uses an unmounted directory
 to validate rejection.
 
-**State on exit:** Diwall v1.10.0. 64 frictions / 35 sessions.
+**State on exit:** Dinoer v1.10.0. 64 frictions / 35 sessions.
 
 ---
 
@@ -2451,7 +2451,7 @@ Proposal raised by Claude Sillage: replace fixed pauses with `attendre_selecteur
 
 **Work done:**
 
-Trilateral operator / Claude Diwall / Claude Sillage — PHP selector verification
+Trilateral operator / Claude Dinoer / Claude Sillage — PHP selector verification
 by Sillage before execution. Sillage commit `a762dbe`: `data-sillage` attribute added
 on `<tr>` elements of `page_tenant.php` to make deletion awaitable (C3).
 
@@ -2475,7 +2475,7 @@ on `<tr>` elements of `page_tenant.php` to make deletion awaitable (C3).
 **Validation:** succes:true — 6 cross-domain navigations (`__DOMAINE_OPERATEUR__` + `__HOST_CLONE__`)
 with `attendre_selecteur_present: h1`, 4463ms, clean captures. Preflight exit 0 / smoke tests 3/3.
 
-**State on exit:** Diwall v1.9.8. 64 frictions / 32 sessions.
+**State on exit:** Dinoer v1.9.8. 64 frictions / 32 sessions.
 
 ---
 
@@ -2486,7 +2486,7 @@ Friction #66 raised by Claude Sillage (E2E validation C1b, campaign 18/06).
 
 **Work done:**
 
-Trilateral operator / Claude Diwall / Claude Sillage (via operator relay) upstream:
+Trilateral operator / Claude Dinoer / Claude Sillage (via operator relay) upstream:
 decision for a two-step fix — immediate documentary, non-urgent API.
 
 - `docs/GUIDE_LLM.md` v2.3 — `attendre_absence` timeout rule on first form submission
@@ -2506,7 +2506,7 @@ decision for a two-step fix — immediate documentary, non-urgent API.
 
 **Preflight:** exit 0 / smoke tests 3/3
 
-**State on exit:** Diwall v1.9.7. 63 frictions / 31 sessions.
+**State on exit:** Dinoer v1.9.7. 63 frictions / 31 sessions.
 
 ---
 
@@ -2532,7 +2532,7 @@ Frictions #35 and #37 marked resolved in `docs/RETOUR_EXPERIENCE.md`.
 
 **Preflight:** exit 0 / smoke tests 3/3
 
-**State on exit:** Diwall v1.9.6. 67 frictions / 29 sessions.
+**State on exit:** Dinoer v1.9.6. 67 frictions / 29 sessions.
 Group C: #35 ✓ #37 ✓ #4 ✓ #40 ✓ (cold test #40 to run before release).
 
 ---
@@ -2544,17 +2544,17 @@ Frictions #61–63 discovered during Sillage E2E campaign v3.5.6 (14/06).
 
 **Work done:**
 
-Trilateral operator / Claude Diwall / Gemini in PHASE_PLANIFICATION: repositioning
-Diwall communication around the shared human/LLM visual reference.
+Trilateral operator / Claude Dinoer / Gemini in PHASE_PLANIFICATION: repositioning
+Dinoer communication around the shared human/LLM visual reference.
 
 - `README.md` — removal of "not a tool for humans". New pitch: shared visual reference,
   distinct benefits for humans (delegating anxiety) and LLMs (interface perception).
 
-- `docs/GUIDE_HUMAIN.md` v1.1 — conceptual introduction "Why Diwall" added at the top:
+- `docs/GUIDE_HUMAIN.md` v1.1 — conceptual introduction "Why Dinoer" added at the top:
   delegation of anxiety-inducing visual verification, recommended/discouraged use case table.
 
 - `docs/GUIDE_LLM.md` v2.1 — two additions:
-  - Section "When NOT to use Diwall": FR-59 (Playwright 30s non-configurable timeout),
+  - Section "When NOT to use Dinoer": FR-59 (Playwright 30s non-configurable timeout),
     FR-60 (orphan mutation after timeout). Summary table with alternatives.
   - Frictions #61–63: rules on JS-interactive DOM elements — CSS-masked inputs
     (toggle-switch), conditional buttons on a `<select>`, buttons inside native `<dialog>`.
@@ -2571,7 +2571,7 @@ in previous sessions without REX marking.
 
 **Commits:** `b12645a`, `d8c0d9d`, `87a1373`, `<this commit>`
 
-**State on exit:** Diwall v1.9.5 in production on the production server. 67 frictions / 28 sessions.
+**State on exit:** Dinoer v1.9.5 in production on the production server. 67 frictions / 28 sessions.
 
 ---
 
@@ -2582,7 +2582,7 @@ Sillage message: 4 new field frictions FN10–FN13 from E2E re-test Milestone C 
 
 **Work done:**
 
-Trilateral operator / Claude Diwall / Gemini in PHASE_PLANIFICATION: analysis of high
+Trilateral operator / Claude Dinoer / Gemini in PHASE_PLANIFICATION: analysis of high
 cost of E2E sessions on new features (7 rpa.py invocations for batch deletion — FN8 triggered).
 Decision: reduce cost via a mandatory non-mutating exploration pass before any operational scenario.
 
@@ -2622,7 +2622,7 @@ three architectural gaps identified by Claude Sillage during PHASE_VALIDATION C2
   must be created manually from this template — its absence shows a framed warning.
   Separate permissions: `lib/*.py` → 644, `scenarios/*` + `skills/*` + `diwall.conf` → 640.
 
-- `lib/repertoire_chiffre.py` — removal of silent fallback `~/Vaults/Diwall`.
+- `lib/repertoire_chiffre.py` — removal of silent fallback `~/Vaults/Dinoer`.
   New exception `SecretsNonConfigureError` (exit 43) raised if `diwall.conf` absent
   during vault resolution. Structured message with correction instructions.
   Vault error set: 42 = vault closed, 43 = not configured.
@@ -2653,14 +2653,14 @@ Sillage Milestone C shared by the operator (PHASE_VALIDATION C2, 11/06/2026).
   - Friction FR-57 "CSS-only dialogs": `cliquer`/`cliquer_som` timeout on
     CSS-masked containers without `<dialog open>` — `evaluer`+JS pattern mandatory.
 - `_CADRE/MEMOIRE/MESSAGERIE_PROJETS.md` — created: inbound inter-LLM channel.
-  Any project using Diwall writes here (via the operator) to communicate with
-  Claude Diwall. Conditional reading at startup (`grep OUVERT`).
+  Any project using Dinoer writes here (via the operator) to communicate with
+  Claude Dinoer. Conditional reading at startup (`grep OUVERT`).
 - `_CADRE/GOUVERNANCE/PROTOCOLE_DEMARRAGE.md` — item 6 conditional (messaging)
   added to instruction n°2 and startup checklist.
 - `_CADRE/INDEX.md` — MESSAGERIE_PROJETS reference added.
 
-**Architectural decision:** the inter-LLM channel is centralised in `_CADRE Diwall`
-(Diwall is the common instrument). Partner projects do not need to access each other's `_CADRE`.
+**Architectural decision:** the inter-LLM channel is centralised in `_CADRE Dinoer`
+(Dinoer is the common instrument). Partner projects do not need to access each other's `_CADRE`.
 
 **REX received from Claude Sillage:** two good reflexes documented (FD1 CSS dialogs,
 FD2 placeholder/ID ambiguity). Avoidable frictions: modal Mode B rule violation,
@@ -2784,7 +2784,7 @@ Same method as the 03 June 2026 campaign (SIGNAUX_V18.md).
 - `docs/GUIDE_LLM.md` v1.8 — security block at top + 4 pitfalls
   (FR-54, FR-55, FR-56, FR-58 DIWALL_SECRETS_DIR vs DIWALL_CONF).
 - `docs/RETOUR_EXPERIENCE.md` — frictions #52–#56, session 19 summary.
-- `docs/RADAR_MODELES.md` created — raw observation log on LLM behaviour with Diwall
+- `docs/RADAR_MODELES.md` created — raw observation log on LLM behaviour with Dinoer
   (2 entries: Claude Sonnet pre-fixes / Gemini Flash).
 
 **Key decision:** `RADAR_MODELES.md` public, no editorial filter. The visibility doctrine
@@ -2829,7 +2829,7 @@ Incomplete JSON schema (refs without definitions).
 
 - `lib/vector.py` (FR-53) — new optional ChromaDB interface. DB_PATH cascade:
   `DIWALL_VECTOR_DB` env → `diwall.conf.vector_db` → `_CADRE/MEMOIRE/`
-  (if sibling) → `~/Vaults/Diwall/chroma_db`. Lazy imports (chromadb, requests).
+  (if sibling) → `~/Vaults/Dinoer/chroma_db`. Lazy imports (chromadb, requests).
 
 - `scenarios/schema.json` — 5 JSON Schema definitions added (AttendreUrl,
   AttendreSelecteurPresent, AttendreAbsence, AttendreReseauCalme, NettoyerOverlay),
@@ -2868,7 +2868,7 @@ Addition during session detected during consistency check.
 - Task sheet created: `_CADRE/SPECIFICATIONS/PROCEDURES_LLM/TACHE_matomo-ajouter-site.md`.
 
 **Decision:** no version bump — `site_internet/` is outside the public repository,
-no Diwall code modified.
+no Dinoer code modified.
 
 ---
 
@@ -2883,10 +2883,10 @@ no Diwall code modified.
   - FN5: domain names in `<a>` selectors → strict mode violation; navigate via direct URL
   - FN7: `attendre_reseau_calme` + synchronous long server operation → fixed 30s screenshot
     timeout not controllable by `--timeout`; `pause` pattern documented
-  - FN8: mutating `evaluer` dispatched before Diwall timeout → verify server state
+  - FN8: mutating `evaluer` dispatched before Dinoer timeout → verify server state
     before relaunching the scenario
 
-**Version:** GUIDE_LLM.md v1.9 (doc only — no Diwall version bump).
+**Version:** GUIDE_LLM.md v1.9 (doc only — no Dinoer version bump).
 
 **Commit:** `8a59e36` — docs(GUIDE_LLM): add FN5–FN9 rules from Sillage E2E validation
 
@@ -2895,5 +2895,5 @@ no Diwall code modified.
 ## Earlier sessions
 
 Sessions 1 to 17 are documented in:
-`~/git/Diwall/_CADRE/MEMOIRE/ADDENDUM_*.md`
+`~/git/Dinoer/_CADRE/MEMOIRE/ADDENDUM_*.md`
 and in `docs/RETOUR_EXPERIENCE.md`.

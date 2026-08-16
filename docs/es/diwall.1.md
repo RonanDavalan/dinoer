@@ -1,4 +1,4 @@
-% DIWALL(1) | Comandos de Diwall
+% DIWALL(1) | Comandos de Dinoer
 %
 % Julio de 2026
 
@@ -22,7 +22,7 @@ diwall - conjunto de herramientas para la percepción visual y la automatizació
 
 # DESCRIPCIÓN
 
-Diwall proporciona a un agente de LLM "ojos" y "manos" en interfaces web que de otro modo no podría ver ni operar: capturas de pantalla, anotaciones tipo "Set-of-Mark" y un árbol de accesibilidad en un lado, y acciones impulsadas por Playwright en el otro. Cada comando imprime un único objeto JSON en la salida estándar, diseñado para ser leído por un programa y no por un humano.
+Dinoer proporciona a un agente de LLM "ojos" y "manos" en interfaces web que de otro modo no podría ver ni operar: capturas de pantalla, anotaciones tipo "Set-of-Mark" y un árbol de accesibilidad en un lado, y acciones impulsadas por Playwright en el otro. Cada comando imprime un único objeto JSON en la salida estándar, diseñado para ser leído por un programa y no por un humano.
 
 Este paquete instala seis comandos bajo **/usr/bin**. Son envoltorios ligeros alrededor de los puntos de entrada de Python en **/opt/diwall**, y leen su configuración desde **/etc/diwall/diwall.conf** en lugar del **/opt/diwall/diwall.conf** utilizado por el canal de instalación de git-clone.
 
@@ -42,7 +42,7 @@ operación repetible, y es el único que evalúa las aserciones del escenario.
 : Monitoreo visual. Guarda una imagen de referencia de una página y luego compara capturas posteriores con ella: diferencia de píxeles localmente o una descripción proporcionada por un modelo de visión local. Se utiliza para detectar regresiones visuales sin la intervención humana.
 
 **diwall-monter-secrets**, **diwall-demonter-secrets**
-: Monta y desmonta el directorio de credenciales cifrado con gocryptfs. Diwall se niega a resolver cualquier credencial mientras está cerrado, saliendo con el código de estado 42 en lugar de recurrir a una alternativa menos segura.
+: Monta y desmonta el directorio de credenciales cifrado con gocryptfs. Dinoer se niega a resolver cualquier credencial mientras está cerrado, saliendo con el código de estado 42 en lugar de recurrir a una alternativa menos segura.
 
 **diwall-monitor-verifier**
 : Ejecuta una única pasada de verificación estructural para un escenario, comparándola con una referencia guardada, y sale con un código distinto de cero si hay divergencias. Está diseñado para ser ejecutado por cron o un temporizador systemd; no contiene ningún bucle propio.
@@ -55,7 +55,7 @@ Las opciones que se muestran a continuación son comunes a **diwall-shot** y **d
 : Es obligatorio proporcionar una prueba de que **/opt/diwall/docs/GUIDE_LLM.md** fue leído. Sin ella
 — y sin un marcador local aún válido — el comando se niega a ejecutarse y
 sale con código 1. El valor esperado es el comentario "notice-version" en la línea 3 de esa
-guía. Este es el único lugar donde Diwall no es opcional.
+guía. Este es el único lugar donde Dinoer no es opcional.
 
 **--version**
 : Imprime la versión instalada en formato JSON y sal de la aplicación, sin iniciar un navegador.

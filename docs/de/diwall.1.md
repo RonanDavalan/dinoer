@@ -1,4 +1,4 @@
-% DIWALL(1) | Diwall-Befehle
+% DIWALL(1) | Dinoer-Befehle
 %
 % Juli 2026
 
@@ -22,7 +22,7 @@ diwall - Toolkit für visuelle Wahrnehmung und Robotic Process Automation (RPA) 
 
 # BESCHREIBUNG
 
-Diwall verleiht einem LLM-Agenten "Augen" und "Hände" für Webinterfaces, die er sonst nicht sehen oder bedienen kann: Screenshots, Markierungen und einen Accessibility-Baum auf der einen Seite, Playwright-gesteuerte Aktionen auf der anderen. Jeder Befehl gibt ein einzelnes JSON-Objekt auf der Standardausgabe aus, das dafür gedacht ist, von einem Programm gelesen zu werden, anstatt von einem Menschen.
+Dinoer verleiht einem LLM-Agenten "Augen" und "Hände" für Webinterfaces, die er sonst nicht sehen oder bedienen kann: Screenshots, Markierungen und einen Accessibility-Baum auf der einen Seite, Playwright-gesteuerte Aktionen auf der anderen. Jeder Befehl gibt ein einzelnes JSON-Objekt auf der Standardausgabe aus, das dafür gedacht ist, von einem Programm gelesen zu werden, anstatt von einem Menschen.
 
 Dieses Paket installiert sechs Befehle unter **/usr/bin**. Sie sind dünne
 Wrapper um die Python-Einstiegspunkte in **/opt/diwall**, und sie lesen
@@ -45,7 +45,7 @@ was wiederholbar ist, und der einzige, der Szenario-Assertions bewertet.
 : Visuelle Überwachung. Speichert ein Referenzbild einer Seite und vergleicht später erstellte Bilder damit – entweder durch einen lokalen Pixelvergleich oder durch eine Beschreibung eines lokalen Bilderkennungsmodells. Wird verwendet, um visuelle Fehler zu erkennen, ohne dass ein Mensch dies überprüfen muss.
 
 **diwall-monter-secrets**, **diwall-demonter-secrets**
-: Das verschlüsselte Credential-Verzeichnis von gocryptfs mounten und unmounten. Diwall weigert sich,
+: Das verschlüsselte Credential-Verzeichnis von gocryptfs mounten und unmounten. Dinoer weigert sich,
 irgendeine Credential zu verarbeiten, während es geschlossen ist, und beendet den Vorgang mit dem Status 42,
 anstatt auf eine schwächere Methode zurückzugreifen.
 
@@ -61,7 +61,7 @@ es wird anders angegeben. Dies ist eine Auswahl, nicht die vollständige Liste.
 : Pflichtnachweis, dass **/opt/diwall/docs/GUIDE_LLM.md** gelesen wurde. Ohne diesen Nachweis
 — und ohne einen noch gültigen lokalen Marker — wird der Befehl nicht ausgeführt und
 beendet sich mit dem Fehlercode 1. Der erwartete Wert ist der Kommentar "*notice-version*" in Zeile 3 dieser
-Anleitung. Dies ist der einzige Ort, an dem Diwall nicht optional ist.
+Anleitung. Dies ist der einzige Ort, an dem Dinoer nicht optional ist.
 
 **--version**
 : Die installierte Version als JSON ausgeben und beenden, ohne einen Browser zu starten.

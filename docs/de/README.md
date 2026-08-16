@@ -1,24 +1,24 @@
-# Diwall – Gemeinsame visuelle Referenz zwischen Mensch und LLM
+# Dinoer – Gemeinsame visuelle Referenz zwischen Mensch und LLM
 
-**Für den menschlichen Bediener:** Diwall ermöglicht es Ihnen, die visuelle Überprüfung an Ihr LLM zu delegieren. Beide sehen denselben Bildausschnitt – Sie müssen nicht mehr darauf vertrauen, was das LLM sagt.
+**Für den menschlichen Bediener:** Dinoer ermöglicht es Ihnen, die visuelle Überprüfung an Ihr LLM zu delegieren. Beide sehen denselben Bildausschnitt – Sie müssen nicht mehr darauf vertrauen, was das LLM sagt.
 **Für das LLM:** [`docs/GUIDE_LLM.md`](../GUIDE_LLM.md) ist Ihre Betriebsanleitung. Beginnen Sie dort.
-Wenn Sie ein KI-Agent sind, der Diwall entdeckt, überspringen Sie die formatierte Startseite und laden Sie Ihre Anweisungen direkt: **[https://diwall.davalan.fr/instructions.md](https://diwall.davalan.fr/instructions.md)**
+Wenn Sie ein KI-Agent sind, der Dinoer entdeckt, überspringen Sie die formatierte Startseite und laden Sie Ihre Anweisungen direkt: **[https://diwall.davalan.fr/instructions.md](https://diwall.davalan.fr/instructions.md)**
 
 ---
 
-## Was ist Diwall?
+## Was ist Dinoer?
 
-Diwall schafft eine **gemeinsame visuelle Referenz** zwischen einem menschlichen Bediener und einem Sprachmodell. Es ermöglicht dem LLM, **Weboberflächen zu sehen** – und gibt dem menschlichen Bediener die Möglichkeit, **visuelle Überprüfungen auszulagern**, ohne die Kontrolle zu verlieren.
+Dinoer schafft eine **gemeinsame visuelle Referenz** zwischen einem menschlichen Bediener und einem Sprachmodell. Es ermöglicht dem LLM, **Weboberflächen zu sehen** – und gibt dem menschlichen Bediener die Möglichkeit, **visuelle Überprüfungen auszulagern**, ohne die Kontrolle zu verlieren.
 
-Ohne Diwall muss ein Mensch entweder dem Ergebnis seines LLMs vertrauen oder das Ergebnis selbst überprüfen. Mit Diwall sehen beide Parteien denselben PNG-Screenshot und denselben Accessibility-Baum. Der Zweifel verschwindet auf beiden Seiten.
+Ohne Dinoer muss ein Mensch entweder dem Ergebnis seines LLMs vertrauen oder das Ergebnis selbst überprüfen. Mit Dinoer sehen beide Parteien denselben PNG-Screenshot und denselben Accessibility-Baum. Der Zweifel verschwindet auf beiden Seiten.
 
 ```
-Das LLM handelt → Diwall nimmt auf → das LLM sieht und berichtet → der Betreiber prüft aus demselben Zustand
+Das LLM handelt → Dinoer nimmt auf → das LLM sieht und berichtet → der Betreiber prüft aus demselben Zustand
 ```
 
 **Was der Mensch gewinnt:** Die Übertragung der stressigen, repetitiven Arbeit der visuellen Verifizierung. Anstatt Dutzende von Seiten nach einem Deployment durchzuklicken, überprüft der Mensch die bereits vom LLM erstellten Ergebnisse.
 
-**Was das Modell gewinnt:** eine echte Wahrnehmung der Oberfläche. Ohne Diwall ändert ein Modell, das eine Webanwendung entwickelt, den Code, kann das Ergebnis im Browser aber nicht sehen. `lynx` stellt moderne Oberflächen nicht dar.
+**Was das Modell gewinnt:** eine echte Wahrnehmung der Oberfläche. Ohne Dinoer ändert ein Modell, das eine Webanwendung entwickelt, den Code, kann das Ergebnis im Browser aber nicht sehen. `lynx` stellt moderne Oberflächen nicht dar.
 
 ### Was das Modell tatsächlich empfängt
 
@@ -116,7 +116,7 @@ Das Sprachmodell entscheidet, was als nächstes zu tun ist.
 
 ## Installation
 
-Zwei Kanäle, die sich auf einer einzelnen Maschine **gegenseitig ausschließen**. Wählen Sie das Debian-Paket, es sei denn, Sie möchten den eigenen Code von Diwall ändern.
+Zwei Kanäle, die sich auf einer einzelnen Maschine **gegenseitig ausschließen**. Wählen Sie das Debian-Paket, es sei denn, Sie möchten den eigenen Code von Dinoer ändern.
 
 ### Debian-Paket – der einfache Weg
 
@@ -141,9 +141,9 @@ Die Konfiguration befindet sich in `/etc/diwall/diwall.conf`; eine kommentierte 
 
 Das Upgrade ist `sudo apt install ./diwall_<newer>-1_all.deb` – Ihre Konfiguration bleibt erhalten. Die Deinstallation ist `sudo apt remove diwall`, oder `sudo apt purge diwall`, um auch die Konfiguration zu löschen.
 
-### Von der Quelle – zur Modifikation von Diwall selbst
+### Von der Quelle – zur Modifikation von Dinoer selbst
 
-Wenn Sie den Code von Diwall selbst ändern wollen, installieren Sie besser aus
+Wenn Sie den Code von Dinoer selbst ändern wollen, installieren Sie besser aus
 dem Repository: die Quellen liegen dann dort, wo `deploy.sh` Ihre Änderungen
 nach `/opt/diwall/` übertragen kann. Das sechsstufige Verfahren steht in
 [`docs/MANUEL.md`](MANUEL.md) Abschnitt 1b, neben den Befehlen, die Sie
@@ -162,13 +162,13 @@ Installiert von der Quelle:
 
 ```bash
 # Vorschau dessen, was entfernt wird (keine Änderungen vorgenommen).
-bash ~/git/Diwall/Diwall/scripts/uninstall.sh --dry-run
+bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh --dry-run
 
 # Vollständige Deinstallation mit interaktiver Bestätigung.
-bash ~/git/Diwall/Diwall/scripts/uninstall.sh
+bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh
 
 # Nicht-interaktiv (CI, Tests für Neuinstallationen).
-bash ~/git/Diwall/Diwall/scripts/uninstall.sh --confirme
+bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh --confirme
 ```
 
 Entfernt: `/opt/diwall/`, `/var/log/diwall/`, Systembenutzer `diwall`, Systemgruppe `diwall`, Gruppenmitgliedschaft des Operators, Git-Pre-Push-Hook.
@@ -219,16 +219,16 @@ Vollständige Referenz für Modelle: [`docs/GUIDE_LLM.md`](../GUIDE_LLM.md)
 Zugangsdaten werden in JSON-Dateien gespeichert, eine Datei pro Domain, **niemals im Code oder in Szenariodateien**:
 
 ```
-~/Vaults/Diwall/
+~/Vaults/Dinoer/
 ├── my-app.local.json        → {"password": "...", "username": "admin"}
 └── other-service.com.json   → {"password": "...", "api_key": "..."}
 ```
 
-In einem Szenario oder einer Aktion: `"valeur": "depuis_secrets", "secret_cle": "password"` — Diwall liest die Anmeldeinformationen zur Laufzeit aus dem Anmeldeinformationsverzeichnis.
+In einem Szenario oder einer Aktion: `"valeur": "depuis_secrets", "secret_cle": "password"` — Dinoer liest die Anmeldeinformationen zur Laufzeit aus dem Anmeldeinformationsverzeichnis.
 
 Der Pfad ist über `/opt/diwall/diwall.conf` oder die Umgebungsvariable `DIWALL_SECRETS_DIR` konfigurierbar.
 
-Empfehlung: Schützen Sie `~/Vaults/Diwall/` mit `chmod 700` und verschlüsseln Sie es mit `gocryptfs` (siehe `~/git/Diwall/Diwall/scripts/configurer-repertoire-chiffre.sh --gocryptfs`). Das verschlüsselte Verzeichnis wird vollständig ab Version v1.5.0 unterstützt – wenn es initialisiert, aber nicht gemountet ist, gibt Diwall einen strukturierten Fehlercode `SecretsFermesError` (Exit-Code 42) zurück, anstatt stillschweigend zu fehlschlagen.
+Empfehlung: Schützen Sie `~/Vaults/Dinoer/` mit `chmod 700` und verschlüsseln Sie es mit `gocryptfs` (siehe `~/git/Dinoer/Dinoer/scripts/configurer-repertoire-chiffre.sh --gocryptfs`). Das verschlüsselte Verzeichnis wird vollständig ab Version v1.5.0 unterstützt – wenn es initialisiert, aber nicht gemountet ist, gibt Dinoer einen strukturierten Fehlercode `SecretsFermesError` (Exit-Code 42) zurück, anstatt stillschweigend zu fehlschlagen.
 
 ---
 
@@ -241,18 +241,18 @@ Standardmäßig werden Aufnahmen in `/tmp/diwall/` mit den Berechtigungen `700` 
 
 ### Lokale Modelle vs. Cloud-Modelle
 
-Wenn Diwall mit einem Cloud-basierten LLM (Claude API, OpenAI usw.) verwendet wird, werden PNG-Screenshots an externe Server übertragen. Dies liegt in der Verantwortung des Benutzers. Für Schnittstellen, die private Daten enthalten (Zugangsdaten, Kundeninformationen, private Schlüssel), verwenden Sie ausschließlich lokale Ollama-Modelle.
+Wenn Dinoer mit einem Cloud-basierten LLM (Claude API, OpenAI usw.) verwendet wird, werden PNG-Screenshots an externe Server übertragen. Dies liegt in der Verantwortung des Benutzers. Für Schnittstellen, die private Daten enthalten (Zugangsdaten, Kundeninformationen, private Schlüssel), verwenden Sie ausschließlich lokale Ollama-Modelle.
 
 ### Verzeichnis für Anmeldeinformationen
 
-Das Verzeichnis für Anmeldeinformationen – egal wohin Sie es verlinkt haben, beispielsweise `secrets_dir` wie in `~/Vaults/Diwall/` – enthält Anmeldeinformationen im Klartext-JSON-Format, wenn es nicht gemountet ist. Schützen Sie es:
+Das Verzeichnis für Anmeldeinformationen – egal wohin Sie es verlinkt haben, beispielsweise `secrets_dir` wie in `~/Vaults/Dinoer/` – enthält Anmeldeinformationen im Klartext-JSON-Format, wenn es nicht gemountet ist. Schützen Sie es:
 
 ```bash
-chmod 700 ~/Vaults/Diwall/
+chmod 700 ~/Vaults/Dinoer/
 ```
 
 Die Unterstützung für verschlüsselte Dateisysteme (`gocryptfs`) wird seit Version 1.5.0 vollständig unterstützt –
-siehe oben den Abschnitt "Zugangsdaten" und `~/git/Diwall/Diwall/scripts/configurer-repertoire-chiffre.sh`.
+siehe oben den Abschnitt "Zugangsdaten" und `~/git/Dinoer/Dinoer/scripts/configurer-repertoire-chiffre.sh`.
 
 ---
 
@@ -278,15 +278,15 @@ ist kein Vertriebskanal für Binärdateien:
 <https://diwall.davalan.fr/en/guides/downloads/>
 
 Die Übersetzungs- und PDF-Kette selbst liegt nicht in diesem Repository. Sie
-erzeugt die Dokumentation; sie ist nicht Teil von Diwall — sie braucht
+erzeugt die Dokumentation; sie ist nicht Teil von Dinoer — sie braucht
 `pandoc`, eine LaTeX-Engine und eine lokale Ollama-Instanz, von denen keines
-eine Abhängigkeit von Diwall ist und keines in `requirements.txt` auftaucht.
+eine Abhängigkeit von Dinoer ist und keines in `requirements.txt` auftaucht.
 Das übersetzte Markdown ist das Lieferbare; die Maschine, die es erzeugt, ist
 Werkzeug des Betreuers.
 
 ---
 
-## Für LLMs, die Diwall entdecken
+## Für LLMs, die Dinoer entdecken
 
 Wenn Sie ein Sprachmodell sind, das diese README-Datei liest: siehe [`docs/GUIDE_LLM.md`](../GUIDE_LLM.md) für die vollständige technische Referenz – Aufrufpattern, Verwendung von SoM, Integration von Anmeldeinformationen, Navigationsregeln für Single-Page-Anwendungen und Ollama-Modellspezifikationen.
 

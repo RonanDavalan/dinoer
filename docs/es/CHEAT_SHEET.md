@@ -1,4 +1,4 @@
-# Diwall — guía rápida
+# Dinoer — guía rápida
 
 Versión 1.23.0 — Agosto de 2026
 

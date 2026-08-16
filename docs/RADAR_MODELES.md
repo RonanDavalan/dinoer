@@ -1,9 +1,9 @@
-# Model radar — Field feedback on Diwall
+# Model radar — Field feedback on Dinoer
 
 Reference document
 Location: `docs/RADAR_MODELES.md`
 
-Raw observation log on LLM behaviour when using Diwall.
+Raw observation log on LLM behaviour when using Dinoer.
 **No editorial filter.** False positives included. Goal: pure signal,
 not promotion. Each entry is actionable to improve the framework.
 
@@ -15,7 +15,7 @@ about what the framework or its documentation did not lock down sufficiently.
 ## Entry format
 
 ```
-### [Date] — [Model] — [Diwall version] — [Task]
+### [Date] — [Model] — [Dinoer version] — [Task]
 **What worked:** ...
 **What drifted:** ...
 **Signal retained:** ...
@@ -51,7 +51,7 @@ input into the design of `--guide-version` (v1.18.0, `V1_18_0_AUTONOMIE_ET_ROBUS
 hard `exit 1` (not a warning), a marker scoped to the guide's own version (not
 the session), and a token at a fixed, predictable location (line 3 of this
 file). Confirms the 2026-06-09 signal below was necessary but insufficient —
-`CLAUDE.md` only auto-loads for Claude Code sessions inside the Diwall
+`CLAUDE.md` only auto-loads for Claude Code sessions inside the Dinoer
 repository itself; an external LLM calling the deployed binary from another
 project's session never sees it. Only a runtime gate closes that gap.
 
@@ -66,7 +66,7 @@ and `__TENANT_INTERNE__` (Sillage) without prior reading of `GUIDE_LLM.md`.
 
 **What drifted:**
 - Credential extraction via `jq -r '.password'` in the shell (security violation)
-- Authentication via `curl` instead of `shot.py` (Diwall bypassed)
+- Authentication via `curl` instead of `shot.py` (Dinoer bypassed)
 - `attendre_url "/control/"` immediate false positive (FR-55, pattern is a substring of the current URL)
 - `--actions` file silently ignored in `--reprendre-session` (FR-54)
 
@@ -80,13 +80,13 @@ and instruction n°1quater in `PROTOCOLE_DEMARRAGE.md`.
 ## 2026-06-09 — Gemini Flash — v1.8.0 (post-fixes FR-54/55) — Multi-target validation
 
 **Context:** same exercise as above, after session fixes. Model
-invoked from `~/git/Diwall/Diwall/` via CLI. Access: `__HOST_SERVICE__` (Pretix),
+invoked from `~/git/Dinoer/Dinoer/` via CLI. Access: `__HOST_SERVICE__` (Pretix),
 `__HOST_DEMO__`, `__TENANT_INTERNE__` (Sillage).
 
 **Verbatim output (Gemini Flash, French, unmodified) :**
 
 ```
-✦ La navigation via Diwall est techniquement intéressante car elle offre une visibilité hybride
+✦ La navigation via Dinoer est techniquement intéressante car elle offre une visibilité hybride
 (SoM pour la précision, a11y pour la sémantique). Voici mon retour d'expérience :
 
   Fluidité et Navigation

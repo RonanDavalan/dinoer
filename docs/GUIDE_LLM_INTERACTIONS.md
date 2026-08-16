@@ -1,8 +1,8 @@
-# Diwall — Interactions guide (SoM, selectors, dialogs, assertions)
+# Dinoer — Interactions guide (SoM, selectors, dialogs, assertions)
 
 <!-- notice-version: 1.1 -->
 Version 1.1 — August 2026. This number counts revisions of this notice, not
-releases of Diwall. Notable in the current text: `actions_invalides` error
+releases of Dinoer. Notable in the current text: `actions_invalides` error
 code documented. Prior (v1.0): `--wait-until` for never-idle targets, and
 `repli_js` second-level escalation on `cliquer`.
 
@@ -103,7 +103,7 @@ where `force: true` alone was confirmed insufficient on a script-opened
 {"type": "cliquer", "selecteur": "#dialog-confirm button[type=submit]", "force": true, "repli_js": true}
 ```
 
-On failure, Diwall retries with `page.eval_on_selector(selecteur, "el => el.click()")` —
+On failure, Dinoer retries with `page.eval_on_selector(selecteur, "el => el.click()")` —
 the same JS click you would otherwise write by hand in `evaluer`, now built
 into `cliquer` itself. `boussole.repli_js_utilise: true` appears only when
 the escalation actually ran (never just because the flag is set — same
@@ -120,7 +120,7 @@ never a silent no-op.
 
 **Symptom:** `shot.py --url <target>` fails with `TimeoutError` on the initial
 navigation, and raising `--timeout` changes nothing — 45 s fails exactly like
-10 s. **Cause:** by default Diwall waits for `networkidle` (500 ms of network
+10 s. **Cause:** by default Dinoer waits for `networkidle` (500 ms of network
 silence). A page that polls continuously — a live-stats panel, a dashboard
 refreshing counters, a router admin UI — never produces that silence. This is
 not a duration problem: the target will never "finish".
@@ -157,7 +157,7 @@ reports the value only when it differs from the default, so its absence means
 the run behaved exactly as before v1.22.0.
 
 **Why not rely on the failure fallback:** when the initial navigation raises,
-Diwall still captures a best-effort screenshot, but that path yields neither
+Dinoer still captures a best-effort screenshot, but that path yields neither
 `elements_som` nor `a11y_tree` — a proof of failure, not usable reconnaissance.
 Getting the navigation to genuinely succeed is what gives you a map to act on.
 
@@ -425,7 +425,7 @@ Avoid relational pseudo-selectors (`:left-of`, `:right-of`, `:near`) — version
 
 ## Reconnaissance before mutation (bloquant)
 
-Before writing any mutating action on a feature **never previously tested with Diwall**:
+Before writing any mutating action on a feature **never previously tested with Dinoer**:
 
 ```bash
 # Step 1 — Visual map
@@ -485,7 +485,7 @@ If an action returns `succes: false` or a Playwright error, you must:
 
 ## Shadow DOM and Web Components — `--shadow-dom` (v1.13.0)
 
-By default, Diwall's SoM injection uses `document.querySelectorAll()`, which does **not**
+By default, Dinoer's SoM injection uses `document.querySelectorAll()`, which does **not**
 traverse Shadow DOM boundaries. Elements encapsulated inside a Shadow Root (Web Components
 built with Angular, Lit, Stencil, FAST, etc.) are invisible to the numbering.
 
@@ -542,7 +542,7 @@ Check root accessibility first:
 ### Permanent limit — closed Shadow Roots
 
 Shadow Roots created with `{mode: 'closed'}` are inaccessible from any external script,
-including Playwright and Diwall. This is a browser security boundary — `--shadow-dom` has
+including Playwright and Dinoer. This is a browser security boundary — `--shadow-dom` has
 no effect on them. Closed Shadow Roots are rare in public-facing Web Components; the
 majority use open mode.
 
@@ -570,7 +570,7 @@ not a default.
 Same-Origin Policy blocks JS injection (and therefore SoM numbering) from
 reaching into a cross-origin iframe's content — a hard browser security
 boundary, unlike Shadow DOM (same document, just encapsulated). Playwright's
-`frame_locator()` bypasses this via CDP, not JS injection — Diwall exposes it
+`frame_locator()` bypasses this via CDP, not JS injection — Dinoer exposes it
 through two scoped actions:
 
 ```json
@@ -626,6 +626,6 @@ without descending further.
 
 No specific number of levels is documented as a breaking point — none has
 been measured yet, and a guessed threshold would be exactly the kind of
-unmeasured recommendation Diwall avoids elsewhere (see the WAF signal's
+unmeasured recommendation Dinoer avoids elsewhere (see the WAF signal's
 honesty about being heuristic, not certain). This section will gain a
 concrete number once a real run produces one.

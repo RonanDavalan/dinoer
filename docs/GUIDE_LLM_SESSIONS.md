@@ -1,8 +1,8 @@
-# Diwall — Sessions guide (encrypted directory, credentials, SPA, MFA, multi-page)
+# Dinoer — Sessions guide (encrypted directory, credentials, SPA, MFA, multi-page)
 
 <!-- notice-version: 1.1 -->
 Version 1.1 — August 2026. This number counts revisions of this notice, not
-releases of Diwall. Notable in the current text: `action_secret_en_clair`
+releases of Dinoer. Notable in the current text: `action_secret_en_clair`
 and `url_scheme_interdit` error codes documented under Security rules.
 Prior (v1.0): `dernier_code_http` in boussole, disambiguates real session
 expiry from a masked server error on the same login redirect. Prior
@@ -65,7 +65,7 @@ otherwise the default one in `diwall.conf` is used.
 Do not try to mount it yourself — ask the operator to run the mount script.
 
 **Unmounted directory and internal writes (fixed in v1.17.2):**
-Diwall's own operations journal (`operations.jsonl`) and mutative-run proof
+Dinoer's own operations journal (`operations.jsonl`) and mutative-run proof
 archiving (`preuves/`) now detect a closed directory before writing: if the
 configured path is inside it but it is not currently mounted,
 the journal entry is redirected to a local fallback
@@ -77,9 +77,9 @@ lesser evil (already the existing degraded-write behavior on any journal
 failure), not a substitute for a mounted encrypted directory.
 
 **Still your responsibility — writing new credential files:**
-The internal guard above only covers Diwall's own journal/proof writes. If
+The internal guard above only covers Dinoer's own journal/proof writes. If
 you construct or update a *credential file* yourself (e.g., via a shell
-command or `evaluer` outside Diwall's `depuis_secrets` mechanism), the same
+command or `evaluer` outside Dinoer's `depuis_secrets` mechanism), the same
 risk applies and is not automatically caught: the encrypted directory, if
 unmounted, exists on disk but is empty and unencrypted. Before creating or
 updating a credential file, confirm it is mounted — the directory
@@ -96,13 +96,13 @@ When a scenario needs credentials from a file other than the default:
 /opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
   --url https://target.local/ \
   --scenario /opt/diwall/scenarios/my-scenario.json \
-  --secrets ~/Vaults/Diwall/other-project/creds.json
+  --secrets ~/Vaults/Dinoer/other-project/creds.json
 ```
 
 ```bash
 /opt/diwall/venv/bin/python3 /opt/diwall/rpa.py \
   --scenario /opt/diwall/scenarios/my-scenario.json \
-  --secrets ~/Vaults/Diwall/other-project/creds.json
+  --secrets ~/Vaults/Dinoer/other-project/creds.json
 ```
 
 **`origines_autorisees` — mandatory since 05/08/2026 (breaking change, no
@@ -458,7 +458,7 @@ flag unless you have a specific, documented reason for a controlled LAN or dev e
 
 ## `--http-credentials` — HTTP Basic Auth (v1.21.0)
 
-Diwall's credential resolution handles web **form** authentication (`remplir_som` +
+Dinoer's credential resolution handles web **form** authentication (`remplir_som` +
 `depuis_secrets`). It does not, on its own, answer a browser-level HTTP Basic
 Auth challenge (RFC 7617) — the kind a reverse proxy (Caddy, nginx, Traefik)
 raises before any page renders. `--http-credentials` closes that specific
@@ -479,7 +479,7 @@ Or via `rpa.py` (propagated automatically), or as a scenario root property
 **Credential keys:** `http_username`/`http_password` tried first (needed only if
 the same target also has a separate application-level login behind the
 Basic Auth wall, e.g. a reverse proxy in front of its own login form — two
-different credential pairs in the same file). If absent, Diwall falls back
+different credential pairs in the same file). If absent, Dinoer falls back
 to the plain `username`/`password` keys — the common case, confirmed
 against a real Caddy-protected target (v1.21.0): most credentials files already
 have exactly this pair for a single-credential target, no renaming needed.
@@ -490,7 +490,7 @@ command line.
 **Security — non-negotiable:** identifiers are scoped to the target's
 origin (`scheme://host:port`) and sent only after a real 401
 (`send: "unauthorized"`). This is not configurable per-run — it protects
-against Diwall sending credentials to a third-party origin (CDN, tracker,
+against Dinoer sending credentials to a third-party origin (CDN, tracker,
 redirect) loaded inside the same browser context.
 
 **Confirmed against a real target (v1.21.0):** `send: "unauthorized"`

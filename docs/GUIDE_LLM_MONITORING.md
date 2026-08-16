@@ -1,8 +1,8 @@
-# Diwall — Monitoring guide (watch.py, long ops, screenshot timeouts, journal)
+# Dinoer — Monitoring guide (watch.py, long ops, screenshot timeouts, journal)
 
 <!-- notice-version: 1.1 -->
 Version 1.1 — August 2026. This number counts revisions of this notice, not
-releases of Diwall. Notable in the current text: `chemin_sensible_refuse`
+releases of Dinoer. Notable in the current text: `chemin_sensible_refuse`
 error code documented for `--checkpoint`/`--sauver-verifier-reference`/
 `--replay-verifier`. Prior (v1.0): `latences_actions` per-action timing, and
 the `journal.py --erreurs` filter
@@ -303,7 +303,7 @@ for why).
 
 **`chemin_sensible_refuse` (`rpa.py`, exit 2):** `--checkpoint`,
 `--sauver-verifier-reference`, or `--replay-verifier` was pointed at a `..`
-traversal or a system-sensitive location (Diwall's own install directories,
+traversal or a system-sensitive location (Dinoer's own install directories,
 `/etc`, `/root`, `/boot`, `/sys`, `/proc`). Fix: pass a path under a
 directory you control — these three flags write or read arbitrary files at
 the path given, so the check exists to stop a scenario-supplied path from
@@ -312,7 +312,7 @@ reaching outside the working area.
 ### Writing reference-safe assertions (v1.19.0)
 
 The exclusion list above (timestamps, `operation_id`, `duree_ms`,
-`boussole.ip_locale`) only covers fields Diwall itself produces. Anything
+`boussole.ip_locale`) only covers fields Dinoer itself produces. Anything
 your own `evaluer` actions read from the target page is your responsibility:
 a `--sauver-verifier-reference` capture freezes `evaluations[]` values at
 reference time. If a scenario reads a legitimately dynamic value — a visitor
@@ -351,7 +351,7 @@ composition into a single, versioned command instead of leaving it to be
 reinvented in an ad hoc crontab line.
 
 ```bash
-bash ~/git/Diwall/Diwall/scripts/monitor-verifier.sh \
+bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
   --scenario /opt/diwall/scenarios/sillage_login.json \
   --reference /tmp/ref_sillage.json \
   --ntfy-topic diwall-monitoring
@@ -365,11 +365,11 @@ from `rpa.py`) → an `ntfy` notification with the diff detail.
 **Repetition is your job, by design** — cron or a systemd timer, not the
 script itself. `scripts/*.sh` is never copied by `deploy.sh` — it lives only
 in the git source, so the cron entry runs from there, as the operator (not
-the `diwall` service account, which has no access to `~/git/Diwall/Diwall/`):
+the `diwall` service account, which has no access to `~/git/Dinoer/Dinoer/`):
 
 ```bash
 # crontab -e (operator's own crontab)
-*/15 * * * * bash ~/git/Diwall/Diwall/scripts/monitor-verifier.sh \
+*/15 * * * * bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
   --scenario /opt/diwall/scenarios/sillage_login.json \
   --reference /opt/diwall/references/sillage_login.ref.json \
   --ntfy-topic diwall-monitoring \
@@ -410,7 +410,7 @@ tail -n 10 /var/log/diwall/operations.jsonl | python3 -m json.tool --no-ensure-a
 | Field | Meaning |
 |---|---|
 | `ts` | ISO 8601 timestamp |
-| `version` | Diwall version string |
+| `version` | Dinoer version string |
 | `mode` | `"shot"` or `"rpa"` |
 | `url` | Target URL |
 | `scenario` | Scenario file path (rpa mode) |
@@ -480,7 +480,7 @@ before deciding whether to proceed with a mutating action.
 **Scope — what `etat` does NOT check:** it has no notion of your business
 expectation for the page (is this the *right* URL, does the title match what
 you expect). That is the job of `evaluer` + `contient`/`motif`/`attendu`
-assertions in `rpa.py` — Diwall has no external reference to compare against
+assertions in `rpa.py` — Dinoer has no external reference to compare against
 on its own. `etat` only aggregates signals `shot.py` can determine by itself.
 
 **When absent:** `etat` is present only on the success path (`succes: true`).
@@ -634,7 +634,7 @@ the runtime:
 
 - **Under 60 000 ms (1 minute):** normal for a simple exploration run.
 - **Above 120 000 ms (2 minutes):** suspect a redirect loop or network
-  congestion. Self-impose a semantic stop rather than waiting further — Diwall
+  congestion. Self-impose a semantic stop rather than waiting further — Dinoer
   will not interrupt itself; there is no runtime timeout tied to this figure.
 
 This is a recommendation for agent self-regulation, not a plafond configured in

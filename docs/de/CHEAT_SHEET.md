@@ -1,4 +1,4 @@
-# Diwall – Schnellreferenz
+# Dinoer – Schnellreferenz
 
 Version 1.23.0 – August 2026
 

@@ -1,4 +1,4 @@
-# Diwall — Guide de l'utilisateur
+# Dinoer — Guide de l'utilisateur
 
 Version 1.10 — Août 2026 (v1.23.0) — quatre nouveaux exemples d'utilisation (observabilité hébergée en interne, administration de la plateforme de ticketing, suivi des événements locaux, accès à l'e-commerce via Respectful Navigation).
 
@@ -6,9 +6,9 @@ Version 1.10 — Août 2026 (v1.23.0) — quatre nouveaux exemples d'utilisation
 
 ---
 
-## Pourquoi Diwall — ce que vous déléguez réellement
+## Pourquoi Dinoer — ce que vous déléguez réellement
 
-### Le problème que Diwall résout
+### Le problème que Dinoer résout
 
 Lorsque vous travaillez avec un LLM dans une application web, une asymétrie de perception se produit :
 le modèle lit du code, exécute des commandes, observe les résultats textuels, mais il ne voit pas
@@ -18,7 +18,7 @@ Cette asymétrie crée une forme spécifique d'anxiété : vous ne savez pas si 
 le modèle décrit correspond à ce que vous verriez dans un navigateur. Pour être sûr, vous devez
 soit lui faire confiance aveuglément, soit le vérifier vous-même.
 
-Diwall résout ce problème en créant une **référence visuelle partagée** :
+Dinoer résout ce problème en créant une **référence visuelle partagée** :
 le modèle capture l'interface avec un navigateur réel (Chromium sans interface graphique),
 et vous avez accès aux mêmes captures PNG et aux arbres d'accessibilité.
 Vous ne faites plus confiance aveuglément au modèle — vous observez le même état que lui.
@@ -43,14 +43,14 @@ Vous ne faites plus confiance aveuglément au modèle — vous observez le même
 
 ### Ce que vous déléguez
 
-Diwall vous permet de déléguer les **vérifications visuelles répétitives et source d'anxiété** :
+Dinoer vous permet de déléguer les **vérifications visuelles répétitives et source d'anxiété** :
 
 - Vérifier que 20 pages d'un site s'affichent correctement après un déploiement.
 - Confirmer qu'un formulaire de connexion fonctionne sur l'interface appropriée.
 - S'assurer qu'un déploiement n'a pas compromis le rendu d'une vue critique.
 - Valider visuellement qu'une correction est correctement visible à l'écran.
 
-Sans Diwall, ces vérifications sont de votre responsabilité. Avec Diwall, le modèle les effectue et rapporte le résultat, avec une preuve visuelle.
+Sans Dinoer, ces vérifications sont de votre responsabilité. Avec Dinoer, le modèle les effectue et rapporte le résultat, avec une preuve visuelle.
 
 ### Ce que vous conservez
 
@@ -60,7 +60,7 @@ présenté par le modèle est acceptable, cohérent avec vos attentes, et confor
 
 ### Navigation Respectueuse (v1.15.0)
 
-Diwall ne masque pas son identité pour contourner la détection des robots. `--stealth`
+Dinoer ne masque pas son identité pour contourner la détection des robots. `--stealth`
 supprime les marqueurs techniques automatiques (`navigator.webdriver`) qui bloquent
 les navigateurs sans interface graphique, quel que soit l'objectif — il ne modifie pas
 l'adresse IP de l'utilisateur, son identité, ni le fait que l'exécution est déclarée. En échange, chaque exécution
@@ -76,9 +76,9 @@ une première exécution non configurée contre l'accès public à Internet ; el
 contre votre propre machine de développement/de production. Définissez-la sur `0` dans votre fichier local
 `diwall.conf` pour le débogage local ; voir la section 3b de `docs/MANUEL.md`.
 
-### Quand Diwall est le bon outil
+### Quand Dinoer est le bon outil
 
-| Cas d'utilisation | Diwall adapté ? |
+| Cas d'utilisation | Dinoer adapté ? |
 |---|---|
 | Validation visuelle après le déploiement | ✓ Oui |
 | Diagnostic d'un rendu incorrect | ✓ Oui |
@@ -86,14 +86,14 @@ contre votre propre machine de développement/de production. Définissez-la sur 
 | Délégation de vérifications répétitives | ✓ Oui |
 | Opération serveur longue (clonage ~2–5 min) | ✗ Non — Dépassement du délai d'attente de Playwright |
 | Suppression ou modification en masse | ✗ Non — Privilégier un appel API direct |
-| Flux de travail nécessitant une restauration | ✗ Non — Diwall ne peut pas annuler les actions |
+| Flux de travail nécessitant une restauration | ✗ Non — Dinoer ne peut pas annuler les actions |
 
-Pour les cas où l'utilisation est déconseillée, voir la section "Quand NE PAS utiliser Diwall" (références FR-59 et FR-60 documentées).
+Pour les cas où l'utilisation est déconseillée, voir la section "Quand NE PAS utiliser Dinoer" (références FR-59 et FR-60 documentées).
 `docs/GUIDE_LLM.md`
 
 ---
 
-**Ce document est destiné à la personne qui utilise Diwall.**
+**Ce document est destiné à la personne qui utilise Dinoer.**
 
 Il complète `GUIDE_LLM.md` (destiné aux modèles) avec des exemples concrets,
 des procédures étape par étape et des rappels sur les points problématiques courants.
@@ -102,7 +102,7 @@ des procédures étape par étape et des rappels sur les points problématiques 
 
 ## Cas d'utilisation de démonstration
 
-Les exemples ci-dessous illustrent ce à quoi peut ressembler une session "agent+Diwall"
+Les exemples ci-dessous illustrent ce à quoi peut ressembler une session "agent+Dinoer"
 dans la pratique. Ils sont destinés à être évalués par rapport à votre propre contexte, et non comme une recommandation d'adopter un modèle spécifique. Seul le cas 1 est fourni sous forme de scénario exécutable ; les autres sont délibérément narratifs, et chacun explique pourquoi, sous son propre titre.
 
 ### Cas 1 : Dépannage des fichiers CSS/JavaScript locaux
@@ -123,7 +123,7 @@ régression. Exécutez-le directement :
 
 ### Cas 2 : comparaison des composants matériels entre différents magasins
 
-Un agent chargé de comparer le prix et la disponibilité d'un composant dans plusieurs boutiques en ligne pourrait utiliser Diwall avec un outil distinct de découverte d'URL (par exemple, une instance de recherche locale) pour trouver les pages de boutiques potentielles, puis utiliser Diwall en mode sonde (`--mode fast`, sans PNG) avec les actions `evaluer` pour extraire le prix /stock/specifications de chaque page, et enfin comparer les résultats lui-même.
+Un agent chargé de comparer le prix et la disponibilité d'un composant dans plusieurs boutiques en ligne pourrait utiliser Dinoer avec un outil distinct de découverte d'URL (par exemple, une instance de recherche locale) pour trouver les pages de boutiques potentielles, puis utiliser Dinoer en mode sonde (`--mode fast`, sans PNG) avec les actions `evaluer` pour extraire le prix /stock/specifications de chaque page, et enfin comparer les résultats lui-même.
 
 **Volontairement non livré comme scénario versionné :** nommer une boutique
 précise dans un scénario public et versionné est une décision qui vous
@@ -133,8 +133,8 @@ site commercial nommé peut échouer des mois plus tard quand la posture anti-bo
 de ce site change (39 % des sites commerciaux de l'échantillon de
 `docs/RETOUR_EXPERIENCE.md` FR-77 ont renvoyé un blocage immédiat), ce qui
 discrédite l'exemple plus qu'il n'aide. Si vous construisez cette composition
-vous-même, notez que tout outil de découverte d'URL que vous associez à Diwall
-(une instance de recherche locale ou autre) n'est pas un composant de Diwall —
+vous-même, notez que tout outil de découverte d'URL que vous associez à Dinoer
+(une instance de recherche locale ou autre) n'est pas un composant de Dinoer —
 c'est une brique distincte que l'agent compose par-dessus.
 
 ### Cas 3 : exploration et résumé de la documentation technique (applications monopages)
@@ -153,7 +153,7 @@ Mentionner un site de documentation spécifique (ou, pire, un fournisseur de pai
 ### Cas 4 : configuration d'un tableau de bord d'observabilité ou d'analyse auto-hébergé
 
 Un opérateur configurant un tableau de bord de surveillance ou d'analyse web auto-hébergé
-derrière un proxy inverse peut utiliser Diwall pour gérer l'interface elle-même —
+derrière un proxy inverse peut utiliser Dinoer pour gérer l'interface elle-même —
 créer un tableau de bord, connecter une source de données, définir une règle d'alerte —,
 de la même manière que n'importe quel autre panneau d'administration est configuré, plutôt que de modifier manuellement
 des fichiers pour des étapes que l'interface utilisateur est censée gérer. Cela inclut les cibles situées
@@ -166,7 +166,7 @@ au défi dès la première tentative.
 
 ### Cas 5 : administration complète d'une plateforme de gestion des tickets
 
-Diwall a été utilisé sur plusieurs sessions pour configurer et exploiter une véritable installation de billetterie auto-hébergée : configuration des événements, catégories de billets, un domaine personnalisé et les outils de scan/enregistrement le jour J, tout cela via la même interface web qu'utiliserait un administrateur humain. Des difficultés réelles ont été rencontrées et résolues en cours de route (gestion des sessions, particularités des menus déroulants, une invite de permission bloquant une étape automatisée), ce qui n'est pas une réussite sans problèmes, et c'est précisément ce qui fait de cet exemple un outil utile : les obstacles étaient des obstacles ordinaires à l'automatisation web, et non quelque chose de spécifique à Diwall.
+Dinoer a été utilisé sur plusieurs sessions pour configurer et exploiter une véritable installation de billetterie auto-hébergée : configuration des événements, catégories de billets, un domaine personnalisé et les outils de scan/enregistrement le jour J, tout cela via la même interface web qu'utiliserait un administrateur humain. Des difficultés réelles ont été rencontrées et résolues en cours de route (gestion des sessions, particularités des menus déroulants, une invite de permission bloquant une étape automatisée), ce qui n'est pas une réussite sans problèmes, et c'est précisément ce qui fait de cet exemple un outil utile : les obstacles étaient des obstacles ordinaires à l'automatisation web, et non quelque chose de spécifique à Dinoer.
 
 **Ne pas expédier en tant que scénario configuré** : une configuration de billetterie concerne
 les aspects liés à la facturation et aux spécificités du lieu, qui sont propres à l'opérateur, comme pour
@@ -174,7 +174,7 @@ le cas 2.
 
 ### Cas 6 : suivi d'un calendrier régional des événements
 
-Un exemple simple d'utilisation de la recherche sémantique : demander à un agent de vérifier le calendrier des événements locaux pour connaître les prochaines manifestations, sans savoir à l'avance quelle page contient la réponse. Le mode rapide de Diwall (`--mode fast`, sans capture), combiné à l'arborescence d'accessibilité, permet à l'agent de scanner et de renvoyer des informations en quelques requêtes seulement — aucun modèle de vision n'est nécessaire pour ce type de tâche axée sur le texte et en lecture seule. Une session a également produit un exemple clair et réel du comportement documenté de faux positifs du signal WAF : une page s'est chargée normalement (contenu riche, sans captcha, sans fenêtre contextuelle) alors que [`respect.waf_bloquants`] était toujours déclenché, en raison d'une ressource tierce non liée sur la page qui correspondait à un mot-clé de détection — ce problème a été résolu en environ une minute en lisant l'arborescence d'accessibilité déjà présente dans la même réponse, exactement comme le prévoit la règle du guide : "signal, et non blocage".
+Un exemple simple d'utilisation de la recherche sémantique : demander à un agent de vérifier le calendrier des événements locaux pour connaître les prochaines manifestations, sans savoir à l'avance quelle page contient la réponse. Le mode rapide de Dinoer (`--mode fast`, sans capture), combiné à l'arborescence d'accessibilité, permet à l'agent de scanner et de renvoyer des informations en quelques requêtes seulement — aucun modèle de vision n'est nécessaire pour ce type de tâche axée sur le texte et en lecture seule. Une session a également produit un exemple clair et réel du comportement documenté de faux positifs du signal WAF : une page s'est chargée normalement (contenu riche, sans captcha, sans fenêtre contextuelle) alors que [`respect.waf_bloquants`] était toujours déclenché, en raison d'une ressource tierce non liée sur la page qui correspondait à un mot-clé de détection — ce problème a été résolu en environ une minute en lisant l'arborescence d'accessibilité déjà présente dans la même réponse, exactement comme le prévoit la règle du guide : "signal, et non blocage".
 
 **Ne pas distribuer en tant que scénario validé** — un site spécifique d'événements régionaux
 n'est pas une cible publique stable et reproductible, et le choix de la nommer publiquement
@@ -184,11 +184,11 @@ relève de l'opérateur, et non d'une configuration par défaut du projet.
 
 Une observation honnête et récurrente provenant de sessions réelles : utilisée avec respect
 (retards limités, plafonds de pages/actions, `--stealth` actif, aucune tentative de
-forcer l'accès au-delà d'un bloc réel), Diwall, lorsqu'il est utilisé contre une gamme de sites de commerce électronique, constate qu'une part importante des principales plateformes renvoie un bloc total — HTTP 403, ou une requête qui ne se termine jamais —, quel que soit le comportement du trafic. Ce n'est pas un défaut de Diwall à corriger :
-la posture anti-bot est le choix propre du site, et Diwall ne tente pas de
+forcer l'accès au-delà d'un bloc réel), Dinoer, lorsqu'il est utilisé contre une gamme de sites de commerce électronique, constate qu'une part importante des principales plateformes renvoie un bloc total — HTTP 403, ou une requête qui ne se termine jamais —, quel que soit le comportement du trafic. Ce n'est pas un défaut de Dinoer à corriger :
+la posture anti-bot est le choix propre du site, et Dinoer ne tente pas de
 la contourner (voir "Navigation Respectueuse" ci-dessus). En pratique : pour les tâches de comparaison de prix auprès de grandes plateformes commerciales, attendez-vous à un nombre important d'impasses, et considérez un signal de bloc (`respect.waf_bloquants`) comme une information permettant de trouver un itinéraire alternatif, et non comme une erreur à réessayer.
 
-Il est important de garder à l'esprit la distinction suivante : un écran de vérification invisible qui ne se résout jamais et ne présente rien sur lequel agir (pas de case à cocher, pas de défi visuel) est différent d'un CAPTCHA interactif. Ce dernier peut être répondu honnêtement : un agent agissant pour une personne identifiable, depuis l'adresse IP de cette personne, n'est pas le "robot" auquel la question s'adresse. Le premier ne propose tout simplement aucune option à exploiter du côté de l'agent, et contourner cet obstacle (rotation d'IP, usurpation de l'empreinte TLS) sort du champ d'action de Diwall.
+Il est important de garder à l'esprit la distinction suivante : un écran de vérification invisible qui ne se résout jamais et ne présente rien sur lequel agir (pas de case à cocher, pas de défi visuel) est différent d'un CAPTCHA interactif. Ce dernier peut être répondu honnêtement : un agent agissant pour une personne identifiable, depuis l'adresse IP de cette personne, n'est pas le "robot" auquel la question s'adresse. Le premier ne propose tout simplement aucune option à exploiter du côté de l'agent, et contourner cet obstacle (rotation d'IP, usurpation de l'empreinte TLS) sort du champ d'action de Dinoer.
 
 Ne pas considérer ceci comme un scénario validé, et intentionnellement ne pas mentionner les plateformes impliquées — voir le raisonnement sur la fragilité du WAF dans le cas 2 : un tableau de blocage/non-blocage daté, lié à des sites commerciaux spécifiques, devient obsolète et compromet son propre objectif plus rapidement qu'il ne l'illustre. `docs/RETOUR_EXPERIENCE.md`
 FR-77 documente le même schéma à l'échelle d'un panneau (taux de blocage immédiat de 39 %).
@@ -198,13 +198,13 @@ FR-77 documente le même schéma à l'échelle d'un panneau (taux de blocage imm
 ## Prérequis avant de commencer
 
 ```bash
-# 1. Vérifier si Diwall répond.
+# 1. Vérifier si Dinoer répond.
 /opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
   --url https://example.com --som --a11y
 # → must return {"succes": true, ...}
 
 # 2. Vérifiez que le répertoire chiffré est monté (si vous utilisez gocryptfs).
-ls ~/Vaults/Diwall/
+ls ~/Vaults/Dinoer/
 # → doit afficher les fichiers .json, et non le contenu chiffré.
 
 # 3. Vérifier les identifiants pour un domaine.
@@ -395,7 +395,7 @@ Complète la surveillance visuelle ci-dessus : ceci vérifie la *structure* de l
   --sauver-verifier-reference /opt/diwall/references/my-scenario.ref.json
 
 # 2. Un contrôle et une alerte.
-bash ~/git/Diwall/Diwall/scripts/monitor-verifier.sh \
+bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
   --scenario /opt/diwall/scenarios/my-scenario.json \
   --reference /opt/diwall/references/my-scenario.ref.json \
   --ntfy-topic diwall-monitoring
@@ -404,11 +404,11 @@ bash ~/git/Diwall/Diwall/scripts/monitor-verifier.sh \
 Silencieux lorsqu'il est stable, il s'active avec une seule exécution de `ntfy` lorsqu'une régression est détectée. Planifiez-le vous-même avec cron : le script effectue un seul passage et se termine, il ne boucle pas.
 `scripts/*.sh` n'est jamais déployé sur `/opt/diwall/`, donc la tâche cron s'exécute
 à partir du code source git, en tant que votre propre utilisateur (et non le compte de service `diwall`,
-qui ne peut pas accéder à `~/git/Diwall/Diwall/` :
+qui ne peut pas accéder à `~/git/Dinoer/Dinoer/` :
 
 ```bash
 # crontab -e (votre propre fichier crontab)
-*/15 * * * * bash ~/git/Diwall/Diwall/scripts/monitor-verifier.sh \
+*/15 * * * * bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
   --scenario /opt/diwall/scenarios/my-scenario.json \
   --reference /opt/diwall/references/my-scenario.ref.json \
   --ntfy-topic diwall-monitoring \
@@ -422,7 +422,7 @@ qui ne peut pas accéder à `~/git/Diwall/Diwall/` :
 | Situation | Ce qu'il faut faire |
 |---|---|
 | `FileNotFoundError` dans le fichier d'identifiants | Vérifiez que le fichier JSON est nommé avec le FQDN complet (`urlparse(url).hostname`) |
-| `SecretsFermesError` (sortie 42) | Montez le répertoire chiffré : `bash ~/git/Diwall/Diwall/scripts/monter-repertoire-chiffre.sh` |
+| `SecretsFermesError` (sortie 42) | Montez le répertoire chiffré : `bash ~/git/Dinoer/Dinoer/scripts/monter-repertoire-chiffre.sh` |
 | JSON invalide dans la sortie | Utilisez `2>/dev/null \| tail -1` pour extraire uniquement la ligne JSON |
 | Les ID SoM diffèrent entre les sessions | Comportement attendu — les ID SoM sont recalculés à chaque capture. Ne les réutilisez jamais entre les sessions |
 | Connexion suivie d'une redirection Django vers le tableau de bord | N'utilisez pas `naviguer` dans une session Django reprise — transmettez l'URL via `--url` |
@@ -433,24 +433,24 @@ qui ne peut pas accéder à `~/git/Diwall/Diwall/` :
 | `respect.waf_bloquants` apparaît sur une page qui n'est en fait pas bloquée | La détection est basée sur des mots-clés (v1.16.0, affinée v1.17.2) — considérez cela comme un signal, et non comme un verdict. Si cela persiste sur une page que vous avez confirmée comme non bloquée, ajoutez `--ignorer-waf` |
 | `cliquer_som` clique sur l'élément incorrect sur une page qui a muté entre la capture et le clic | Ajoutez `--som-rafraichir` (v1.17.0) — résout en utilisant un marqueur stable au lieu d'une réindexation en direct |
 | Un long scénario RPA échoue à mi-chemin et vous ne voulez pas rejouer les étapes terminées | Ajoutez `--checkpoint FILE` (v1.17.0) — relancez la même commande pour reprendre ; l'état du DOM n'est pas conservé, seulement la session + la position de l'action |
-| Les éléments interactifs à l'intérieur d'un iframe sont invisibles pour Diwall | SoM ne peut pas numéroter le contenu de l'iframe (même origine ou autre origine) — utilisez `cliquer_iframe`/`remplir_iframe` (v1.17.0) avec un sélecteur CSS explicite, ou `iframe_chemin` (v1.18.0) pour un iframe imbriqué dans un autre |
-| Votre modèle signale `"erreur": "guide_non_lu"` / sortie 1 lors de son premier appel à Diwall | Comportement attendu la première fois qu'un modèle utilise Diwall sur cette machine en tant que cet utilisateur OS (v1.18.0) — il doit lire `docs/GUIDE_LLM.md` et passer `--guide-version` une seule fois. C'est intentionnel, ce n'est pas un bug — demandez au modèle de lire le guide plutôt que de contourner l'erreur |
+| Les éléments interactifs à l'intérieur d'un iframe sont invisibles pour Dinoer | SoM ne peut pas numéroter le contenu de l'iframe (même origine ou autre origine) — utilisez `cliquer_iframe`/`remplir_iframe` (v1.17.0) avec un sélecteur CSS explicite, ou `iframe_chemin` (v1.18.0) pour un iframe imbriqué dans un autre |
+| Votre modèle signale `"erreur": "guide_non_lu"` / sortie 1 lors de son premier appel à Dinoer | Comportement attendu la première fois qu'un modèle utilise Dinoer sur cette machine en tant que cet utilisateur OS (v1.18.0) — il doit lire `docs/GUIDE_LLM.md` et passer `--guide-version` une seule fois. C'est intentionnel, ce n'est pas un bug — demandez au modèle de lire le guide plutôt que de contourner l'erreur |
 
 ---
 
-## Désinstallation de Diwall
+## Désinstallation de Dinoer
 
-Le script `~/git/Diwall/Diwall/scripts/uninstall.sh` désinstalle proprement le logiciel, dans l'ordre inverse de `install.sh`.
+Le script `~/git/Dinoer/Dinoer/scripts/uninstall.sh` désinstalle proprement le logiciel, dans l'ordre inverse de `install.sh`.
 
 ```bash
 # Voyez ce qui sera supprimé, sans rien faire.
-bash ~/git/Diwall/Diwall/scripts/uninstall.sh --dry-run
+bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh --dry-run
 
 # Désinstallation complète (confirmation interactive).
-bash ~/git/Diwall/Diwall/scripts/uninstall.sh
+bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh
 
 # Sans confirmation (tests préliminaires, réinstallations successives).
-bash ~/git/Diwall/Diwall/scripts/uninstall.sh --confirme && bash ~/git/Diwall/Diwall/scripts/install.sh
+bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh --confirme && bash ~/git/Dinoer/Dinoer/scripts/install.sh
 ```
 
 Qu'est-ce qui est supprimé :
@@ -459,20 +459,20 @@ Qu'est-ce qui est supprimé :
 |---|---|
 | `/opt/diwall/` | Code, environnement Python (venv), configuration |
 | `/var/log/diwall/` | Journaux d'opérations |
-| `diwall` utilisateur système | Créé exclusivement pour Diwall |
+| `diwall` utilisateur système | Créé exclusivement pour Dinoer |
 | `diwall` groupe système | Identique |
 | Appartenance au groupe | Votre compte est retiré du groupe `diwall` |
 | Hook de pré-envoi Git | `core.hooksPath` désactivé dans le dépôt source |
 
 Ce qui ne doit jamais être modifié :
 - `~/Vaults/` — vos identifiants
-- `~/git/Diwall/` — les sources Git
+- `~/git/Dinoer/` — les sources Git
 - Le cache du navigateur Playwright (`~/.cache/ms-playwright/`)
 
 Conserve les captures (`/var/log/diwall/preuves/`) : si le répertoire contient des captures, elles sont conservées par défaut avec un avertissement. Pour les supprimer :
 
 ```bash
-bash ~/git/Diwall/Diwall/scripts/uninstall.sh --confirme --purge-preuves
+bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh --confirme --purge-preuves
 ```
 
 ---

@@ -1,4 +1,4 @@
-% DIWALL(1) | Commandes Diwall
+% DIWALL(1) | Commandes Dinoer
 %
 % Juillet 2026
 
@@ -22,7 +22,7 @@ diwall - outil de perception visuelle et de RPA pour les agents LLM
 
 # DESCRIPTION
 
-Diwall offre à un agent LLM des "yeux" et des "mains" pour interagir avec des interfaces web qu'il ne pourrait autrement voir ou manipuler : captures d'écran, annotations de type "Set-of-Mark" et un arbre d'accessibilité d'un côté, et actions pilotées par Playwright de l'autre. Chaque commande affiche un seul objet JSON sur la sortie standard, conçu pour être lu par un programme plutôt que par un humain.
+Dinoer offre à un agent LLM des "yeux" et des "mains" pour interagir avec des interfaces web qu'il ne pourrait autrement voir ou manipuler : captures d'écran, annotations de type "Set-of-Mark" et un arbre d'accessibilité d'un côté, et actions pilotées par Playwright de l'autre. Chaque commande affiche un seul objet JSON sur la sortie standard, conçu pour être lu par un programme plutôt que par un humain.
 
 Ce paquet installe six commandes sous **/usr/bin**. Elles sont de simples
 interfaces autour des points d'entrée Python dans **/opt/diwall**, et elles lisent
@@ -45,7 +45,7 @@ répétable, et la seule qui évalue les assertions du scénario.
 : Surveillance visuelle. Enregistre une image de référence d'une page, puis compare les captures ultérieures à celle-ci — comparaison pixel par pixel localement, ou une description fournie par un modèle de vision locale. Utilisé pour détecter les régressions visuelles sans intervention humaine.
 
 **diwall-monter-secrets**, **diwall-demonter-secrets**
-: Montez et démontez le répertoire de crédentielles chiffré par gocryptfs. Diwall refuse
+: Montez et démontez le répertoire de crédentielles chiffré par gocryptfs. Dinoer refuse
 de résoudre les identifiants tant qu'il est fermé, et se termine avec le code de sortie 42 au lieu de revenir à une méthode moins sécurisée.
 
 **diwall-monitor-verifier**
@@ -59,7 +59,7 @@ Les options ci-dessous sont partagées par **diwall-shot** et **diwall-rpa**, sa
 : Preuve obligatoire que **/opt/diwall/docs/GUIDE_LLM.md** a été lu. Sans cela,
 — et sans un marqueur local toujours valide —, la commande refuse de s'exécuter et
 se termine avec le code 1. La valeur attendue est le commentaire *notice-version* sur la ligne 3 de ce
-guide. C'est le seul endroit où Diwall n'est pas une option facultative.
+guide. C'est le seul endroit où Dinoer n'est pas une option facultative.
 
 **--version**
 : Afficher la version installée au format JSON et quitter, sans lancer de navigateur.

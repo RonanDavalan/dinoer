@@ -1,4 +1,4 @@
-# Diwall — cheat sheet
+# Dinoer — cheat sheet
 
 Version 1.23.0 — August 2026
 

@@ -1,8 +1,8 @@
-# Diwall — FAQ for LLMs
+# Dinoer — FAQ for LLMs
 
 Version 1.9 — August 2026 (v1.23.0) — version table through v1.22.0, `--guide-version` current token 1.2
 
-Answers to technical questions raised by language models during real Diwall sessions.
+Answers to technical questions raised by language models during real Dinoer sessions.
 No attribution — these are recurring questions, not individual testimonies.
 
 ---
@@ -17,7 +17,7 @@ No attribution — these are recurring questions, not individual testimonies.
 either `--guide-version X.Y` (the `<!-- notice-version: X.Y -->` value found
 on line 3 of `docs/GUIDE_LLM.md`) or a local marker from a previous accepted
 call. This is deliberate, not a bug — field observation showed models calling
-Diwall without reading anything first, hitting avoidable errors, and only
+Dinoer without reading anything first, hitting avoidable errors, and only
 reading the guide after the fact. See `docs/RADAR_MODELES.md` for the
 incident that motivated it.
 
@@ -30,7 +30,7 @@ cat /opt/diwall/docs/GUIDE_LLM.md
 You will not be asked again on this machine, as this OS user, until
 `GUIDE_LLM.md`'s `notice-version` changes.
 
-### Q: How do I check which Diwall version is installed, without a full run?
+### Q: How do I check which Dinoer version is installed, without a full run?
 
 ```bash
 /opt/diwall/venv/bin/python3 /opt/diwall/shot.py --version
@@ -39,14 +39,14 @@ You will not be asked again on this machine, as this OS user, until
 
 No Playwright launch, no `--url` needed, exit 0 immediately (v1.18.0+). Same
 flag on `rpa.py` and `watch.py`. Distinct from `--guide-version` — one reports
-the Diwall release, the other proves you read the guide. Passing one where
+the Dinoer release, the other proves you read the guide. Passing one where
 the other is expected fails.
 
 ---
 
 ## Perception
 
-### Q: Can Diwall analyze image files (JPG, PNG, PDF)?
+### Q: Can Dinoer analyze image files (JPG, PNG, PDF)?
 
 **Yes — natively, without any OCR library.**
 
@@ -69,7 +69,7 @@ The browser renders it, `shot.py` captures it, the vision LLM reads it.
 Text extraction (if needed) goes through `evaluer` on the DOM text layer exposed
 by the PDF viewer — not through OCR pixel parsing.
 
-**Not yet supported:** audio files. There is no ASR integration in Diwall.
+**Not yet supported:** audio files. There is no ASR integration in Dinoer.
 Do not confuse Vosk (ASR = audio-to-text) with OCR (image-to-text). Vosk cannot
 read text from images or screenshots.
 
@@ -77,7 +77,7 @@ read text from images or screenshots.
 
 ### Q: What is in the `boussole` object?
 
-The `boussole` is the first object to read in any Diwall JSON output. Since v1.16.0
+The `boussole` is the first object to read in any Dinoer JSON output. Since v1.16.0
 it always contains six fields:
 
 ```json
@@ -116,10 +116,10 @@ go/no-go read — see `docs/MANUEL.md` section 2d.
 
 ### Q: Does `etat.pret_a_agir: false` block my next action?
 
-**No. `etat` is a report, not a gate — Diwall never checks it before running
+**No. `etat` is a report, not a gate — Dinoer never checks it before running
 an action.**
 
-No verb dispatcher reads `pret_a_agir`. Seeing `false` means Diwall perceived
+No verb dispatcher reads `pret_a_agir`. Seeing `false` means Dinoer perceived
 a friction worth your attention (a probable WAF block, JS/console errors, a
 navigation cap reached, a session drift) before you act — it is descriptive,
 not a permission system. The decision to stop, investigate `raisons` further,
@@ -184,12 +184,12 @@ elements inside shadow roots are not numbered by default.
 
 **Known limitation:** closed Shadow Roots (created with `{mode: 'closed'}`) are
 inaccessible from JS and are silently skipped. There is no workaround — this is
-a browser-level enforcement, not a Diwall limitation.
+a browser-level enforcement, not a Dinoer limitation.
 
 In scenario JSON, activate with `"shadow_dom": true` at the root level.
 
 **Cross-origin iframes:** JS injection cannot cross the Same-Origin Policy boundary
-by construction — a hard browser security limit, not a Diwall gap (unlike Shadow DOM,
+by construction — a hard browser security limit, not a Dinoer gap (unlike Shadow DOM,
 which is the same document, just encapsulated). Since v1.17.0, `cliquer_iframe` and
 `remplir_iframe` bypass this via Playwright's native `page.frame_locator()` (CDP-based,
 not JS injection):
@@ -272,11 +272,11 @@ alongside `"auth_indicator"`. `rpa.py` propagates it to `shot.py` automatically.
 
 ---
 
-### Q: Can Diwall fill a login form? What about a network-level auth wall (HTTP Basic Auth)?
+### Q: Can Dinoer fill a login form? What about a network-level auth wall (HTTP Basic Auth)?
 
 Both, and they are unrelated mechanisms — do not confuse one for a limit on
 the other. **Web form authentication** (a username/password `<input>` on a
-page) has always been supported, and is Diwall's core credential
+page) has always been supported, and is Dinoer's core credential
 mechanism: `remplir_som` + `valeur: "depuis_secrets"` (see the Security
 section of `docs/GUIDE_LLM.md`). **HTTP Basic Auth** (RFC 7617, a browser-
 level challenge raised by a reverse proxy before any page renders — Caddy,
@@ -388,6 +388,6 @@ duplicated here, which would otherwise need updating every cycle.
 ## See also
 
 - `docs/GUIDE_LLM.md` — complete operator guide (security rules, all flags, all actions)
-- `docs/GUIDE_EXPLORATION.md` — how to explore an unknown interface with Diwall
+- `docs/GUIDE_EXPLORATION.md` — how to explore an unknown interface with Dinoer
 - `docs/RETOUR_EXPERIENCE.md` — terrain frictions and resolutions
-- `docs/RADAR_MODELES.md` — observed LLM behaviour on real Diwall sessions
+- `docs/RADAR_MODELES.md` — observed LLM behaviour on real Dinoer sessions

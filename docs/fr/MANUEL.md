@@ -1,10 +1,10 @@
-# Diwall — Manuel d'utilisation
+# Dinoer — Manuel d'utilisation
 
 **Version 1.23.0 — Août 2026**
 
 *Également disponible en français, allemand et espagnol sous `docs/fr/`, `docs/de/` et `docs/es/`.*
 
-Ce document répond à une seule question : **comment réaliser X avec Diwall**.
+Ce document répond à une seule question : **comment réaliser X avec Dinoer**.
 
 **Si vous êtes un utilisateur** — aucune commande n'est nécessaire. Indiquez à votre modèle ce que vous souhaitez visiter, observer ou accomplir sur un site web, une application web ou une interface d'administration.
 Le modèle lit ce manuel et traduit votre intention en actions appropriées.
@@ -50,7 +50,7 @@ Résultat attendu : du JSON sur stdout avec `"succes": true`.
 **`--guide-version` (v1.18.0+):** `shot.py`, `rpa.py`, et `watch.py` refusent de
 fonctionner sans cela — sauf si un marqueur local provenant d'un appel accepté précédemment existe déjà (`~/.config/diwall/guide_state.json`). La valeur est la
 `<!-- notice-version: X.Y -->` sur la ligne 3 de `docs/GUIDE_LLM.md` — et non le
-numéro de version de Diwall. Consultez la version actuelle plutôt que de vous fier à une valeur quelconque mentionnée ici : `grep notice-version /opt/diwall/docs/GUIDE_LLM.md`. Reportez-vous à la section "Vérifications préalables obligatoires" de
+numéro de version de Dinoer. Consultez la version actuelle plutôt que de vous fier à une valeur quelconque mentionnée ici : `grep notice-version /opt/diwall/docs/GUIDE_LLM.md`. Reportez-vous à la section "Vérifications préalables obligatoires" de
 `docs/GUIDE_LLM.md` pour comprendre le mécanisme complet et le format des erreurs si vous l'omettez.
 
 Une fois le marqueur existant, ``--guide-version`` redevient optionnel — chaque autre exemple de commande dans ce manuel l'omet délibérément, car un marqueur provenant d'un appel précédent réussi les couvre déjà, tant que ``docs/GUIDE_LLM.md`'s `notice-version`` n'a pas changé depuis.
@@ -64,16 +64,16 @@ grep "__version__" /opt/diwall/shot.py
 /opt/diwall/venv/bin/python3 -c "import playwright_stealth; print('stealth OK')"
 
 # Vérifiez que le répertoire chiffré est monté.
-ls ~/Vaults/__PROJET__/Diwall/
+ls ~/Vaults/__PROJET__/Dinoer/
 # → doit afficher les fichiers .json, et non une liste vide.
 ```
 
 Si `ls ~/Vaults/...` renvoie une liste vide ou une erreur :
-→ montez-le : `bash ~/git/Diwall/Diwall/scripts/monter-repertoire-chiffre.sh`
+→ montez-le : `bash ~/git/Dinoer/Dinoer/scripts/monter-repertoire-chiffre.sh`
 
 ### 1a. Installation à partir du paquet Debian : la méthode la plus simple
 
-Le `.deb` est un dépôt sur GitHub. C'est le canal recommandé, sauf si vous avez l'intention de modifier le code propre de Diwall, auquel cas, voir 1b. Les deux canaux sont mutuellement exclusifs sur une seule machine : ils ciblent tous les deux `/opt/diwall/`.
+Le `.deb` est un dépôt sur GitHub. C'est le canal recommandé, sauf si vous avez l'intention de modifier le code propre de Dinoer, auquel cas, voir 1b. Les deux canaux sont mutuellement exclusifs sur une seule machine : ils ciblent tous les deux `/opt/diwall/`.
 
 ```bash
 sudo apt install ./diwall_1.23.0-1_all.deb
@@ -108,9 +108,9 @@ l'un ou l'autre, sur les deux canaux.
 
 **Page de manuel (v1.22.0):** `man diwall` documente les six commandes sur une seule page. Les cinq autres noms de commandes (`man diwall-rpa`, etc.) renvoient à la même page. Elle est générée à partir de `debian/diwall.1.md` au moment de la compilation, elle ne peut donc pas devenir obsolète sans avertissement, mais pour la liste exhaustive des options de toute commande, `--help` reste la source d'information privilégiée par rapport à la page de manuel.
 
-### 1b. Installation à partir du code source – pour modifier Diwall lui-même
+### 1b. Installation à partir du code source – pour modifier Dinoer lui-même
 
-N'utilisez ce canal que si vous comptez modifier le code de Diwall lui-même :
+N'utilisez ce canal que si vous comptez modifier le code de Dinoer lui-même :
 il place le dépôt là où `deploy.sh` peut pousser vos changements vers
 `/opt/diwall/`. Pour un usage simple, le `.deb` ci-dessus tient en une commande
 et fait le même travail.
@@ -122,8 +122,8 @@ sudo mkdir -p /opt/diwall
 sudo chown root:diwall /opt/diwall
 
 # 2. Cloner le dépôt.
-git clone https://github.com/ronandavalan/diwall.git ~/git/Diwall/Diwall
-cd ~/git/Diwall/Diwall
+git clone https://github.com/ronandavalan/diwall.git ~/git/Dinoer/Dinoer
+cd ~/git/Dinoer/Dinoer
 
 # 3. Créer un environnement virtuel Python.
 sudo /usr/bin/python3 -m venv /opt/diwall/venv
@@ -133,26 +133,26 @@ sudo /opt/diwall/venv/bin/pip install -r requirements.txt
 sudo /opt/diwall/venv/bin/playwright install chromium
 
 # 5. Déployer.
-bash ~/git/Diwall/Diwall/scripts/deploy.sh
+bash ~/git/Dinoer/Dinoer/scripts/deploy.sh
 
 # 6. Créez votre répertoire de clés chiffrées.
-mkdir -p ~/Vaults/<your-project>/Diwall
-# Créez le fichier `~/Vaults/<votre_projet>/Diwall/<nom_d'hôte>.json` avec vos identifiants.
+mkdir -p ~/Vaults/<your-project>/Dinoer
+# Créez le fichier `~/Vaults/<votre_projet>/Dinoer/<nom_d'hôte>.json` avec vos identifiants.
 ```
 
 Sur ce canal, la configuration est `/opt/diwall/diwall.conf`, et non
 `/etc/diwall/diwall.conf`. Désinstallez avec
-`bash ~/git/Diwall/Diwall/scripts/uninstall.sh --dry-run` en premier, puis sans
+`bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh --dry-run` en premier, puis sans
 l'indicateur.
 
 **Construction du paquet (responsable) :**
 
 ```bash
-bash ~/git/Diwall/Diwall/scripts/construire-paquet.sh
+bash ~/git/Dinoer/Dinoer/scripts/construire-paquet.sh
 ```
 
 Construit puis archive les trois artefacts (`.deb`, `.buildinfo`, `.changes`)
-sous `~/git/Diwall/paquets/<version>/`. Toutes les versions sont conservées : le
+sous `~/git/Dinoer/paquets/<version>/`. Toutes les versions sont conservées : le
 `.buildinfo` est la seule trace de l'environnement exact dans lequel un paquet a été construit, et il ne vaut rien s'il n'est pas conservé.
 
 ---
@@ -231,7 +231,7 @@ Si `pret_a_agir` est égal à `false`, consultez `raisons` pour connaître la ca
 
 ### 2e. `mode_conseille` — Conseils de configuration avant le vol (v1.18.0)
 
-Si Diwall dispose de données antérieures concernant l'hôte que vous appelez — provenant d'une exécution précédente `diagnostic_dom.json`, il peut proposer une recommandation pour votre prochain appel, mais cette recommandation n'est jamais appliquée automatiquement : `etat`
+Si Dinoer dispose de données antérieures concernant l'hôte que vous appelez — provenant d'une exécution précédente `diagnostic_dom.json`, il peut proposer une recommandation pour votre prochain appel, mais cette recommandation n'est jamais appliquée automatiquement : `etat`
 
 ```json
 "etat": {
@@ -290,7 +290,7 @@ Configuré dans `/opt/diwall/diwall.conf`:
 
 ```json
 {
-  "secrets_dir": "~/Vaults/__PROJET__/Diwall",
+  "secrets_dir": "~/Vaults/__PROJET__/Dinoer",
   "navigation": {
     "min_action_delay_ms": 800,
     "max_pages_par_run": 10,
@@ -376,7 +376,7 @@ ce qui est attendu pour cette référence spécifique, et non un signe d'un bloc
 
 ### 3e. Signal de détection WAF (v1.16.0, version améliorée v1.17.2)
 
-Diwall signale un blocage probable par un WAF de manière passive : HTTP 403/429, ou une correspondance de titre/mot-clé HTML (`Cloudflare`, `CAPTCHA`, `checking your browser`, etc.). Ceci est un indicateur, et non une exception ; l'exécution se termine normalement :
+Dinoer signale un blocage probable par un WAF de manière passive : HTTP 403/429, ou une correspondance de titre/mot-clé HTML (`Cloudflare`, `CAPTCHA`, `checking your browser`, etc.). Ceci est un indicateur, et non une exception ; l'exécution se termine normalement :
 
 ```json
 "respect": {
@@ -386,7 +386,7 @@ Diwall signale un blocage probable par un WAF de manière passive : HTTP 403/429
 
 Lorsque les éléments suivants sont présents et que `> 0` est vrai: `etat.niveau_confiance` est `"faible"` et
 `etat.pret_a_agir` est `false`. Décidez vous-même si vous souhaitez réessayer avec
-`--stealth`, modifier la cible, ou arrêter — Diwall n'interrompt pas l'exécution pour vous.
+`--stealth`, modifier la cible, ou arrêter — Dinoer n'interrompt pas l'exécution pour vous.
 
 Depuis la version v1.17.2, les noms de fournisseurs génériques (`Cloudflare`, `Akamai`) ne correspondent qu'au
 titre de la page ; auparavant, ils produisaient des faux positifs pour les références ordinaires aux ressources CDN. Si un faux positif persiste, `--ignorer-waf`
@@ -404,7 +404,7 @@ traitent légitimement du blocage/de la détection (par exemple, une page de ré
 Les identifiants sont stockés dans un répertoire chiffré, un volume gocryptfs, contenant un fichier `.json` par domaine.
 
 ```
-~/Vaults/__PROJET__/Diwall/
+~/Vaults/__PROJET__/Dinoer/
   ├── app.example.com.json         ← credentials for https://app.example.com/
   ├── admin.example.com.json       ← credentials for https://admin.example.com/
   └── operations.jsonl             ← operation log (v1.15.0)
@@ -519,15 +519,15 @@ Sans la clé `checksum`, le comportement reste inchangé (option stricte).
 ### 4f. Répertoire chiffré fermé : que faire ?
 
 ```
-SecretsFermesError: Le répertoire chiffré Diwall est initialisé mais non monté.
+SecretsFermesError: Le répertoire chiffré Dinoer est initialisé mais non monté.
 ```
 
 ```bash
 # Montez le répertoire chiffré.
-bash ~/git/Diwall/Diwall/scripts/monter-repertoire-chiffre.sh
+bash ~/git/Dinoer/Dinoer/scripts/monter-repertoire-chiffre.sh
 
 # Vérifiez le montage.
-ls ~/Vaults/__PROJET__/Diwall/
+ls ~/Vaults/__PROJET__/Dinoer/
 # → doit afficher les fichiers JSON.
 ```
 
@@ -542,7 +542,7 @@ mécanisme différent de l'authentification basée sur un formulaire décrite ci
 ```bash
 /opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
   --url https://internal.example/ \
-  --http-credentials --secrets ~/Vaults/__PROJET__/Diwall/internal_example.json
+  --http-credentials --secrets ~/Vaults/__PROJET__/Dinoer/internal_example.json
 ```
 
 Fichier d'identifiants : la paire `username` / `password` simple déjà utilisée pour le cas courant (un seul jeu d'identifiants pour la cible) :
@@ -551,7 +551,7 @@ Fichier d'identifiants : la paire `username` / `password` simple déjà utilisé
 {"username": "admin", "password": "my-password"}
 ```
 
-Les clés dédiées `http_username`/`http_password` sont testées en premier et ne sont nécessaires que lorsque la même cible possède à la fois une protection Basic Auth au niveau du réseau *et* sa propre connexion d'application distincte (deux paires d'identifiants différentes dans le même fichier) — Diwall revient automatiquement aux clés `username`/`password` lorsque les clés dédiées sont absentes.
+Les clés dédiées `http_username`/`http_password` sont testées en premier et ne sont nécessaires que lorsque la même cible possède à la fois une protection Basic Auth au niveau du réseau *et* sa propre connexion d'application distincte (deux paires d'identifiants différentes dans le même fichier) — Dinoer revient automatiquement aux clés `username`/`password` lorsque les clés dédiées sont absentes.
 
 Confirmé en production contre une cible réelle protégée par Caddy : la configuration
 par défaut (`send: "unauthorized"` — les identifiants sont envoyés uniquement après un véritable
@@ -999,12 +999,12 @@ Depuis la version v1.17.2, l'injecteur efface également les marqueurs laissés 
 Si l'erreur 403 persiste avec `--stealth`: le site utilise l'empreinte TLS (JA3/JA4) ou une analyse comportementale avancée (Cloudflare Enterprise). `playwright-stealth` ne contourne pas ces protections.
 Voir `docs/RETOUR_EXPERIENCE.md` FR-77/FR-78/FR-79 pour plus de contexte.
 
-Diwall signale également un blocage probable de manière passive, sans que vous ayez à vérifier vous-même le
+Dinoer signale également un blocage probable de manière passive, sans que vous ayez à vérifier vous-même le
 code d'état HTTP — voir la section 3e (`respect.waf_bloquants`).
 
 ### 7l. La navigation initiale ne se termine jamais — `--wait-until` (v1.22.0)
 
-Symptôme : `TimeoutError` lors de la navigation initiale, et l'augmentation de `--timeout` ne change rien (45 s échoue exactement comme 10 s). Cause : par défaut, Diwall attend `networkidle` – 500 ms de silence réseau. Une page qui interroge continuellement (statistiques en direct, compteurs actualisés automatiquement, panneaux d'administration du routeur) ne produit jamais ce silence, donc aucune valeur de délai d'attente ne peut être suffisamment grande.
+Symptôme : `TimeoutError` lors de la navigation initiale, et l'augmentation de `--timeout` ne change rien (45 s échoue exactement comme 10 s). Cause : par défaut, Dinoer attend `networkidle` – 500 ms de silence réseau. Une page qui interroge continuellement (statistiques en direct, compteurs actualisés automatiquement, panneaux d'administration du routeur) ne produit jamais ce silence, donc aucune valeur de délai d'attente ne peut être suffisamment grande.
 
 ```bash
 # shot.py — direct reconnaissance
@@ -1129,7 +1129,7 @@ Compléments 8a–8f : `watch.py` surveille l'*apparence* (pixels/sémantique).
 # Un script de vérification et d'alerte – ce n'est pas un démon, exécutez-le à plusieurs reprises via cron.
 # Les fichiers `*.sh` situés dans le répertoire `scripts/` ne sont jamais déployés vers /opt/diwall/, ils s'exécutent donc depuis Git.
 # source, en tant que votre propre utilisateur.
-bash ~/git/Diwall/Diwall/scripts/monitor-verifier.sh \
+bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
   --scenario /opt/diwall/scenarios/sillage_login.json \
   --reference /opt/diwall/references/sillage_login.ref.json \
   --ntfy-topic diwall-monitoring
@@ -1137,7 +1137,7 @@ bash ~/git/Diwall/Diwall/scripts/monitor-verifier.sh \
 
 ```bash
 # crontab -e (votre propre fichier crontab)
-*/15 * * * * bash ~/git/Diwall/Diwall/scripts/monitor-verifier.sh \
+*/15 * * * * bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
   --scenario /opt/diwall/scenarios/sillage_login.json \
   --reference /opt/diwall/references/sillage_login.ref.json \
   --ntfy-topic diwall-monitoring \
@@ -1156,7 +1156,7 @@ Le journal est configurable dans `diwall.conf` (v1.15.0) :
 
 ```json
 "journal": {
-  "chemin": "~/Vaults/__PROJET__/Diwall/operations.jsonl"
+  "chemin": "~/Vaults/__PROJET__/Dinoer/operations.jsonl"
 }
 ```
 
@@ -1164,7 +1164,7 @@ Si le fichier est absent ou si le répertoire chiffré n'est pas monté, utilise
 
 ```bash
 # Lisez les 10 dernières entrées.
-tail -n 10 ~/Vaults/__PROJET__/Diwall/operations.jsonl | python3 -m json.tool
+tail -n 10 ~/Vaults/__PROJET__/Dinoer/operations.jsonl | python3 -m json.tool
 
 # Filtrez par cible (journal.py outil).
 /opt/diwall/venv/bin/python3 /opt/diwall/journal.py \
@@ -1188,7 +1188,7 @@ Champs dans chaque entrée :
 | Champ | Signification |
 |---|---|
 | `ts` | Horodatage ISO 8601 |
-| `version` | Version Diwall |
+| `version` | Version Dinoer |
 | `outil` | `shot.py` ou `rpa.py` |
 | `cible_url` | URL cible |
 | `scenario` | Chemin du fichier de scénario (mode RPA) |
@@ -1200,13 +1200,13 @@ Champs dans chaque entrée :
 
 ### 9a. Rotation des journaux (G-36, CHANTIER_SANITISATION.md)
 
-Diwall ne fournit pas de configuration `logrotate` — `/var/log/diwall/operations.jsonl`
+Dinoer ne fournit pas de configuration `logrotate` — `/var/log/diwall/operations.jsonl`
 et grandit indéfiniment jusqu'à ce que l'administrateur en installe une. `lib/journal.py` ouvre
 et ferme le fichier à chaque écriture (pas de descripteur de fichier persistant entre
 les exécutions), spécifiquement pour que le comportement par défaut de `logrotate` (renommer
 le fichier actuel, créer un nouveau fichier) fonctionne correctement sans aucune option spéciale : la prochaine écriture rouvre le chemin et trouve le nouvel inode.
 
-Ne pas ajouter ``copytruncate`` à une configuration de logrotate pour Diwall, car c'est
+Ne pas ajouter ``copytruncate`` à une configuration de logrotate pour Dinoer, car c'est
 inutile ici (contrairement aux outils qui maintiennent un descripteur de fichier ouvert
 pendant toute leur durée de vie) et cela réintroduit une fenêtre de perte d'écriture que cette conception a été conçue pour éviter. Exemple ``/etc/logrotate.d/diwall``:
 
@@ -1389,7 +1389,7 @@ Les clés conditionnelles (absentes lorsqu'elles sont inactives) : `capture`, `c
 {
   "succes": false,
   "erreur": "secrets_fermes",
-  "message": "Le répertoire chiffré Diwall est initialisé mais non monté.",
+  "message": "Le répertoire chiffré Dinoer est initialisé mais non monté.",
   "code_sortie_recommande": 42,
   "boussole": { "url_courante": "", "titre_page": "" }
 }
@@ -1409,11 +1409,11 @@ Les clés conditionnelles (absentes lorsqu'elles sont inactives) : `capture`, `c
 | `/opt/diwall/docs/` | Documentation |
 | `/opt/diwall/references/` | Références visuelles watch.py |
 | `/tmp/diwall/<operation_id>/` | Captures temporaires pour une seule exécution, isolées par `operation_id` (v1.16.0, effacées au redémarrage) |
-| `~/Vaults/__PROJET__/Diwall/` | Identifiants + logs (volume gocryptfs) |
-| `~/git/Diwall/Diwall/` | Sources Git (modifier ici, puis `deploy.sh`) |
+| `~/Vaults/__PROJET__/Dinoer/` | Identifiants + logs (volume gocryptfs) |
+| `~/git/Dinoer/Dinoer/` | Sources Git (modifier ici, puis `deploy.sh`) |
 
 Déployez après avoir modifié les sources :
 
 ```bash
-bash ~/git/Diwall/Diwall/scripts/deploy.sh
+bash ~/git/Dinoer/Dinoer/scripts/deploy.sh
 ```

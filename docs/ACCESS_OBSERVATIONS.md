@@ -1,14 +1,14 @@
-# Diwall — Access observations
+# Dinoer — Access observations
 
 Version 1.0 — July 2026 (v1.19.0)
 
-A neutral, dated log of real access outcomes encountered while using Diwall
+A neutral, dated log of real access outcomes encountered while using Dinoer
 against public sites. Purpose: give future runs (and future models) factual
 grounding instead of repeated guessing about which targets are reachable.
 
 **What this file is not:** a verdict on any site's legitimacy, a WAF-vendor
 classifier, or a call to action. An entry records what was observed, on what
-date, with what Diwall configuration — nothing about the target's intent or
+date, with what Dinoer configuration — nothing about the target's intent or
 worth. See `docs/GUIDE_LLM.md` section "WAF and Cloudflare blocking" for the
 doctrine behind this neutrality (perceive the friction, do not moralize
 about it).
@@ -25,7 +25,7 @@ a reconstructed panel assembled without a genuine intent to visit each site
 ## 2026-06-27 — Commercial search campaign, 23 sites (FR-77)
 
 **Context:** real purchase research (reconditioned game consoles, budget
-≤ 200 €), francophone e-commerce sites. Diwall v1.14.0, no `--stealth`
+≤ 200 €), francophone e-commerce sites. Dinoer v1.14.0, no `--stealth`
 (introduced later, v1.15.0).
 
 | Outcome | Count | Share |
@@ -87,7 +87,7 @@ this benchmark — `playwright-stealth` does not claim to cover either.
 When a real run produces a genuine access observation (not a synthetic
 re-test), append a dated section above the "Adding an entry" heading:
 
-- Date, target (public name, no internal codenames), Diwall version and
+- Date, target (public name, no internal codenames), Dinoer version and
   flags used (`--stealth`, `--mode`, etc.)
 - Outcome: accessible / blocked (403, timeout, other) — cite the actual
   `http_status` or symptom from the JSON output

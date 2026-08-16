@@ -1,4 +1,4 @@
-# Diwall — Operator guide
+# Dinoer — Operator guide
 
 Version 1.10 — August 2026 (v1.23.0) — four more demonstration use cases (self-hosted observability, ticketing platform administration, local events tracking, e-commerce access under Respectful Navigation)
 
@@ -6,9 +6,9 @@ Version 1.10 — August 2026 (v1.23.0) — four more demonstration use cases (se
 
 ---
 
-## Why Diwall — what you actually delegate
+## Why Dinoer — what you actually delegate
 
-### The problem Diwall solves
+### The problem Dinoer solves
 
 When you work with an LLM on a web application, a perception asymmetry occurs:
 the model reads code, runs commands, observes textual output — but it does not see
@@ -18,7 +18,7 @@ This asymmetry creates a specific form of anxiety: you don't know whether what
 the model describes matches what you would see in a browser. To be sure, you must
 either trust it at its word, or verify it yourself.
 
-Diwall solves this problem by creating a **shared visual reference**:
+Dinoer solves this problem by creating a **shared visual reference**:
 the model captures the interface with a real browser (headless Chromium),
 and you have access to the same PNG captures and accessibility trees.
 You no longer take the model at its word — you observe the same state it does.
@@ -43,14 +43,14 @@ You no longer take the model at its word — you observe the same state it does.
 
 ### What you delegate
 
-Diwall lets you delegate **repetitive and anxiety-inducing visual verification**:
+Dinoer lets you delegate **repetitive and anxiety-inducing visual verification**:
 
 - Checking that 20 pages of a site display correctly after a deployment
 - Confirming that a login form works on the right interface
 - Ensuring a deployment did not break the rendering of a critical view
 - Visually validating that a fix is correctly visible on screen
 
-Without Diwall, these verifications are your responsibility. With Diwall, the model
+Without Dinoer, these verifications are your responsibility. With Dinoer, the model
 performs them and reports the result — with visual proof.
 
 ### What you keep
@@ -61,7 +61,7 @@ with what your users should see. That decision remains yours.
 
 ### Respectful Navigation (v1.15.0)
 
-Diwall does not disguise its identity to bypass bot detection. `--stealth`
+Dinoer does not disguise its identity to bypass bot detection. `--stealth`
 removes automatic technical markers (`navigator.webdriver`) that block
 headless browsers regardless of intent — it does not change the operator's
 IP, identity, or the fact that the run is declared. In exchange, every run
@@ -77,9 +77,9 @@ an unconfigured first run against the public internet — it is meaningless
 against your own development/production machine. Set it to `0` in your local
 `diwall.conf` for local debugging; see `docs/MANUEL.md` section 3b.
 
-### When Diwall is the right tool
+### When Dinoer is the right tool
 
-| Use case | Diwall suitable? |
+| Use case | Dinoer suitable? |
 |---|---|
 | Visual validation after deployment | ✓ Yes |
 | Diagnosing a broken rendering | ✓ Yes |
@@ -87,14 +87,14 @@ against your own development/production machine. Set it to `0` in your local
 | Delegating repetitive checks | ✓ Yes |
 | Long server operation (cloning ~2–5 min) | ✗ No — Playwright timeout |
 | Bulk deletion or mutation | ✗ No — prefer a direct API call |
-| Workflow requiring rollback | ✗ No — Diwall cannot undo |
+| Workflow requiring rollback | ✗ No — Dinoer cannot undo |
 
-For discouraged cases, see `docs/GUIDE_LLM.md` section "When NOT to use Diwall"
+For discouraged cases, see `docs/GUIDE_LLM.md` section "When NOT to use Dinoer"
 (frictions FR-59 and FR-60 documented).
 
 ---
 
-**This document is written for the person operating Diwall.**
+**This document is written for the person operating Dinoer.**
 
 It complements `GUIDE_LLM.md` (intended for models) with concrete examples,
 step-by-step procedures, and reminders on common stumbling points.
@@ -103,7 +103,7 @@ step-by-step procedures, and reminders on common stumbling points.
 
 ## Demonstration use cases
 
-The cases below illustrate what an agent-plus-Diwall session can look like in
+The cases below illustrate what an agent-plus-Dinoer session can look like in
 practice. They are meant for you to evaluate against your own context, not as
 a recommendation to adopt any specific one. Only Case 1 ships as a runnable
 scenario; the others are narrative on purpose, and each explains why under its
@@ -128,9 +128,9 @@ regression. Run it directly:
 ### Case 2 — comparing hardware components across shops
 
 An agent asked to compare a component's price and stock across several
-online shops could compose Diwall with a separate URL-discovery tool (a
+online shops could compose Dinoer with a separate URL-discovery tool (a
 local search instance, for example) to find candidate shop pages, then use
-Diwall in sonde mode (`--mode fast`, no PNG) with `evaluer` actions to
+Dinoer in sonde mode (`--mode fast`, no PNG) with `evaluer` actions to
 extract price/stock/specifications from each page, and finally compare the
 results itself.
 
@@ -142,7 +142,7 @@ fail months later when that site's anti-bot posture changes (39% of the
 commercial sites sampled in `docs/RETOUR_EXPERIENCE.md` FR-77 returned an
 immediate block), which discredits the example more than it helps. If you
 build this composition yourself, note that any URL-discovery tool you pair
-Diwall with (a local search instance or otherwise) is not a Diwall
+Dinoer with (a local search instance or otherwise) is not a Dinoer
 component — it is a separate piece the agent composes on top.
 
 ### Case 3 — exploring and summarising technical documentation (single-page apps)
@@ -164,7 +164,7 @@ pinned to one real target.
 ### Case 4 — configuring a self-hosted observability or analytics dashboard
 
 An operator setting up a self-hosted monitoring or web-analytics dashboard
-behind a reverse proxy can use Diwall to drive the interface itself —
+behind a reverse proxy can use Dinoer to drive the interface itself —
 creating a dashboard, wiring a data source, setting an alert rule — the
 same way any other admin panel gets configured, rather than hand-editing
 files for steps the UI is meant to handle. This includes targets sitting
@@ -181,7 +181,7 @@ multi-step configuration work.
 
 ### Case 5 — administering a ticketing platform end-to-end
 
-Diwall used across several sessions to configure and operate a real
+Dinoer used across several sessions to configure and operate a real
 self-hosted ticketing installation — event setup, ticket categories, a
 custom domain, and the day-of scan/check-in tooling — through the same web
 interface a human administrator would use. Real friction was encountered
@@ -189,7 +189,7 @@ and resolved along the way (session handling, dropdown quirks, a
 permission prompt blocking an unattended step) — not a friction-free
 success story, which is part of what makes it a useful example: the
 obstacles were ordinary web-automation obstacles, not something specific
-to Diwall.
+to Dinoer.
 
 **Not shipped as a committed scenario** — a ticketing configuration touches
 billing and venue specifics unique to the operator, same reasoning as
@@ -199,7 +199,7 @@ Case 2.
 
 A simple semantic-probe usage: asking an agent to check a local events
 calendar for upcoming happenings, without knowing in advance which page
-holds the answer. Diwall's fast mode (`--mode fast`, no
+holds the answer. Dinoer's fast mode (`--mode fast`, no
 capture) combined with the accessibility tree lets the agent scan and
 report back in a handful of requests — no vision model needed for this
 kind of read-only, text-driven task. One session also produced a clean,
@@ -218,11 +218,11 @@ the operator's call, not a project default.
 
 A recurring, honest observation from actual sessions: used respectfully
 (rate-limited delays, page/action caps, `--stealth` active, no attempt to
-force access past a real block), Diwall run against a range of e-commerce
+force access past a real block), Dinoer run against a range of e-commerce
 sites finds that a large share of major platforms return an outright
 block — HTTP 403, or a request that never completes — regardless of how
-courteous the traffic is. This is not a Diwall shortcoming to fix:
-anti-bot posture is the site's own choice, and Diwall does not attempt to
+courteous the traffic is. This is not a Dinoer shortcoming to fix:
+anti-bot posture is the site's own choice, and Dinoer does not attempt to
 defeat it (see "Respectful Navigation" above). Practically: for
 shopping-comparison tasks against large commercial platforms, expect a
 meaningful share of dead ends, and treat a block signal
@@ -235,7 +235,7 @@ challenge) is different from an interactive CAPTCHA. The latter is
 legitimate to answer honestly — an agent operating for a named human, from
 that human's own IP, is not the "robot" the question is aimed at. The
 former simply offers no door to open from the agent's side, and forcing
-past it (IP rotation, TLS fingerprint spoofing) falls outside what Diwall
+past it (IP rotation, TLS fingerprint spoofing) falls outside what Dinoer
 does.
 
 **Not shipped as a committed scenario, and deliberately not naming the
@@ -249,13 +249,13 @@ FR-77 documents the same pattern at panel scale (39% immediate block rate).
 ## Prerequisites before starting
 
 ```bash
-# 1. Verify Diwall responds
+# 1. Verify Dinoer responds
 /opt/diwall/venv/bin/python3 /opt/diwall/shot.py \
   --url https://example.com --som --a11y
 # → must return {"succes": true, ...}
 
 # 2. Verify the encrypted directory is mounted (if gocryptfs)
-ls ~/Vaults/Diwall/
+ls ~/Vaults/Dinoer/
 # → must show .json files, not encrypted content
 
 # 3. Verify credentials for a domain
@@ -442,7 +442,7 @@ disappeared form field with unchanged layout, for instance).
   --sauver-verifier-reference /opt/diwall/references/my-scenario.ref.json
 
 # 2. One check-and-alert pass
-bash ~/git/Diwall/Diwall/scripts/monitor-verifier.sh \
+bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
   --scenario /opt/diwall/scenarios/my-scenario.json \
   --reference /opt/diwall/references/my-scenario.ref.json \
   --ntfy-topic diwall-monitoring
@@ -452,11 +452,11 @@ Silent when stable, one `ntfy` push when a regression is detected. Schedule
 it yourself with cron — the script does one pass and exits, it does not loop.
 `scripts/*.sh` is never deployed to `/opt/diwall/`, so the cron entry runs
 from the git source, as your own user (not the `diwall` service account,
-which cannot reach `~/git/Diwall/Diwall/`):
+which cannot reach `~/git/Dinoer/Dinoer/`):
 
 ```bash
 # crontab -e (your own crontab)
-*/15 * * * * bash ~/git/Diwall/Diwall/scripts/monitor-verifier.sh \
+*/15 * * * * bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
   --scenario /opt/diwall/scenarios/my-scenario.json \
   --reference /opt/diwall/references/my-scenario.ref.json \
   --ntfy-topic diwall-monitoring \
@@ -470,7 +470,7 @@ which cannot reach `~/git/Diwall/Diwall/`):
 | Situation | What to do |
 |---|---|
 | `FileNotFoundError` on the credentials file | Check that the JSON file is named with the full FQDN (`urlparse(url).hostname`) |
-| `SecretsFermesError` (exit 42) | Mount the encrypted directory: `bash ~/git/Diwall/Diwall/scripts/monter-repertoire-chiffre.sh` |
+| `SecretsFermesError` (exit 42) | Mount the encrypted directory: `bash ~/git/Dinoer/Dinoer/scripts/monter-repertoire-chiffre.sh` |
 | Invalid JSON in output | Use `2>/dev/null \| tail -1` to extract only the JSON line |
 | SoM IDs differ between sessions | Expected — SoM IDs are recalculated on each capture. Never reuse them cross-session |
 | Login followed by Django redirect to dashboard | Do not use `naviguer` in a resumed Django session — pass the URL via `--url` |
@@ -481,25 +481,25 @@ which cannot reach `~/git/Diwall/Diwall/`):
 | `respect.waf_bloquants` appears on a page that is not actually blocked | Detection is keyword-based (v1.16.0, refined v1.17.2) — treat as a signal, not a verdict. If it persists on a page you've confirmed is not blocked, add `--ignorer-waf` |
 | `cliquer_som` clicks the wrong element on a page that mutated between capture and click | Add `--som-rafraichir` (v1.17.0) — resolves by a stable marker instead of live re-indexing |
 | A long RPA scenario fails partway through and you don't want to replay completed steps | Add `--checkpoint FILE` (v1.17.0) — relaunch the same command to resume; DOM state is not preserved, only session + action position |
-| Interactive elements inside an iframe are invisible to Diwall | SoM cannot number iframe content (same-origin or cross-origin) — use `cliquer_iframe`/`remplir_iframe` (v1.17.0) with an explicit CSS selector, or `iframe_chemin` (v1.18.0) for an iframe nested inside another |
-| Your model reports `"erreur": "guide_non_lu"` / exit 1 on its first Diwall call | Expected the first time a model uses Diwall on this machine as this OS user (v1.18.0) — it must read `docs/GUIDE_LLM.md` and pass `--guide-version` once. This is deliberate, not a bug — tell the model to read the guide rather than working around the error |
+| Interactive elements inside an iframe are invisible to Dinoer | SoM cannot number iframe content (same-origin or cross-origin) — use `cliquer_iframe`/`remplir_iframe` (v1.17.0) with an explicit CSS selector, or `iframe_chemin` (v1.18.0) for an iframe nested inside another |
+| Your model reports `"erreur": "guide_non_lu"` / exit 1 on its first Dinoer call | Expected the first time a model uses Dinoer on this machine as this OS user (v1.18.0) — it must read `docs/GUIDE_LLM.md` and pass `--guide-version` once. This is deliberate, not a bug — tell the model to read the guide rather than working around the error |
 
 ---
 
-## Uninstalling Diwall
+## Uninstalling Dinoer
 
-The `~/git/Diwall/Diwall/scripts/uninstall.sh` script removes the installation cleanly, in the reverse
+The `~/git/Dinoer/Dinoer/scripts/uninstall.sh` script removes the installation cleanly, in the reverse
 order of `install.sh`.
 
 ```bash
 # See what will be removed, without doing anything
-bash ~/git/Diwall/Diwall/scripts/uninstall.sh --dry-run
+bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh --dry-run
 
 # Full uninstall (interactive confirmation)
-bash ~/git/Diwall/Diwall/scripts/uninstall.sh
+bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh
 
 # Without confirmation (cold tests, chained reinstall)
-bash ~/git/Diwall/Diwall/scripts/uninstall.sh --confirme && bash ~/git/Diwall/Diwall/scripts/install.sh
+bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh --confirme && bash ~/git/Dinoer/Dinoer/scripts/install.sh
 ```
 
 **What is removed:**
@@ -508,21 +508,21 @@ bash ~/git/Diwall/Diwall/scripts/uninstall.sh --confirme && bash ~/git/Diwall/Di
 |---|---|
 | `/opt/diwall/` | Code, Python venv, configuration |
 | `/var/log/diwall/` | Operation logs |
-| `diwall` system user | Created exclusively for Diwall |
+| `diwall` system user | Created exclusively for Dinoer |
 | `diwall` system group | Same |
 | Group membership | Your account is removed from the `diwall` group |
 | git pre-push hook | `core.hooksPath` disabled in the source repository |
 
 **What is never touched:**
 - `~/Vaults/` — your credentials
-- `~/git/Diwall/` — git sources
+- `~/git/Dinoer/` — git sources
 - Playwright browser cache (`~/.cache/ms-playwright/`)
 
 **Evidence captures (`/var/log/diwall/preuves/`):** if the directory contains
 captures, it is preserved by default with a warning. To remove it:
 
 ```bash
-bash ~/git/Diwall/Diwall/scripts/uninstall.sh --confirme --purge-preuves
+bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh --confirme --purge-preuves
 ```
 
 ---
