@@ -1103,7 +1103,7 @@ Propagates all relevant shot.py flags, plus:
 | `--id-campagne ID` | Campaign identifier (used in the manifest and extraction) |
 | `--extraire-cible DEMANDE` | Targeted extraction on an already-collected corpus, without synthesis. Requires `--id-campagne` or `--corpus` |
 | `--corpus FILE` | Direct path to a `collecte.jsonl` — alternative to `--id-campagne` for `--extraire-cible` |
-| `--format-extraction {json,markdown,html}` | Output format for `--extraire-cible` (default: `json`) — added 15/08/2026, missing from this table |
+| `--format-extraction {json,markdown,html}` | Output format for `--extraire-cible` (default: `json`) — added 15/08/2026 |
 | `--desactiver-cache` | Bypass the search cache |
 | `--purger-cache` | Purge the whole search cache |
 | `--purger-cache-avant-jours N` | Purge cache entries older than N days |

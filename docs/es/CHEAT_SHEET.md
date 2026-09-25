@@ -58,7 +58,7 @@ del DOM.
 | `boussole.dernier_code_http` | último estado de navegación |
 | `etat.pret_a_agir` + `etat.raisons` | fricciones percibidas — un informe, nunca una barrera |
 | `a11y_tree` | estructura de la página — encabezados, campos, botones |
-| `respect` | tu propia huella: páginas, acciones, duración |
+| `respect` | su propia huella: páginas, acciones, duración |
 
 Si `boussole` no coincide con lo que esperas, detente antes de cualquier
 acción mutante.
@@ -99,8 +99,8 @@ acción mutante.
 ```
 
 Nunca extraigas un secreto al shell. `lib/repertoire_chiffre.py` lo resuelve
-dentro del proceso Playwright; el valor nunca llega a tu línea de comandos,
-tu historial, ni ningún log.
+dentro del proceso Playwright; el valor nunca llega a su línea de comandos,
+su historial, ni ningún log.
 
 ---
 

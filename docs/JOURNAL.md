@@ -4,6 +4,32 @@ History of decisions and discoveries by session, in reverse chronological order.
 
 ---
 
+## 2026-09-25 — 1.0.1: the four audit items fixed, and what the release cycle found
+
+**1. The four items of the site audit below are fixed in 1.0.1.**
+`lib/searxng.py` reads `searxng_url` from the file `DINOER_CONF` designates
+(`/etc/dinoer/dinoer.conf` on the package channel, through the `dinoer-campaign`
+wrapper). There is no default OpenCode model any more: without
+`DINOER_OPENCODE_MODEL` the report step says so, and a failed call reports
+OpenCode's own error and whether the model is missing from `opencode models`.
+`invoquer_opencode()` sets `websearch`/`webfetch` to `deny` in
+`OPENCODE_CONFIG_CONTENT` on every call, merged with the user's own value —
+measured from `/tmp` with `opencode debug config` (OpenCode 1.18.32); `bash`
+stays `allow`, the residual gap is unchanged. The campaign notification no
+longer carries the local path of the report. The entry below describes the
+state before these fixes.
+
+**2. Found by running the release cycle for real.**
+- A package installation interrupted during the Chromium download left the
+  package half-configured, and `postinst` only checked for the full Chromium
+  executable, not for the headless shell Playwright launches. Both `postinst`
+  and `scripts/install.sh` now check both.
+- The README, GUIDE and MANUAL translations had drifted from the English source
+  (the badge block, the campaign options table, two paragraphs, example paths,
+  Spanish written in the familiar register). They were corrected by hand and the
+  translation checks (`verifier-traduction.py --sans-porte`) now pass in French,
+  German and Spanish.
+
 ## 2026-09-25 — Site audit: what the site claimed, what the code does
 
 **1. Inherited entries removed.** `docs/RADAR_MODELES.md` carried three

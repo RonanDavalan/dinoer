@@ -11,6 +11,8 @@ Edit `debian/changelog` and rebuild instead
 - OpenCode calls deny websearch/webfetch whatever the launch directory (OPENCODE_CONFIG_CONTENT, merged with the user's own value), so the report only cites the collected pages. stdin is closed on the call.
 - The campaign completion notification no longer carries the local report path.
 - docs/RADAR_MODELES.md: three entries inherited from the fork removed.
+- postinst (and scripts/install.sh) now also check the headless Chromium shell: an interrupted download could leave the full browser without it and pass for a complete installation, leaving shot.py unable to start.
+- README, GUIDE and MANUAL in French, German and Spanish brought back in line with the English source (badges, campaign options table, example paths, Spanish formal register); the translation checks pass in the three languages.
 
 ## 1.0.0 — 15 Aug 2026 00:22:11 +0200
 

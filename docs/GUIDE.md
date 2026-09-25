@@ -129,7 +129,7 @@ An agent asked to compare a component's price and stock across several
 online shops could compose Dinoer with a separate URL-discovery tool (a
 local search instance, for example) to find candidate shop pages, then use
 Dinoer in read-only mode with `evaluer` actions to extract
-price/stock/specifications from each page, and finally compare the
+price, stock and specifications from each page, and finally compare the
 results itself.
 
 **Not shipped as a committed scenario, deliberately:** naming a specific

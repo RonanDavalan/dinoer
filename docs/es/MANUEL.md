@@ -1154,7 +1154,9 @@ Propaga todas las opciones relevantes de shot.py, más:
 |---|---|
 | `--manifeste FILE` | Manifiesto de campaña (JSON) — requiere `id_campagne` + `cibles` |
 | `--id-campagne ID` | Identificador de campaña (usado en el manifiesto y la extracción) |
-| `--extraire-cible DEMANDE` | Extracción dirigida sobre un corpus ya recopilado, sin síntesis |
+| `--extraire-cible DEMANDE` | Extracción dirigida sobre un corpus ya recopilado, sin síntesis. Requiere `--id-campagne` o `--corpus` |
+| `--corpus FILE` | Ruta directa a un `collecte.jsonl` — alternativa a `--id-campagne` para `--extraire-cible` |
+| `--format-extraction {json,markdown,html}` | Formato de salida de `--extraire-cible` (por defecto: `json`) — añadido el 15/08/2026 |
 | `--desactiver-cache` | Omite la caché de búsqueda |
 | `--purger-cache` | Purga toda la caché de búsqueda |
 | `--purger-cache-avant-jours N` | Purga las entradas de caché anteriores a N días |
@@ -1237,9 +1239,9 @@ Artefactos: el `/var/log/dinoer/operations.jsonl` compartido + un
 esta ejecución — coincide con el campo `operation_id` de la entrada de esta
 ejecución en el registro de operaciones (sección 9), y nombra el directorio
 de pruebas `preuves/<AAAA-MM>/<operation_id>/` cuando se archivan capturas
-allí (corregido el 15/08/2026: no existe ningún directorio
-`/tmp/dinoer/<operation_id>/` en el código — `/tmp/dinoer/` solo contiene
-el archivo de respaldo del registro). `etat`
+allí (corregido el 15/08/2026, verificado contra `lib/journal.py`: no existe ningún directorio
+`/tmp/dinoer/<operation_id>/` en ninguna parte del código — `/tmp/dinoer/` solo contiene
+el archivo de respaldo del registro de operaciones). `etat`
 (v1.16.0) está presente solo en la ruta de éxito. `latences_actions`
 (v1.20.0) siempre está presente (lista vacía si no hubo acciones), una
 entrada por cada acción que realmente se despachó — consulta

@@ -1,11 +1,16 @@
 # Dinoer — Investigación web soberana y local-first para agentes LLM
 
-> **Para el operador humano:** Dinoer se ejecuta en tu propia máquina, delega
-> la búsqueda y la recopilación a primitivas que puedes leer línea por línea,
+[![CI](https://github.com/RonanDavalan/dinoer/actions/workflows/ci.yml/badge.svg)](https://github.com/RonanDavalan/dinoer/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/RonanDavalan/dinoer)](https://github.com/RonanDavalan/dinoer/releases)
+[![Download .deb](https://img.shields.io/badge/Download-.deb%20package-blue)](https://github.com/RonanDavalan/dinoer/releases/latest/download/dinoer_1.0.1-1_all.deb)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
+
+> **Para el operador humano:** Dinoer se ejecuta en su propia máquina, delega
+> la búsqueda y la recopilación a primitivas que puede leer línea por línea,
 > y te entrega un informe Markdown con fuentes y fecha — no una respuesta de
 > caja negra.
 >
-> **Para el LLM:** [`docs/GUIDE_LLM.md`](../GUIDE_LLM.md) es tu referencia
+> **Para el LLM:** [`docs/GUIDE_LLM.md`](../GUIDE_LLM.md) es su referencia
 > operativa. Empieza por ahí.
 
 ---
@@ -42,7 +47,7 @@ completa.
 
 ## Posicionamiento: en qué compite Dinoer y en qué no.
 
-Dinoer no compite con los asistentes de búsqueda de uso general (Perplexity y similares) en cuanto a la amplitud, el volumen o el precio de las búsquedas. Una prueba real (14 de agosto de 2026, investigación de reputación sobre un tema real) midió esto directamente en lugar de asumirlo: de las 28 páginas recopiladas por el propio sistema de descubrimiento impulsado por SearXNG de Dinoer, tres fuentes que una consulta simple y no preparada de Perplexity mostró inmediatamente (un perfil de LinkedIn, una página de proyecto, un crédito de foto de archivo) estaban completamente ausentes; esto se rastreó hasta consultas de SearXNG dirigidas al tipo incorrecto de búsqueda (directorios de empresas, en lugar de los términos que habrían mostrado esas páginas), y no a un defecto de clasificación o truncamiento posterior. Un motor de búsqueda generalista con motores autenticados y respaldados por cookies tiene un alcance estructural que una instancia local de SearXNG sin autenticación no posee.
+Dinoer no compite con los asistentes de búsqueda de uso general (Perplexity y similares) en cuanto a la amplitud, el volumen o el precio de las búsquedas. Una prueba real (14 de agosto de 2026, investigación de reputación sobre un tema real) midió esto directamente en lugar de asumirlo: de las 28 páginas recopiladas por el propio sistema de descubrimiento impulsado por SearXNG de Dinoer, tres fuentes que una consulte simple y no preparada de Perplexity mostró inmediatamente (un perfil de LinkedIn, una página de proyecto, un crédito de foto de archivo) estaban completamente ausentes; esto se rastreó hasta consultas de SearXNG dirigidas al tipo incorrecto de búsqueda (directorios de empresas, en lugar de los términos que habrían mostrado esas páginas), y no a un defecto de clasificación o truncamiento posterior. Un motor de búsqueda generalista con motores autenticados y respaldados por cookies tiene un alcance estructural que una instancia local de SearXNG sin autenticación no posee.
 
 Lo que la misma prueba verificó, en el mismo conjunto de datos, midió más que lo que se asumió: **una síntesis trazable y reproducible de un conjunto de datos específico.** Cada afirmación en un informe de Dinoer es atribuible a una página realmente recopilada en disco (`collecte.jsonl`/`operations.jsonl`) — sin ninguna dependencia de lo que haya hecho un motor de búsqueda externo al producir la respuesta. Una verificación directa del flujo completo de eventos del modelo delegado durante la síntesis (no solo su texto final) confirmó que no se realizaron llamadas externas `websearch`/`webfetch` al conjunto de datos durante la generación del informe. Esa es la verdadera propuesta de valor: saber precisamente de dónde proviene una respuesta, y no simplemente obtener resultados como lo haría una herramienta generalista.
 
@@ -135,7 +140,7 @@ Dos canales, mutuamente excluyentes en una misma máquina.
 sudo apt install ./dinoer_1.0.1-1_all.deb
 ```
 
-Instala el usuario y grupo del sistema `dinoer`, un entorno virtual de Python aislado, Chromium, los seis comandos `dinoer-*` y sus páginas de manual en cuatro idiomas. Los paquetes, el código fuente y las sumas de comprobación se publican en [dinoer.davalan.fr](https://dinoer.davalan.fr) -- consulta la página de [Descargas](https://dinoer.davalan.fr/en/guides/downloads/) para obtener más detalles, incluyendo qué significa ese aviso de "sandbox" `apt`.
+Instala el usuario y grupo del sistema `dinoer`, un entorno virtual de Python aislado, Chromium, los seis comandos `dinoer-*` y sus páginas de manual en cuatro idiomas. Los paquetes, el código fuente y las sumas de comprobación se publican en [dinoer.davalan.fr](https://dinoer.davalan.fr) -- consulte la página de [Descargas](https://dinoer.davalan.fr/en/guides/downloads/) para obtener más detalles, incluyendo qué significa ese aviso de "sandbox" `apt`.
 
 **Clonar el repositorio Git** — si tiene la intención de modificar el código:
 
@@ -165,12 +170,12 @@ bash scripts/uninstall.sh             # confirmación interactiva
 ```
 
 Elimina: `/opt/dinoer/`, `/var/log/dinoer/`, el usuario de sistema `dinoer`,
-el grupo de sistema `dinoer`. **Nunca se toca:** `~/Vaults/` (tus
+el grupo de sistema `dinoer`. **Nunca se toca:** `~/Vaults/` (sus
 credenciales), el propio repositorio.
 
 ---
 
-## Uso (por tu LLM)
+## Uso (por su LLM)
 
 ### Extracción semántica, sin imagen
 
@@ -195,7 +200,7 @@ Las credenciales se almacenan en archivos JSON, uno por dominio, **nunca en
 el código ni en archivos de escenario**:
 
 ```
-~/Vaults/Dinoer/
+~/Vaults/__PROJET__/Dinoer/
 ├── my-source.example.json   → {"password": "...", "username": "admin"}
 └── other-service.com.json   → {"password": "...", "api_key": "..."}
 ```
@@ -207,7 +212,7 @@ directorio de credenciales.
 La ruta es configurable vía `/opt/dinoer/dinoer.conf` o la variable de
 entorno `DINOER_SECRETS_DIR`.
 
-**Recomendación:** proteja `~/Vaults/Dinoer/` con `chmod 700` y encripte
+**Recomendación:** proteja `~/Vaults/__PROJET__/Dinoer/` con `chmod 700` y encripte
 esto con `gocryptfs` (consulte `scripts/configurer-repertoire-chiffre.sh
 --gocryptfs` — git-clone channel only, not shipped by the `.deb`; en ese
 canal, configure `gocryptfs` usted mismo y dirija `secrets_dir` a la ruta montada). Si el directorio encriptado se inicializa pero no está montado, Dinoer
@@ -228,11 +233,11 @@ nube sobre fuentes sensibles.
 ### Directorio de credenciales
 
 El directorio de credenciales — dondequiera que hayas apuntado `secrets_dir`,
-por ejemplo `~/Vaults/Dinoer/` — contiene credenciales en JSON de texto plano
+por ejemplo `~/Vaults/__PROJET__/Dinoer/` — contiene credenciales en JSON de texto plano
 cuando no está montado. Protégelo:
 
 ```bash
-chmod 700 ~/Vaults/Dinoer/
+chmod 700 ~/Vaults/__PROJET__/Dinoer/
 ```
 
 Consulta `~/git/Dinoer/Dinoer/SECURITY.md` para la política de divulgación
@@ -242,18 +247,20 @@ de vulnerabilidades.
 
 ## Documentación en otros idiomas
 
-Esta página es la traducción española, derivada de la fuente inglesa
-(`README.md`, raíz del repositorio), que prevalece en caso de divergencia.
-También disponible en [francés](../fr/README.md) y
-[alemán](../de/README.md). Las guías destinadas al LLM
-(`docs/GUIDE_LLM.md` y sus tres notas) solo existen en inglés y nunca se
-traducen (guide-lock, rutas fijas).
+Esta página es la traducción española de la fuente inglesa (`README.md`, raíz del
+repositorio), que prevalece en caso de divergencia.
+[`docs/fr/README.md`](../fr/README.md), [`docs/de/README.md`](../de/README.md) y
+[`docs/es/README.md`](README.md) son traducciones derivadas de esa fuente
+(resincronizadas el 15/08/2026), junto con `docs/MANUEL.md`, `docs/GUIDE.md`,
+`docs/CHEAT_SHEET.md` y la página de manual `dinoer.1` en cada idioma.
+`docs/GUIDE_LLM.md` y sus tres notas solo existen en inglés y nunca se
+traducen — ruta bloqueada, mecanismo de guide-lock. 
 
 ---
 
 ## Para LLMs que descubren Dinoer
 
-Si eres un modelo de lenguaje leyendo este README: consulta
+Si es un modelo de lenguaje leyendo este README: consulte
 [`docs/GUIDE_LLM.md`](../GUIDE_LLM.md) para la referencia técnica completa
 — patrones de invocación, integración de credenciales y el pipeline de
 investigación (`campagne.py`).
@@ -285,4 +292,4 @@ optimización del flujo de trabajo, validación cruzada de decisiones técnicas.
 
 ## Licencia
 
-MIT — consulta el archivo `LICENSE`.
+MIT — consulte el archivo `LICENSE`.

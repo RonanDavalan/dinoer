@@ -82,7 +82,11 @@ if ! sudo PLAYWRIGHT_BROWSERS_PATH="$PW_BROWSERS" "$DEST/venv/bin/python3" -c "f
 fi
 CHROMIUM_PATH=$(sudo PLAYWRIGHT_BROWSERS_PATH="$PW_BROWSERS" "$DEST/venv/bin/python3" -c \
     "from playwright.sync_api import sync_playwright; p=sync_playwright().start(); b=p.chromium; print(b.executable_path); p.stop()" 2>/dev/null || true)
-if [ -z "$CHROMIUM_PATH" ] || [ ! -f "$CHROMIUM_PATH" ]; then
+# Chromium complet et shell headless : un téléchargement interrompu peut laisser
+# le premier sans le second, et ne tester que le premier ferait passer
+# l'installation pour complète alors que shot.py ne peut pas se lancer.
+if [ -z "$CHROMIUM_PATH" ] || [ ! -f "$CHROMIUM_PATH" ] \
+    || ! ls "$PW_BROWSERS"/chromium_headless_shell-*/*/chrome-headless-shell >/dev/null 2>&1; then
     echo "  Installation de Chromium..."
     # --with-deps : installe aussi les bibliothèques partagées système
     # (libnspr4, libnss3, etc.) via apt — trouvé manquant par un cycle .deb

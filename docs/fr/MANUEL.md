@@ -1164,7 +1164,9 @@ Propage tous les drapeaux pertinents de shot.py, plus :
 |---|---|
 | `--manifeste FICHIER` | manifeste de campagne (JSON) — requiert `id_campagne` + `cibles` |
 | `--id-campagne ID` | identifiant de campagne (utilisé dans le manifeste et l'extraction) |
-| `--extraire-cible DEMANDE` | extraction ciblée sur un corpus déjà collecté, sans synthèse |
+| `--extraire-cible DEMANDE` | extraction ciblée sur un corpus déjà collecté, sans synthèse. Requiert `--id-campagne` ou `--corpus` |
+| `--corpus FICHIER` | chemin direct vers un `collecte.jsonl` — alternative à `--id-campagne` pour `--extraire-cible` |
+| `--format-extraction {json,markdown,html}` | format de sortie de `--extraire-cible` (par défaut : `json`) — ajouté le 15/08/2026 |
 | `--desactiver-cache` | contourne le cache de recherche |
 | `--purger-cache` | purge l'intégralité du cache de recherche |
 | `--purger-cache-avant-jours N` | purge les entrées de cache plus anciennes que N jours |
@@ -1247,9 +1249,9 @@ partagé + un `collecte.jsonl` par campagne. Détail complet :
 de façon unique — il correspond au champ `operation_id` de l'entrée de
 cette exécution dans le journal d'opérations (section 9), et nomme le
 répertoire de preuves `preuves/<AAAA-MM>/<operation_id>/` quand des
-captures y sont archivées (corrigé le 15/08/2026 : aucun répertoire
-`/tmp/dinoer/<operation_id>/` n'existe dans le code — `/tmp/dinoer/` ne
-contient que le fichier de repli du journal).
+captures y sont archivées (corrigé le 15/08/2026, vérifié contre `lib/journal.py` : aucun répertoire
+`/tmp/dinoer/<operation_id>/` n'existe nulle part dans le code — `/tmp/dinoer/` ne
+contient jamais que le fichier de repli du journal d'opérations).
 `etat` (v1.16.0) est présent uniquement sur le chemin de succès.
 `latences_actions` (v1.20.0) est toujours présent (liste vide si aucune
 action), une entrée par action réellement exécutée — voir

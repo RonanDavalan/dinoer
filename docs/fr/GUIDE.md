@@ -142,7 +142,7 @@ Un agent chargé de comparer le prix et le stock d'un composant sur plusieurs
 boutiques en ligne pourrait composer Dinoer avec un outil séparé de
 découverte d'URL (une instance de recherche locale, par exemple) pour
 trouver des pages boutique candidates, puis utiliser Dinoer en mode lecture
-seule avec des actions `evaluer` pour extraire prix/stock/spécifications de
+seule avec des actions `evaluer` pour extraire prix, stock et spécifications de
 chaque page, et enfin comparer lui-même les résultats.
 
 **Non livré comme scénario commité, délibérément :** nommer une boutique
@@ -275,7 +275,7 @@ panel (39 % de taux de blocage immédiat).
 # → doit renvoyer {"succes": true, ...}
 
 # 2. Vérifier que le répertoire chiffré est monté (si gocryptfs)
-ls ~/Vaults/Dinoer/
+ls ~/Vaults/__PROJET__/Dinoer/
 # → doit montrer des fichiers .json, pas du contenu chiffré
 
 # 3. Vérifier les identifiants pour un domaine
@@ -295,7 +295,7 @@ Chaque projet peut avoir son propre répertoire d'identifiants. Deux méthodes :
 **Méthode 1 — variable d'environnement directe (ponctuelle) :**
 
 ```bash
-DINOER_SECRETS_DIR=~/Vaults/MonProjet \
+DINOER_SECRETS_DIR=~/Vaults/MyProject \
   /opt/dinoer/venv/bin/python /opt/dinoer/shot.py --url …
 ```
 
@@ -304,10 +304,10 @@ récurrents) :**
 
 ```bash
 # Créer le fichier à la racine du projet
-echo '{"secrets_dir": "../MonProjet-secrets"}' > ~/git/MonProjet/.dinoer.conf
+echo '{"secrets_dir": "../MyProject-secrets"}' > ~/git/MyProject/.dinoer.conf
 
 # Puis préfixer chaque invocation (ou exporter en début de session shell)
-export DINOER_CONF=~/git/MonProjet/.dinoer.conf
+export DINOER_CONF=~/git/MyProject/.dinoer.conf
 /opt/dinoer/venv/bin/python /opt/dinoer/shot.py --url …
 ```
 
@@ -443,13 +443,13 @@ mise en page inchangée, par exemple).
 ```bash
 # 1. Sauvegarder une référence structurelle, une fois
 /opt/dinoer/venv/bin/python /opt/dinoer/rpa.py \
-  --scenario /opt/dinoer/scenarios/mon-scenario.json \
-  --sauver-verifier-reference /opt/dinoer/references/mon-scenario.ref.json
+  --scenario /opt/dinoer/scenarios/my-scenario.json \
+  --sauver-verifier-reference /opt/dinoer/references/my-scenario.ref.json
 
 # 2. Une passe de vérification-et-alerte
 bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
-  --scenario /opt/dinoer/scenarios/mon-scenario.json \
-  --reference /opt/dinoer/references/mon-scenario.ref.json \
+  --scenario /opt/dinoer/scenarios/my-scenario.json \
+  --reference /opt/dinoer/references/my-scenario.ref.json \
   --ntfy-topic dinoer-monitoring
 ```
 
@@ -462,8 +462,8 @@ branche `.deb`, les trois scripts sont installés sous
 ```bash
 # crontab -e (votre propre crontab)
 */15 * * * * bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
-  --scenario /opt/dinoer/scenarios/mon-scenario.json \
-  --reference /opt/dinoer/references/mon-scenario.ref.json \
+  --scenario /opt/dinoer/scenarios/my-scenario.json \
+  --reference /opt/dinoer/references/my-scenario.ref.json \
   --ntfy-topic dinoer-monitoring \
   >> /var/log/dinoer/cron-structural.jsonl 2>&1
 ```

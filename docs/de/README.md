@@ -1,5 +1,10 @@
 # Dinoer — souveräne, lokale Web-Recherche für LLM-Agenten
 
+[![CI](https://github.com/RonanDavalan/dinoer/actions/workflows/ci.yml/badge.svg)](https://github.com/RonanDavalan/dinoer/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/RonanDavalan/dinoer)](https://github.com/RonanDavalan/dinoer/releases)
+[![Download .deb](https://img.shields.io/badge/Download-.deb%20package-blue)](https://github.com/RonanDavalan/dinoer/releases/latest/download/dinoer_1.0.1-1_all.deb)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
+
 > **Für den menschlichen Betreiber:** Dinoer läuft auf Ihrer eigenen Maschine,
 > delegiert Suche und Sammlung an Primitiven, die Sie Zeile für Zeile lesen
 > können, und liefert Ihnen einen belegten, datierten Markdown-Bericht — keine
@@ -85,7 +90,7 @@ Credential-Auflösung) — nichts von dessen Wahrnehmungsschicht.
 | **Referenzseiten-Tabellen** | `lib/tables_reference.py` — eine persistente, belegte Tabelle bekannter Seiten pro Thema |
 | **Vektor-Suchcache** | `lib/cache_recherche.py` — ChromaDB-gestützt, vermeidet erneute Abfragen für nahezu identische Anfragen |
 | **Deduplizierung & Aktualität** | Deduplizierung auf Kampagnenebene nach exakter URL, Obergrenze pro Hostname, 30-Tage-Aktualitätsfenster vor erneutem Crawl |
-| **Respektvolles Crawling** | Zufällige Verzögerung zwischen Zielen, harte Verweigerung bei WAF-/robots.txt-Signalen — nie umgangen |
+| **Respektvolles Crawling** | Zufällige Verzögerung zwischen Zielen, harte Verweigerung bei WAF/robots.txt-Signalen — nie umgangen |
 | **Credential-Auflösung** | Sichere Credential-Injektion — nie im Klartext, nie auf der Kommandozeile |
 | **Verschlüsseltes Verzeichnis** | gocryptfs-Volume — `SecretsFermesError` (Exit 42), wenn es nicht gemountet ist |
 | **Vorgangsprotokoll** | Persistentes Append-only-Protokoll aller Läufe — wer hat was, wo, wann getan |
@@ -196,7 +201,7 @@ Credentials werden in JSON-Dateien gespeichert, eine pro Domain, **nie im
 Code oder in Szenariodateien**:
 
 ```
-~/Vaults/Dinoer/
+~/Vaults/__PROJET__/Dinoer/
 ├── my-source.example.json   → {"password": "...", "username": "admin"}
 └── other-service.com.json   → {"password": "...", "api_key": "..."}
 ```
@@ -208,7 +213,7 @@ Credentials-Verzeichnis.
 Der Pfad ist über `/opt/dinoer/dinoer.conf` oder die Umgebungsvariable
 `DINOER_SECRETS_DIR` konfigurierbar.
 
-**Empfehlung:** Schützen Sie `~/Vaults/Dinoer/` mit `chmod 700` und
+**Empfehlung:** Schützen Sie `~/Vaults/__PROJET__/Dinoer/` mit `chmod 700` und
 verschlüsseln Sie es mit `gocryptfs` (siehe
 `scripts/configurer-repertoire-chiffre.sh --gocryptfs` — nur Git-Clone-Kanal,
 nicht vom `.deb` mitgeliefert; richten Sie auf diesem Kanal `gocryptfs`
@@ -231,11 +236,11 @@ Dinoer bei sensiblen Quellen auf einen Cloud-Anbieter richten.
 ### Credentials-Verzeichnis
 
 Das Credentials-Verzeichnis — wohin auch immer Sie `secrets_dir`
-verweisen ließen, zum Beispiel `~/Vaults/Dinoer/` — enthält Credentials bei
+verweisen ließen, zum Beispiel `~/Vaults/__PROJET__/Dinoer/` — enthält Credentials bei
 nicht gemountetem Zustand im Klartext-JSON. Schützen Sie es:
 
 ```bash
-chmod 700 ~/Vaults/Dinoer/
+chmod 700 ~/Vaults/__PROJET__/Dinoer/
 ```
 
 Siehe `~/git/Dinoer/Dinoer/SECURITY.md` für die Richtlinie zur Offenlegung
@@ -245,11 +250,14 @@ von Sicherheitslücken.
 
 ## Dokumentation in anderen Sprachen
 
-Dieses Dokument ist die deutsche Übersetzung der englischen Quelle
-(`README.md`, Repository-Wurzel). Auch verfügbar auf Französisch und
-Spanisch unter `docs/fr/` und `docs/es/`. Die LLM-Leitfäden
-(`docs/GUIDE_LLM.md` und seine drei Merkblätter) existieren bewusst nur auf
-Englisch und werden nie übersetzt (Guide-Lock, feste Pfade).
+Dieses Dokument ist die deutsche Übersetzung der englischen Quelle (`README.md`,
+Repository-Wurzel), die bei Abweichungen maßgeblich ist.
+[`docs/fr/README.md`](../fr/README.md), [`docs/de/README.md`](README.md) und
+[`docs/es/README.md`](../es/README.md) sind aus dieser Quelle abgeleitete Übersetzungen
+(neu synchronisiert am 15/08/2026), zusammen mit `docs/MANUEL.md`, `docs/GUIDE.md`,
+`docs/CHEAT_SHEET.md` und der Manpage `dinoer.1` in jeder Sprache.
+`docs/GUIDE_LLM.md` und seine drei Merkblätter existieren nur auf Englisch und
+werden nie übersetzt — gesperrter Pfad, Guide-Lock-Mechanismus. 
 
 ---
 

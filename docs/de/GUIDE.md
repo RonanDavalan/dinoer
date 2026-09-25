@@ -145,7 +145,7 @@ mehrere Online-Shops hinweg zu vergleichen, könnte Dinoer mit einem
 separaten Werkzeug zur URL-Entdeckung (zum Beispiel einer lokalen
 Suchinstanz) kombinieren, um Kandidatenseiten von Shops zu finden, dann
 Dinoer im schreibgeschützten Modus mit `evaluer`-Aktionen nutzen, um
-Preis/Lagerbestand/Spezifikationen von jeder Seite zu extrahieren, und
+Preis, Lagerbestand und Spezifikationen von jeder Seite zu extrahieren, und
 schließlich die Ergebnisse selbst vergleichen.
 
 **Bewusst nicht als eingechecktes Szenario ausgeliefert:** Einen
@@ -285,7 +285,7 @@ dasselbe Muster im Panel-Maßstab (39 % Sofort-Block-Rate).
 # → muss {"succes": true, ...} zurückgeben
 
 # 2. Prüfen, dass das verschlüsselte Verzeichnis gemountet ist (falls gocryptfs)
-ls ~/Vaults/Dinoer/
+ls ~/Vaults/__PROJET__/Dinoer/
 # → muss .json-Dateien zeigen, nicht verschlüsselten Inhalt
 
 # 3. Credentials für eine Domain prüfen

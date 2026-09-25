@@ -10,17 +10,17 @@ y el `docs/` raíz.*
 
 ---
 
-## Por qué Dinoer — qué delegas realmente
+## Por qué Dinoer — qué delega realmente
 
 ### El problema que resuelve Dinoer
 
 Cuando trabajas con un LLM en una aplicación web, se produce una asimetría de
 percepción: el modelo lee código, ejecuta comandos, observa salida textual —
-pero no ve la interfaz que ven tus usuarios. Tú sí.
+pero no ve la interfaz que ven sus usuarios. Usted sí.
 
-Esta asimetría crea una forma específica de ansiedad: no sabes si lo que el
+Esta asimetría crea una forma específica de ansiedad: no sabe si lo que el
 modelo describe coincide con lo que verías en un navegador. Para estar
-seguro, debes creerle bajo palabra o verificarlo tú mismo.
+seguro, debe creerle bajo palabra o verificarlo usted mismo.
 
 Dinoer resuelve este problema dándole al modelo la misma vista estructurada
 que obtendrías en un navegador: el árbol de accesibilidad, leído a través de
@@ -44,9 +44,9 @@ Ya no le crees al modelo bajo palabra — observas el mismo estado que él.
  Tú (el modelo): lees → analizas → decides → actúas → repites
 ```
 
-### Qué delegas
+### Qué delega
 
-Dinoer te permite delegar **verificaciones repetitivas y propensas al
+Dinoer le permite delegar **verificaciones repetitivas y propensas al
 control**:
 
 - Comprobar que 20 páginas de un sitio responden correctamente tras un despliegue
@@ -54,15 +54,15 @@ control**:
 - Asegurar que un despliegue no rompió la estructura de una vista crítica
 - Controlar un panel de administración a través de la misma interfaz que usaría un humano
 
-Sin Dinoer, estas verificaciones son responsabilidad tuya. Con Dinoer, el
+Sin Dinoer, estas verificaciones son responsabilidad suya. Con Dinoer, el
 modelo las realiza e informa del resultado — con la evidencia JSON que lo
 respalda.
 
 ### Qué conservas
 
 Conservas la **validación de sentido de alto nivel**: decidir si el resultado
-que presenta el modelo es aceptable, coherente con tus expectativas y acorde
-con lo que tus usuarios deberían ver. Esa decisión sigue siendo tuya.
+que presenta el modelo es aceptable, coherente con sus expectativas y acorde
+con lo que sus usuarios deberían ver. Esa decisión sigue siendo suya.
 
 ### Navegación respetuosa (v1.15.0)
 
@@ -74,14 +74,14 @@ esté declarada. A cambio, cada ejecución informa de su propia huella
 (`respect`: páginas visitadas, acciones ejecutadas, duración) y respeta
 retardos de cortesía configurables y límites estrictos (`dinoer.conf
 [navigation]`). El derecho a navegar y el deber de hacerlo de forma medible
-se tratan como inseparables — consulta `docs/RETOUR_EXPERIENCE.md`
+se tratan como inseparables — consulte `docs/RETOUR_EXPERIENCE.md`
 FR-77/FR-78/FR-79 para el contexto de campo que dio forma a esto.
 
 **Objetivos locales — el retardo de cortesía no es una doctrina, es un valor
 por defecto (v1.19.0):** el `min_action_delay_ms: 800` de fábrica protege
 una primera ejecución sin configurar contra el internet público — carece de
-sentido contra tu propia máquina de desarrollo/producción. Ponlo a `0` en tu
-`dinoer.conf` local para depuración local; consulta `docs/MANUEL.md` sección
+sentido contra su propia máquina de desarrollo/producción. Póngalo a `0` en su
+`dinoer.conf` local para depuración local; consulte `docs/MANUEL.md` sección
 3b.
 
 ### Cuándo Dinoer es la herramienta adecuada
@@ -109,7 +109,7 @@ comunes.
 ## Casos de uso de demostración
 
 Los siguientes casos ilustran cómo puede verse en la práctica una sesión de
-agente más Dinoer. Están pensados para que los evalúes en tu propio
+agente más Dinoer. Están pensados para que los evalúe en su propio
 contexto, no como una recomendación de adoptar alguno en concreto. Solo el
 Caso 1 se distribuye como escenario ejecutable; los demás son narrativos a
 propósito, y cada uno explica por qué bajo su propio encabezado.
@@ -136,18 +136,18 @@ en varias tiendas en línea podría combinar Dinoer con una herramienta
 separada de descubrimiento de URLs (una instancia de búsqueda local, por
 ejemplo) para encontrar páginas de tiendas candidatas, y luego usar Dinoer
 en modo de solo lectura con acciones `evaluer` para extraer
-precio/stock/especificaciones de cada página, y finalmente comparar los
+precio, stock y especificaciones de cada página, y finalmente comparar los
 resultados él mismo.
 
 **No se distribuye como escenario incluido, deliberadamente:** nombrar una
-tienda concreta en un escenario público y versionado es una decisión que te
-corresponde a ti, no un valor por defecto que este proyecto deba imponer en
-tu nombre. También conlleva un riesgo real de fragilidad — un escenario
+tienda concreta en un escenario público y versionado es una decisión que le
+corresponde a usted, no un valor por defecto que este proyecto deba imponer en
+su nombre. También conlleva un riesgo real de fragilidad — un escenario
 público dirigido a un sitio comercial nombrado puede fallar meses después
 cuando la postura anti-bot de ese sitio cambie (el 39 % de los sitios
 comerciales muestreados en `docs/RETOUR_EXPERIENCE.md` FR-77 devolvieron un
 bloqueo inmediato), lo que desacredita el ejemplo más de lo que ayuda. Si
-construyes tú mismo esta composición, ten en cuenta que cualquier
+construye usted mismo esta composición, tenga en cuenta que cualquier
 herramienta de descubrimiento de URLs con la que combines Dinoer (una
 instancia de búsqueda local u otra) no es un componente de Dinoer — es una
 pieza separada que el agente compone encima.
@@ -235,7 +235,7 @@ una gran proporción de las plataformas principales devuelve un bloqueo
 directo — HTTP 403, o una solicitud que nunca se completa — sin importar
 cuán cortés sea el tráfico. Esto no es una carencia de Dinoer que haya que
 corregir: la postura anti-bot es la propia elección del sitio, y Dinoer no
-intenta vencerla (consulta «Navegación respetuosa» más arriba). En la
+intenta vencerla (consulte «Navegación respetuosa» más arriba). En la
 práctica: para tareas de comparación de compras contra grandes plataformas
 comerciales, espera una proporción significativa de callejones sin salida, y
 trata una señal de bloqueo (`respect.waf_bloquants`) como información para
@@ -251,7 +251,7 @@ desde el lado del agente, y forzarlo (rotación de IP, suplantación de huella
 TLS) queda fuera de lo que hace Dinoer.
 
 **No se distribuye como escenario incluido, y deliberadamente sin nombrar las
-plataformas implicadas** — consulta el razonamiento sobre fragilidad ante WAF
+plataformas implicadas** — consulte el razonamiento sobre fragilidad ante WAF
 del Caso 2: una tabla fechada de bloqueo/no bloqueo ligada a sitios
 comerciales nombrados queda obsoleta y socava su propio argumento más rápido
 de lo que lo ilustra. `docs/RETOUR_EXPERIENCE.md` FR-77 documenta el mismo
@@ -268,7 +268,7 @@ patrón a escala de panel (tasa de bloqueo inmediato del 39 %).
 # → debe devolver {"succes": true, ...}
 
 # 2. Verificar que el directorio cifrado está montado (si usas gocryptfs)
-ls ~/Vaults/Dinoer/
+ls ~/Vaults/__PROJET__/Dinoer/
 # → debe mostrar archivos .json, no contenido cifrado
 
 # 3. Verificar las credenciales de un dominio
@@ -317,7 +317,7 @@ en relación con la ubicación del archivo `.dinoer.conf`.
 # → devuelve url_courante, titre_page, a11y_tree en el JSON
 ```
 
-**Lo que obtienes:**
+**Lo que obtiene:**
 - `boussole.url_courante` + `boussole.titre_page`: URL y título efectivos tras la navegación
 - `a11y_tree`: estructura de la página en texto (encabezados, campos, botones)
 - `etat.pret_a_agir` + `etat.raisons`: fricciones percibidas, para que el modelo las rodee
@@ -443,10 +443,10 @@ bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
 ```
 
 Silencioso cuando todo está estable, un envío `ntfy` cuando se detecta una
-regresión. Prográmalo tú mismo con cron — el script hace una sola pasada y
+regresión. Prográmelo usted mismo con cron — el script hace una sola pasada y
 termina, no repite en bucle. En el canal git-clone, `scripts/*.sh` nunca se
 despliega a `/opt/dinoer/`, así que la entrada de cron de abajo se ejecuta
-desde el código fuente de git, como tu propio usuario (no como la cuenta de
+desde el código fuente de git, como su propio usuario (no como la cuenta de
 servicio `dinoer`, que no puede acceder a `~/git/Dinoer/Dinoer/`). En el
 canal `.deb`, los tres scripts empaquetados se instalan en
 `/opt/dinoer/scripts/` y son accesibles vía los comandos `dinoer-*` en su
@@ -454,7 +454,7 @@ lugar — corregido el 15/08/2026, esta sección era anterior a la
 construcción real de ese canal:
 
 ```bash
-# crontab -e (tu propio crontab)
+# crontab -e (su propio crontab)
 */15 * * * * bash ~/git/Dinoer/Dinoer/scripts/monitor-verifier.sh \
   --scenario /opt/dinoer/scenarios/my-scenario.json \
   --reference /opt/dinoer/references/my-scenario.ref.json \
@@ -473,14 +473,14 @@ construcción real de ese canal:
 | JSON inválido en la salida | Usa `2>/dev/null \| tail -1` para extraer solo la línea JSON |
 | Inicio de sesión seguido de una redirección de Django al panel | No uses `naviguer` en una sesión Django reanudada — pasa la URL vía `--url` |
 | Campo de formulario `<select>` no se rellena | Usa `remplir` con `selecteur`, luego `cliquer` en la opción, o contrólalo vía `evaluer` |
-| El clic no tiene efecto en un botón fuera del viewport | Añade `{"type":"defiler","selecteur":"#the-button"}` antes del clic |
+| El clic no tiene efecto en un botón fuera del viewport | Añada `{"type":"defiler","selecteur":"#the-button"}` antes del clic |
 | `auth_status: "active"` incluso en la página de inicio de sesión | El selector positivo es ambiguo (encabezado persistente) — añade `--auth-indicator-negative .btn-login` |
 | Los Web Components bloquean un selector normal | Usa `cliquer_iframe`/`remplir_iframe` con un selector explícito, o accede dentro del shadow root vía `evaluer` |
 | `respect.waf_bloquants` aparece en una página que en realidad no está bloqueada | La detección se basa en palabras clave (v1.16.0, refinada en v1.17.2) — trátala como una señal, no un veredicto. Si persiste en una página que has confirmado que no está bloqueada, añade `--ignorer-waf` |
 | `cliquer` hace clic en el elemento equivocado en una página que mutó | Prefiere selectores estables en orden, o vuelve a leer el árbol con una llamada `--a11y` nueva antes de hacer clic |
-| Un escenario RPA largo falla a mitad de camino y no quieres repetir los pasos ya completados | Añade `--checkpoint FILE` (v1.17.0) — vuelve a lanzar el mismo comando para reanudar; el estado del DOM no se preserva, solo la sesión y la posición de la acción |
+| Un escenario RPA largo falla a mitad de camino y no quiere repetir los pasos ya completados | Añada `--checkpoint FILE` (v1.17.0) — vuelva a lanzar el mismo comando para reanudar; el estado del DOM no se preserva, solo la sesión y la posición de la acción |
 | Los elementos interactivos dentro de un iframe son invisibles para el árbol | Usa `cliquer_iframe`/`remplir_iframe` (v1.17.0) con un selector CSS explícito, o `iframe_chemin` (v1.18.0) para un iframe anidado dentro de otro |
-| Tu modelo informa `"erreur": "guide_non_lu"` / código de salida 1 en su primera llamada a Dinoer | Esperado la primera vez que un modelo usa Dinoer en esta máquina con este usuario del SO (v1.18.0) — debe leer `docs/GUIDE_LLM.md` y pasar `--guide-version` una vez. Esto es deliberado, no un fallo — indícale al modelo que lea la guía en lugar de sortear el error |
+| Su modelo informa `"erreur": "guide_non_lu"` / código de salida 1 en su primera llamada a Dinoer | Esperado la primera vez que un modelo usa Dinoer en esta máquina con este usuario del SO (v1.18.0) — debe leer `docs/GUIDE_LLM.md` y pasar `--guide-version` una vez. Esto es deliberado, no un fallo — indícale al modelo que lea la guía en lugar de sortear el error |
 
 ---
 
@@ -508,11 +508,11 @@ bash ~/git/Dinoer/Dinoer/scripts/uninstall.sh --confirme && bash ~/git/Dinoer/Di
 | `/var/log/dinoer/` | Registros de operaciones |
 | Usuario de sistema `dinoer` | Creado exclusivamente para Dinoer |
 | Grupo de sistema `dinoer` | Ídem |
-| Pertenencia al grupo | Tu cuenta se elimina del grupo `dinoer` |
+| Pertenencia al grupo | Su cuenta se elimina del grupo `dinoer` |
 | Hook de git pre-push | `core.hooksPath` desactivado en el repositorio de origen |
 
 **Qué nunca se toca:**
-- `~/Vaults/` — tus credenciales
+- `~/Vaults/` — sus credenciales
 - `~/git/Dinoer/` — el origen git
 - Caché del navegador de Playwright (`~/.cache/ms-playwright/`)
 

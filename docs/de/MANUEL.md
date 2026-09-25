@@ -401,7 +401,7 @@ Inhalt von `~/git/MyProject/.dinoer.conf`:
 Der Pfad wird relativ zum Speicherort von `.dinoer.conf` aufgelöst.
 
 **Inhalt der `--secrets`-Datei — `origines_autorisees` seit dem
-05.08.2026 zwingend** (breaking change, keine Übergangsfrist): eine
+05/08/2026 zwingend** (breaking change, keine Übergangsfrist): eine
 Datei ohne diesen Schlüssel wird vor jedem Lesevorgang zurückgewiesen.
 
 ```json
@@ -447,7 +447,7 @@ Um eine Credentials-Datei gegen stille FUSE-Korruption zu schützen, ein
 /opt/dinoer/venv/bin/python -c "
 import json, hashlib
 creds = json.load(open('my_credentials.json'))
-# Korrigiert am 15.08.2026, gegen lib/repertoire_chiffre.py:32 geprüft
+# Korrigiert am 15/08/2026, gegen lib/repertoire_chiffre.py:32 geprüft
 # (_CHAMPS_CHECKSUM): die Prüfsumme deckt alle vier vorhandenen Felder ab,
 # nicht nur username/password.
 champs = ('username', 'password', 'totp_cle', 'origines_autorisees')
@@ -807,7 +807,7 @@ ist pro Aktion erforderlich. Für ein einstufiges iframe weiterhin
 | `evaluer` | `script` | `attendu`, `contient`, `motif` | Im Browser ausgeführtes JS. Assertions nur für rpa.py |
 | `defiler` | `px` oder `selecteur` | — | Vertikales Scrollen in Pixeln (`px`) oder Scrollen zum Element (`selecteur`) |
 | `pause` | `ms` | — | Feste Verzögerung in ms. `attendre_selecteur_present` für DOM-Signale bevorzugen |
-| `attendre` | `selecteur` | — | Wartet, bis der CSS-Selektor sichtbar wird (`state=visible`, Playwright-Standard — korrigiert am 16.08.2026, identisch zu `attendre_selecteur_present`) |
+| `attendre` | `selecteur` | — | Wartet, bis der CSS-Selektor sichtbar wird (`state=visible`, Playwright-Standard — korrigiert am 16/08/2026, identisch zu `attendre_selecteur_present`) |
 | `attendre_navigation` | — | — | Wartet auf `networkidle` (Ende der Netzwerkanfragen) |
 | `attendre_url` | `motif` | `attendre_changement` (bool) | URL-Teilstring-Abgleich. `attendre_changement: true` wartet zuerst auf eine echte Navigation (siehe die FR-55-Falle) |
 | `attendre_selecteur_present` | `selecteur` | — | Wartet, dass das Element sichtbar ist (`state=visible`) |
@@ -1016,7 +1016,7 @@ Diff. Jeder Aufruf ist ein isolierter Prozess — kein Daemon, kein
 Speicherleck-Risiko, und die Obergrenzen der respektvollen Navigation
 werden bei jedem Durchlauf sauber zurückgesetzt.
 
-**Korrigiert am 16.08.2026:** Das Skript rief früher `rpa.py --no-capture
+**Korrigiert am 16/08/2026:** Das Skript rief früher `rpa.py --no-capture
 --replay-verifier` auf, aber `--no-capture` war kein `rpa.py`-Flag mehr —
 jeder echte Aufruf scheiterte an argparse. Das tote Flag wurde entfernt
 (Dinoer hat standardmäßig keinen Bildpfad, das Entfernen ändert sonst
@@ -1080,7 +1080,7 @@ Felder in jedem Eintrag:
 | `respect` | Das Navigationsprotokoll des Laufs — nur vorhanden, wenn es gesetzt ist |
 | `evaluations` | Bereinigte `{script, valeur_retournee}` Werte — nur vorhanden, wenn `evaluer` Aktionen ausgeführt wurden |
 
-Es gibt kein Feld `duree_ms` im Journal — am 15.08.2026 korrigiert, diese
+Es gibt kein Feld `duree_ms` im Journal — am 15/08/2026 korrigiert, diese
 Tabelle führte zuvor eines auf, das der Code nie geschrieben hat. Die
 Zeitmessung pro Aktion ist `latences_actions`, im JSON-Output eines Laufs,
 nicht im Journal-Eintrag.
@@ -1175,7 +1175,9 @@ Reicht alle relevanten shot.py-Flags weiter, plus:
 |---|---|
 | `--manifeste DATEI` | Kampagnen-Manifest (JSON) — erfordert `id_campagne` + `cibles` |
 | `--id-campagne ID` | Kampagnen-Kennung (im Manifest und der Extraktion verwendet) |
-| `--extraire-cible ANFRAGE` | gezielte Extraktion auf einem bereits gesammelten Korpus, ohne Synthese |
+| `--extraire-cible ANFRAGE` | gezielte Extraktion auf einem bereits gesammelten Korpus, ohne Synthese. Erfordert `--id-campagne` oder `--corpus` |
+| `--corpus DATEI` | direkter Pfad zu einer `collecte.jsonl` — Alternative zu `--id-campagne` für `--extraire-cible` |
+| `--format-extraction {json,markdown,html}` | Ausgabeformat von `--extraire-cible` (Standard: `json`) — am 15/08/2026 hinzugefügt |
 | `--desactiver-cache` | den Suchcache umgehen |
 | `--purger-cache` | den gesamten Suchcache leeren |
 | `--purger-cache-avant-jours N` | Cache-Einträge älter als N Tage leeren |
@@ -1258,9 +1260,9 @@ kampagnenspezifische `collecte.jsonl`. Vollständiges Detail:
 Lauf eindeutig — er stimmt mit dem `operation_id`-Feld des Eintrags
 dieses Laufs im Vorgangsprotokoll überein (Abschnitt 9) und benennt das
 Belegverzeichnis `preuves/<AAAA-MM>/<operation_id>/`, wenn Aufnahmen dort
-archiviert werden (korrigiert am 15.08.2026: es existiert kein
-`/tmp/dinoer/<operation_id>/`-Verzeichnis im Code — `/tmp/dinoer/`
-enthält nur die Ausweich-Protokolldatei).
+archiviert werden (korrigiert am 15/08/2026, gegen `lib/journal.py` geprüft: nirgends im Code existiert ein
+Verzeichnis `/tmp/dinoer/<operation_id>/` — `/tmp/dinoer/` enthält immer nur die
+Ausweich-Protokolldatei des Vorgangsprotokolls).
 `etat` (v1.16.0) ist nur auf dem Erfolgspfad vorhanden.
 `latences_actions` (v1.20.0) ist immer vorhanden (leere Liste ohne
 Aktionen), ein Eintrag pro tatsächlich abgesetzter Aktion — siehe
@@ -1302,7 +1304,7 @@ vollständige Aktivierungstabelle.
 | `/opt/dinoer/scenarios/` | RPA-Szenarien (einschließlich `diagnostic_dom.json`) |
 | `/opt/dinoer/docs/` | Dokumentation |
 | `/opt/dinoer/references/` | Referenzen für `--sauver-verifier-reference` / Replay |
-| `/tmp/dinoer/` | Sitzungsdateien (`--sauver-session`/`--reprendre-session`) und die Ausweich-Protokolldatei — korrigiert am 15.08.2026: kein Unterverzeichnis pro `operation_id` hier, siehe nächste Zeile |
+| `/tmp/dinoer/` | Sitzungsdateien (`--sauver-session`/`--reprendre-session`) und die Ausweich-Protokolldatei — korrigiert am 15/08/2026: kein Unterverzeichnis pro `operation_id` hier, siehe nächste Zeile |
 | `/var/log/dinoer/preuves/<AAAA-MM>/<operation_id>/` | Belegverzeichnis für einen Lauf, isoliert nach `operation_id` (v1.16.0), nur erstellt, wenn Aufnahmen archiviert werden |
 | `~/Vaults/__PROJET__/Dinoer/` | Credentials + Protokoll (gocryptfs-Volume) |
 | `~/git/Dinoer/Dinoer/` | Git-Quellen (hier bearbeiten, dann `deploy.sh`) |

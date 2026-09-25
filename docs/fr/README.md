@@ -1,5 +1,10 @@
 # Dinoer — recherche web souveraine et locale pour agents LLM
 
+[![CI](https://github.com/RonanDavalan/dinoer/actions/workflows/ci.yml/badge.svg)](https://github.com/RonanDavalan/dinoer/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/RonanDavalan/dinoer)](https://github.com/RonanDavalan/dinoer/releases)
+[![Download .deb](https://img.shields.io/badge/Download-.deb%20package-blue)](https://github.com/RonanDavalan/dinoer/releases/latest/download/dinoer_1.0.1-1_all.deb)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
+
 > **Pour l'opérateur humain :** Dinoer s'exécute sur votre propre machine, délègue
 > la recherche et la collecte à des primitives que vous pouvez lire ligne à ligne,
 > et vous remet un rapport Markdown sourcé et daté — pas une réponse en boîte noire.
@@ -195,7 +200,7 @@ Les identifiants sont stockés dans des fichiers JSON, un par domaine, **jamais
 dans le code ou les fichiers de scénario** :
 
 ```
-~/Vaults/Dinoer/
+~/Vaults/__PROJET__/Dinoer/
 ├── ma-source.example.json   → {"password": "...", "username": "admin"}
 └── autre-service.com.json   → {"password": "...", "api_key": "..."}
 ```
@@ -207,7 +212,7 @@ credentials.
 Le chemin est configurable via `/opt/dinoer/dinoer.conf` ou la variable
 d'environnement `DINOER_SECRETS_DIR`.
 
-**Recommandation :** protégez `~/Vaults/Dinoer/` avec `chmod 700` et
+**Recommandation :** protégez `~/Vaults/__PROJET__/Dinoer/` avec `chmod 700` et
 chiffrez-le avec `gocryptfs` (voir `scripts/configurer-repertoire-chiffre.sh
 --gocryptfs` — canal git-clone uniquement, non livré par le `.deb` ; sur ce
 canal, configurez `gocryptfs` vous-même et pointez `secrets_dir` vers le
@@ -229,11 +234,11 @@ des sources sensibles.
 ### Répertoire des identifiants
 
 Le répertoire des identifiants — où que vous ayez pointé `secrets_dir`, par
-exemple `~/Vaults/Dinoer/` — contient des identifiants en JSON en clair quand
+exemple `~/Vaults/__PROJET__/Dinoer/` — contient des identifiants en JSON en clair quand
 il n'est pas monté. Protégez-le :
 
 ```bash
-chmod 700 ~/Vaults/Dinoer/
+chmod 700 ~/Vaults/__PROJET__/Dinoer/
 ```
 
 Voir `~/git/Dinoer/Dinoer/SECURITY.md` pour la politique de divulgation des
@@ -243,12 +248,14 @@ vulnérabilités.
 
 ## Documentation dans d'autres langues
 
-Cette page est la traduction française, dérivée de la source anglaise
-(`README.md`, à la racine du dépôt), qui fait foi en cas de divergence.
-Également disponible en [allemand](../de/README.md) et
-[espagnol](../es/README.md). Les guides destinés au LLM
-(`docs/GUIDE_LLM.md` et ses trois notices) n'existent qu'en anglais et ne
-sont jamais traduits — verrouillés par le mécanisme de guide-lock.
+Cette page est la traduction française de la source anglaise (`README.md`, à la
+racine du dépôt), qui fait foi en cas de divergence. [`docs/fr/README.md`](README.md),
+[`docs/de/README.md`](../de/README.md) et
+[`docs/es/README.md`](../es/README.md) sont des traductions dérivées de cette source
+(resynchronisées le 15/08/2026), avec `docs/MANUEL.md`, `docs/GUIDE.md`,
+`docs/CHEAT_SHEET.md` et la page de manuel `dinoer.1` dans chaque langue.
+`docs/GUIDE_LLM.md` et ses trois notices n'existent qu'en anglais et ne sont
+jamais traduits — chemin verrouillé, mécanisme de guide-lock. 
 
 ---
 
