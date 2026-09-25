@@ -4,6 +4,33 @@ History of decisions and discoveries by session, in reverse chronological order.
 
 ---
 
+## 2026-09-25 — Site audit: what the site claimed, what the code does
+
+**1. Inherited entries removed.** `docs/RADAR_MODELES.md` carried three
+model-behaviour entries dated before Dinoer existed (fork of 25 July 2026,
+first release 1.0.0 on 15 August 2026). They described sessions of the tool
+Dinoer was forked from, under Dinoer's name. Removed at the source; the file
+keeps its format and rules, and the site publishes the page again as soon as it
+has one entry of its own. Four pointers to it (`docs/FAQ_LLM.md` twice,
+`shot.py`, `lib/preflight_guide.py`) were rewritten so they no longer cite it.
+
+**2. Facts checked against the code while auditing the site**, now stated on
+the site as they are:
+- `opencode.jsonc` is read from the directory OpenCode is launched in
+  (`opencode debug config`, OpenCode 1.18.32: `websearch`/`webfetch` are `deny`
+  from the repository, `allow` from `/tmp`). The `.deb` package does not install
+  it. `invoquer_opencode()` sets no working directory.
+- The default model `opencode/deepseek-v4-flash-free` is no longer in
+  `opencode models`, and a call to it returns an error (25 September 2026).
+- On the `.deb` channel the `searxng_url` key of `/etc/dinoer/dinoer.conf` is not
+  read (`lib/searxng.py` reads `/opt/dinoer/dinoer.conf` only); the environment
+  variable works on both channels.
+- The campaign notification carries the campaign identifier, the number of
+  sources and the local path of the report, to `ntfy.sh` unless another server
+  is configured.
+
+None of these four is fixed here; they are decisions for the maintainer.
+
 ## 2026-08-16 — First public release: Matomo, history squash, GitHub push
 
 **1. Matomo tracking activated.** A new site (`dinoer.davalan.fr`, idSite

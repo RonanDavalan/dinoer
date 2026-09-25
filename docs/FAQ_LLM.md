@@ -18,10 +18,7 @@ No attribution — these are recurring questions, not individual testimonies.
 `shot.py` and `rpa.py` both refuse to launch Playwright without
 either `--guide-version X.Y` (the `<!-- notice-version: X.Y -->` value found
 on line 3 of `docs/GUIDE_LLM.md`) or a local marker from a previous accepted
-call. This is deliberate, not a bug — field observation showed models calling
-Dinoer without reading anything first, hitting avoidable errors, and only
-reading the guide after the fact. See `docs/RADAR_MODELES.md` for the
-incident that motivated it.
+call. This is deliberate, not a bug.
 
 ```bash
 cat /opt/dinoer/docs/GUIDE_LLM.md
@@ -256,4 +253,3 @@ duplicated here, which would otherwise need updating every cycle.
 - `docs/GUIDE_LLM.md` — complete operator guide (security rules, all flags, all actions)
 - `docs/GUIDE_EXPLORATION.md` — how to explore an unknown interface with Dinoer
 - `docs/RETOUR_EXPERIENCE.md` — terrain frictions and resolutions
-- `docs/RADAR_MODELES.md` — observed LLM behaviour on real Dinoer sessions

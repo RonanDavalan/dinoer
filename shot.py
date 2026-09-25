@@ -1104,8 +1104,7 @@ def main():
     # ── Verrou de lecture obligatoire (v1.18.0) ────────────────────────────────
     # Avant tout autre traitement — y compris la validation --url. Exception
     # consciente à la doctrine d'additivité de Dinoer (seule du projet) :
-    # la documentation seule a échoué à se faire lire spontanément (retour
-    # terrain répété, cf. docs/RADAR_MODELES.md).
+    # la documentation seule ne suffit pas à se faire lire spontanément.
     from lib.preflight_guide import guide_valide, erreur_guide_non_lu
     if not guide_valide(args.guide_version):
         print(json.dumps(erreur_guide_non_lu(__version__)), file=sys.stderr)

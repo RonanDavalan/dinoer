@@ -4,9 +4,8 @@ preflight_guide.py — verrou de lecture obligatoire de docs/GUIDE_LLM.md
 
 Contexte : un LLM tiers appelant shot.py/rpa.py sans avoir lu le
 guide au préalable produit des erreurs évitables (venv, permissions). La
-documentation seule ne suffit pas à se faire lire spontanément (retour
-terrain répété, docs/RADAR_MODELES.md) — ce module implémente le garde-fou
-technique correspondant.
+documentation seule ne suffit pas à se faire lire spontanément — ce module
+implémente le garde-fou technique correspondant.
 
 Jeton : GUIDE_VERSION_ATTENDUE doit toujours être synchronisé avec le
 commentaire <!-- notice-version: X.Y --> en tête de docs/GUIDE_LLM.md. Toute
