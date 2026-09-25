@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/RonanDavalan/dinoer/actions/workflows/ci.yml/badge.svg)](https://github.com/RonanDavalan/dinoer/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/RonanDavalan/dinoer)](https://github.com/RonanDavalan/dinoer/releases)
-[![Download .deb](https://img.shields.io/badge/Download-.deb%20package-blue)](https://github.com/RonanDavalan/dinoer/releases/latest/download/dinoer_1.0.0-1_all.deb)
+[![Download .deb](https://img.shields.io/badge/Download-.deb%20package-blue)](https://github.com/RonanDavalan/dinoer/releases/latest/download/dinoer_1.0.1-1_all.deb)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 > **For the human operator:** Dinoer runs on your own machine, delegates search
@@ -165,7 +165,7 @@ Two channels, mutually exclusive on one machine.
 **`.deb` package** — the normal path if you want to use Dinoer as-is:
 
 ```bash
-sudo apt install ./dinoer_1.0.0-1_all.deb
+sudo apt install ./dinoer_1.0.1-1_all.deb
 ```
 
 Installs the `dinoer` system user and group, an isolated Python virtual

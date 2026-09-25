@@ -33,7 +33,7 @@ You will not be asked again on this machine, as this OS user, until
 
 ```bash
 /opt/dinoer/venv/bin/python /opt/dinoer/shot.py --version
-# → {"outil": "shot.py", "version": "1.0.0"}
+# → {"outil": "shot.py", "version": "1.0.1"}
 ```
 
 No Playwright launch, no `--url` needed, exit 0 immediately (v1.18.0+). Same

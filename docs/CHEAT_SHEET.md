@@ -1,6 +1,6 @@
 # Dinoer — cheat sheet
 
-Version 1.0.0 — August 2026
+Version 1.0.1 — September 2026
 
 Everything on one page. Full reference: `docs/MANUEL.md`.
 

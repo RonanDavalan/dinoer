@@ -1,6 +1,6 @@
 # Dinoer — Betreiberleitfaden
 
-Version 1.11 — August 2026 (v1.0.0) — Oberfläche an die Dinoer-Rekonstruktion
+Version 1.11 — August 2026 (v1.0.1) — Oberfläche an die Dinoer-Rekonstruktion
 angepasst: kein Screenshot, kein Set-of-Mark, kein `watch.py`; der Agent
 liest den Accessibility-Baum und steuert Playwright-Aktionen über
 CSS-Selektoren.

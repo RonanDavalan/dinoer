@@ -132,7 +132,7 @@ Deux canaux, mutuellement exclusifs sur une même machine.
 **`.deb` package** — le chemin habituel si vous souhaitez utiliser Dinoer tel quel :
 
 ```bash
-sudo apt install ./dinoer_1.0.0-1_all.deb
+sudo apt install ./dinoer_1.0.1-1_all.deb
 ```
 
 Installe l'utilisateur système et le groupe `dinoer`, un environnement virtuel Python isolé, Chromium, les six commandes `dinoer-*` et leurs pages de manuel en quatre langues. Les paquets, les sources et les sommes de contrôle sont publiés sur [dinoer.davalan.fr](https://dinoer.davalan.fr) — consultez la page [Téléchargements](https://dinoer.davalan.fr/en/guides/downloads/) pour plus de détails, y compris ce que signifie cette notification de bac à sable `apt`.

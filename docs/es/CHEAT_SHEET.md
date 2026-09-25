@@ -1,6 +1,6 @@
 # Dinoer — hoja de referencia rápida
 
-Versión 1.0.0 — agosto de 2026
+Versión 1.0.1 — septiembre de 2026
 
 Todo en una página. Referencia completa: `docs/MANUEL.md`.
 

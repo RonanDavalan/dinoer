@@ -1,6 +1,6 @@
 # Dinoer — Operator guide
 
-Version 1.11 — August 2026 (v1.0.0) — surface realigned to the Dinoer
+Version 1.11 — August 2026 (v1.0.1) — surface realigned to the Dinoer
 reconstruction: no screenshot, no Set-of-Mark, no `watch.py`; the agent
 reads the accessibility tree and drives Playwright actions on CSS selectors.
 

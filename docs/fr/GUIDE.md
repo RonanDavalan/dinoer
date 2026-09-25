@@ -1,6 +1,6 @@
 # Dinoer — guide de l'opérateur
 
-Version 1.11 — août 2026 (v1.0.0) — surface réalignée sur la reconstruction
+Version 1.11 — août 2026 (v1.0.1) — surface réalignée sur la reconstruction
 Dinoer : aucune capture d'écran, aucun Set-of-Mark, aucun `watch.py` ;
 l'agent lit l'arbre d'accessibilité et pilote les actions Playwright sur des
 sélecteurs CSS.

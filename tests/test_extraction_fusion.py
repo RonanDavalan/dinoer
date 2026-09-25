@@ -20,7 +20,7 @@ import os
 import pytest
 
 from lib.extraction import FusionIntrouvableError, fusionner_evenements
-from lib.modeles import _OPENCODE_BIN
+from lib.modeles import _OPENCODE_BIN, _OPENCODE_MODELE_DEFAUT
 
 _CORPUS_DIR = os.path.expanduser(
     "~/git/Dinoer/campagnes_dev/spectacles-sud-finistere-2026-08-11-20"
@@ -40,6 +40,8 @@ def _urls_mentionnant(positifs, motif):
 def test_fusionner_evenements_contre_verite_terrain():
     if not os.path.isfile(_OPENCODE_BIN):
         pytest.skip(f"binaire opencode introuvable ({_OPENCODE_BIN!r})")
+    if not _OPENCODE_MODELE_DEFAUT:
+        pytest.skip("aucun modèle OpenCode choisi (DINOER_OPENCODE_MODEL)")
 
     with open(_RESULTATS_PATH, encoding="utf-8") as f:
         resultats = json.load(f)

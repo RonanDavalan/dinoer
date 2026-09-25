@@ -4,6 +4,14 @@ Generated from `debian/changelog` at build time — do not edit by hand.
 Edit `debian/changelog` and rebuild instead
 (`bash ~/git/Dinoer/scripts/construire-paquet.sh`).
 
+## 1.0.1 — 25 Sep 2026 21:08:00 +0200
+
+- searxng_url is now read from the file DINOER_CONF designates, and the dinoer-campaign wrapper exports DINOER_CONF=/etc/dinoer/dinoer.conf like dinoer-shot and dinoer-rpa: on this channel the key written in /etc/dinoer/dinoer.conf was ignored and campaigns stopped on "no SearXNG URL configured".
+- OpenCode: no default model any more (the model list changes, a hard-coded default disappears); without DINOER_OPENCODE_MODEL the error says to pick one from `opencode models`. A failed call reports OpenCode's own error and whether the model is missing from the list.
+- OpenCode calls deny websearch/webfetch whatever the launch directory (OPENCODE_CONFIG_CONTENT, merged with the user's own value), so the report only cites the collected pages. stdin is closed on the call.
+- The campaign completion notification no longer carries the local report path.
+- docs/RADAR_MODELES.md: three entries inherited from the fork removed.
+
 ## 1.0.0 — 15 Aug 2026 00:22:11 +0200
 
 - Initial dinoer .deb packaging, adapted from the diwall channel this package is forked from (Dinoer split off Diwall on 2026-07-25, diwall's own .deb history predates the fork and lives in Diwall's own changelog, not repeated here).

@@ -1,6 +1,6 @@
 # Dinoer — Manual operativo
 
-**Versión 1.0.0 — Agosto de 2026**
+**Versión 1.0.1 — septiembre de 2026**
 
 Este documento responde a una sola pregunta: **cómo hacer X con Dinoer**.
 
@@ -35,7 +35,7 @@ Sin descripciones arquitectónicas. Comandos que funcionan.
 ```bash
 # Verificación más económica posible: sin Playwright, sin URL, salida 0 inmediata (v1.18.0+).
 /opt/dinoer/venv/bin/python /opt/dinoer/shot.py --version
-# → {"outil": "shot.py", "version": "1.0.0"}
+# → {"outil": "shot.py", "version": "1.0.1"}
 ```
 
 ```bash
@@ -64,7 +64,7 @@ cambiado desde entonces.
 ```bash
 # Verifique la versión instalada.
 grep "__version__" /opt/dinoer/shot.py
-# → __version__ = "1.0.0"
+# → __version__ = "1.0.1"
 
 # Verificar que playwright-stealth esté disponible (v1.15.0).
 /opt/dinoer/venv/bin/python -c "import playwright_stealth; print('stealth OK')"
@@ -84,7 +84,7 @@ Dos canales, mutuamente excluyentes en una misma máquina.
 **`.deb` package** — el camino habitual si desea usar Dinoer tal cual:
 
 ```bash
-sudo apt install ./dinoer_1.0.0-1_all.deb
+sudo apt install ./dinoer_1.0.1-1_all.deb
 ```
 
 El paquete, los códigos fuente y las sumas de comprobación se publican en
@@ -1223,7 +1223,7 @@ Artefactos: el `/var/log/dinoer/operations.jsonl` compartido + un
     "respect": { "pages_visitees": 0, "actions_executees": 3, "duree_totale_ms": 2400, "indice_agressivite": 0.33 }
   },
   "dinoer_meta": {
-    "version_shot": "1.0.0",
+    "version_shot": "1.0.1",
     "horodatage_iso": "2026-08-12T14:23:11+02:00",
     "hostname_executant": "operator-host",
     "utilisateur_executant": "operator",
