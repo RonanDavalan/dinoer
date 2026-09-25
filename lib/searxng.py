@@ -11,7 +11,9 @@ s'exécute sur la machine de développement/production).
 
 Résolution de l'URL du métamoteur (par ordre de priorité) :
   1. DINOER_SEARXNG_URL (variable d'environnement)
-  2. Clé "searxng_url" dans /opt/dinoer/dinoer.conf (JSON)
+  2. Clé "searxng_url" du fichier de configuration JSON : celui que désigne
+     DINOER_CONF (canal .deb : /etc/dinoer/dinoer.conf), sinon
+     /opt/dinoer/dinoer.conf
 
 Pas de défaut public, contrairement à `lib/ntfy.py` (ntfy.sh) : il n'existe
 pas d'instance SearXNG publique fiable à supposer sans consentement de
@@ -23,6 +25,8 @@ Dépendance optionnelle : requests (non requise pour l'import).
 import json
 import os
 import sys
+
+from lib.repertoire_chiffre import _lire_conf
 
 _CONF_PATH = "/opt/dinoer/dinoer.conf"
 
@@ -41,19 +45,17 @@ def _url_searxng() -> str:
     if "DINOER_SEARXNG_URL" in os.environ:
         return os.environ["DINOER_SEARXNG_URL"].rstrip("/")
 
-    if os.path.isfile(_CONF_PATH):
-        try:
-            with open(_CONF_PATH, encoding="utf-8") as f:
-                conf = json.load(f)
-            if "searxng_url" in conf:
-                return conf["searxng_url"].rstrip("/")
-        except (OSError, json.JSONDecodeError):
-            pass
+    try:
+        conf = _lire_conf()
+    except (OSError, json.JSONDecodeError):
+        conf = {}
+    if "searxng_url" in conf:
+        return conf["searxng_url"].rstrip("/")
 
     raise SearxngNonConfigureError(
         "Aucune URL SearXNG configurée.\n"
         "  Définir DINOER_SEARXNG_URL=https://votre-instance/ , ou ajouter "
-        f"la clé \"searxng_url\" dans {_CONF_PATH}."
+        f"la clé \"searxng_url\" dans {os.environ.get('DINOER_CONF', _CONF_PATH)}."
     )
 
 

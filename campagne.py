@@ -693,7 +693,7 @@ def main() -> None:
                 notifier(
                     topic, "Dinoer — rapport prêt",
                     f"Campagne {id_campagne!r} terminée : {len(sources)} source(s), "
-                    f"rapport disponible ({chemin_rapport}).",
+                    f"rapport écrit.",
                 )
             else:
                 print(

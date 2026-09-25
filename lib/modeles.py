@@ -40,9 +40,9 @@ _TIMEOUT_SHOW_S = 5
 _OPENCODE_BIN = os.environ.get(
     "DINOER_OPENCODE_BIN", os.path.expanduser("~/.opencode/bin/opencode")
 )
-_OPENCODE_MODELE_DEFAUT = os.environ.get(
-    "DINOER_OPENCODE_MODEL", "opencode/deepseek-v4-flash-free"
-)
+# Aucun modèle par défaut : la liste d'OpenCode change et tout défaut finit par
+# disparaître. L'utilisateur choisit dans `opencode models`.
+_OPENCODE_MODELE_DEFAUT = os.environ.get("DINOER_OPENCODE_MODEL", "")
 _TIMEOUT_OPENCODE_S = 120
 
 _CACHE_SHOW: dict[tuple[str, str], dict] = {}
@@ -166,6 +166,67 @@ def collecter_modele_claude(model_id: str, role: str) -> dict:
     }
 
 
+def _config_opencode_sans_web(config_utilisateur: Optional[str]) -> str:
+    """Configuration OpenCode (JSON) qui interdit websearch et webfetch, quel
+    que soit le répertoire de lancement : le rapport ne doit citer que les
+    pages collectées. Fusionnée avec une OPENCODE_CONFIG_CONTENT déjà
+    définie par l'utilisateur (fournisseur Ollama, par exemple) au lieu de
+    l'écraser ; les deux interdictions l'emportent sur ses propres valeurs.
+    """
+    config = {}
+    if config_utilisateur:
+        try:
+            lue = json.loads(config_utilisateur)
+            if isinstance(lue, dict):
+                config = lue
+        except json.JSONDecodeError:
+            pass
+    permission = config.get("permission")
+    if not isinstance(permission, dict):
+        permission = {}
+    permission.update({"websearch": "deny", "webfetch": "deny"})
+    config["permission"] = permission
+    return json.dumps(config)
+
+
+def _message_echec_opencode(resultat, modele: str, env: dict) -> str:
+    """Message d'échec d'OpenCode avec sa cause. OpenCode écrit son erreur
+    en événement JSON `error` sur la sortie standard, la sortie d'erreur
+    reste le plus souvent vide. Si le modèle demandé n'est pas dans
+    `opencode models`, le dit et donne la commande pour en choisir un.
+    """
+    cause = ""
+    for ligne in resultat.stdout.splitlines():
+        try:
+            evenement = json.loads(ligne)
+        except json.JSONDecodeError:
+            continue
+        if evenement.get("type") == "error":
+            erreur = evenement.get("error") or {}
+            donnees = erreur.get("data") or {}
+            cause = donnees.get("message") or erreur.get("message") or ligne
+            break
+    if not cause:
+        cause = resultat.stderr.strip()
+
+    message = f"opencode a échoué (exit {resultat.returncode}, modèle {modele}) : {cause[:500]}"
+    try:
+        liste = subprocess.run(
+            [_OPENCODE_BIN, "models"], capture_output=True, text=True,
+            timeout=30, env=env,
+        )
+        if liste.returncode == 0 and modele not in liste.stdout.split():
+            message += (
+                f"\n  Le modèle {modele} n'est pas dans `opencode models`. "
+                "Choisir un modèle dans cette liste (par exemple "
+                "`opencode models | grep deepseek`), puis "
+                "DINOER_OPENCODE_MODEL=<modèle>."
+            )
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+    return message
+
+
 def invoquer_opencode(
     prompt: str,
     modele: str = _OPENCODE_MODELE_DEFAUT,
@@ -188,19 +249,28 @@ def invoquer_opencode(
     """
     if not os.path.isfile(_OPENCODE_BIN):
         raise RuntimeError(f"binaire opencode introuvable : {_OPENCODE_BIN}")
+    if not modele:
+        raise RuntimeError(
+            "Aucun modèle OpenCode choisi. Lister les modèles avec `opencode models` "
+            "(par exemple `opencode models | grep deepseek`), puis "
+            "DINOER_OPENCODE_MODEL=<modèle>."
+        )
 
+    env = dict(os.environ)
+    env["OPENCODE_CONFIG_CONTENT"] = _config_opencode_sans_web(
+        env.get("OPENCODE_CONFIG_CONTENT")
+    )
     try:
         resultat = subprocess.run(
             [_OPENCODE_BIN, "run", prompt, "--model", modele, "--format", "json"],
-            capture_output=True, text=True, timeout=timeout_s,
+            capture_output=True, text=True, timeout=timeout_s, env=env,
+            stdin=subprocess.DEVNULL,
         )
     except subprocess.TimeoutExpired as exc:
         raise RuntimeError(f"opencode a dépassé le timeout de {timeout_s}s") from exc
 
     if resultat.returncode != 0:
-        raise RuntimeError(
-            f"opencode a échoué (exit {resultat.returncode}) : {resultat.stderr[:500]}"
-        )
+        raise RuntimeError(_message_echec_opencode(resultat, modele, env))
 
     morceaux_texte = []
     tokens = None
