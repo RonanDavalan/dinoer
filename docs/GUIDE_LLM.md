@@ -216,7 +216,7 @@ mutating before completing the map.
 `--stealth` removes `navigator.webdriver`, normalises plugins/languages/
 platform — first response, not a cure: TLS fingerprinting (JA3/JA4) and
 Cloudflare Enterprise behavioural analysis are not covered; persistent 403
-means deep fingerprinting. Field data: `docs/RETOUR_EXPERIENCE.md` FR-77/78.
+means deep fingerprinting.
 
 **Passive detection — `respect.waf_bloquants`:** flagged on 403/429 or a
 title/HTML keyword match — a **signal, never an exception**, Dinoer does not

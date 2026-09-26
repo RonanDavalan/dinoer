@@ -271,10 +271,7 @@ Jeder Lauf gibt `respect` zurück (JSON-Wurzel und innerhalb von
 
 ### 3d. Stealth-Benchmark — quantitativ (v1.17.1)
 
-Konkrete Fingerprint-Signale zählen statt visuell zu vergleichen —
-dies ist die Methode, mit der der API-Kompatibilitätsfix für
-`playwright-stealth` in v1.17.0 verifiziert wurde
-(`docs/RETOUR_EXPERIENCE.md` FR-79):
+Zählen Sie lieber konkrete Fingerprint-Signale, statt nach Augenmaß zu vergleichen:
 
 ```bash
 # Ohne Stealth
@@ -925,10 +922,8 @@ JS-Setter über `evaluer` verwenden:
   --url https://target.local/ --a11y --stealth
 ```
 
-Bleibt 403 mit `--stealth` bestehen: Die Site nutzt TLS-Fingerprinting
-(JA3/JA4) oder fortgeschrittene Verhaltensanalyse (Cloudflare
-Enterprise). `playwright-stealth` umgeht diese Schutzmaßnahmen nicht.
-Siehe `docs/RETOUR_EXPERIENCE.md` FR-77/FR-78/FR-79 für den Kontext.
+Bleibt der 403 mit `--stealth` bestehen: Die Website verwendet TLS-Fingerprinting (JA3/JA4) oder erweiterte
+Verhaltensanalyse (Cloudflare Enterprise). `playwright-stealth` umgeht diese Schutzmechanismen nicht.
 
 Dinoer markiert auch passiv einen wahrscheinlichen Block — siehe
 Abschnitt 3e (`respect.waf_bloquants`).

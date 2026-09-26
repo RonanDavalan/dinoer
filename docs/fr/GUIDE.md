@@ -71,17 +71,14 @@ vôtre.
 
 ### Navigation respectueuse (v1.15.0)
 
-Dinoer ne déguise pas son identité pour contourner la détection de bots.
-`--stealth` retire les marqueurs techniques automatiques
-(`navigator.webdriver`) qui bloquent les navigateurs headless quelle que soit
-l'intention — cela ne change ni l'IP de l'opérateur, ni son identité, ni le
-fait que l'exécution est déclarée. En contrepartie, chaque exécution rapporte
-sa propre empreinte (`respect` : pages visitées, actions exécutées, durée)
-et respecte des délais de courtoisie et des plafonds configurables
+Dinoer ne déguise pas son identité pour contourner la détection de bots. `--stealth`
+supprime les marqueurs techniques automatiques (`navigator.webdriver`) qui bloquent
+les navigateurs headless quelle que soit l'intention — il ne modifie ni l'IP,
+ni l'identité de l'opérateur, ni le fait que l'exécution est déclarée. En contrepartie, chaque exécution
+rapporte sa propre empreinte (`respect` : pages visitées, actions exécutées,
+durée) et respecte des délais de courtoisie configurables et des plafonds stricts
 (`dinoer.conf [navigation]`). Le droit de naviguer et le devoir de naviguer
-de façon mesurable sont traités comme inséparables — voir
-`docs/RETOUR_EXPERIENCE.md` FR-77/FR-78/FR-79 pour le contexte terrain qui a
-façonné ce choix.
+de manière mesurable sont traités comme indissociables.
 
 **Cibles locales — le délai de courtoisie n'est pas une doctrine, c'est une
 valeur par défaut (v1.19.0) :** le `min_action_delay_ms: 800` livré par
@@ -145,18 +142,15 @@ trouver des pages boutique candidates, puis utiliser Dinoer en mode lecture
 seule avec des actions `evaluer` pour extraire prix, stock et spécifications de
 chaque page, et enfin comparer lui-même les résultats.
 
-**Non livré comme scénario commité, délibérément :** nommer une boutique
-précise dans un scénario public et versionné est une décision qui vous
-appartient, pas un défaut que ce projet devrait prendre à votre place. Cela
-porte aussi un vrai risque de fragilité — un scénario public ciblant un site
-commercial nommé peut échouer des mois plus tard quand la posture anti-bot de
-ce site change (39 % des sites commerciaux échantillonnés dans
-`docs/RETOUR_EXPERIENCE.md` FR-77 ont renvoyé un blocage immédiat), ce qui
-décrédibilise l'exemple plus qu'il ne l'aide. Si vous construisez cette
-composition vous-même, notez que tout outil de découverte d'URL que vous
-associez à Dinoer (une instance de recherche locale ou autre) n'est pas un
-composant de Dinoer — c'est une pièce séparée que l'agent compose par
-dessus.
+**Non livré comme scénario versionné, délibérément :** nommer une boutique
+spécifique dans un scénario public et versionné est une décision qui vous appartient, et non
+un choix par défaut que ce projet devrait faire à votre place. Cela comporte aussi un réel
+risque de fragilité — un scénario public ciblant un site commercial nommé peut
+échouer des mois plus tard lorsque la posture anti-bot de ce site change, ce qui
+discrédite l'exemple plus qu'il ne l'aide. Si vous
+construisez vous-même cette composition, notez que tout outil de découverte d'URL que vous associez
+à Dinoer (une instance de recherche locale ou autre) n'est pas un composant
+Dinoer — c'est une pièce distincte que l'agent compose au-dessus.
 
 ### Cas 3 — explorer et résumer une documentation technique (applications monopages)
 
@@ -258,11 +252,9 @@ et forcer le passage (rotation d'IP, usurpation d'empreinte TLS) sort du
 périmètre de ce que fait Dinoer.
 
 **Non livré comme scénario commité, et sans nommer délibérément les
-plateformes concernées** — voir le raisonnement sur la fragilité WAF sous le
-cas 2 : une table datée de blocage/non-blocage liée à des sites commerciaux
-nommés se périme et sape son propre propos plus vite qu'elle ne l'illustre.
-`docs/RETOUR_EXPERIENCE.md` FR-77 documente le même schéma à l'échelle d'un
-panel (39 % de taux de blocage immédiat).
+plateformes concernées** — voir le raisonnement sur la fragilité face au WAF au cas 2 : un
+tableau daté blocage/non-blocage lié à des sites commerciaux nommés devient obsolète et
+sape son propre propos plus vite qu'il ne l'illustre.
 
 ---
 

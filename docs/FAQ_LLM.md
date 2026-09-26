@@ -242,7 +242,8 @@ string is a claim about release history, and no prior Dinoer release
 happened at "1.23".
 
 The operation log (`/var/log/dinoer/operations.jsonl`) and the friction index
-(`docs/RETOUR_EXPERIENCE.md`) cover the full history from v1.0 — see that
+(`docs/RETOUR_EXPERIENCE.md`) cover everything met since Dinoer's first
+release — see that
 file directly for the current friction count rather than a number
 duplicated here, which would otherwise need updating every cycle.
 

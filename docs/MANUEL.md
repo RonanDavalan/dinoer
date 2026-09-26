@@ -262,9 +262,7 @@ Each run returns `respect` (JSON root and inside `boussole`):
 
 ### 3d. Stealth benchmark — quantitative (v1.17.1)
 
-Prefer counting concrete fingerprint signals over comparing by eye — this is
-the method used to verify the v1.17.0 `playwright-stealth` API-compatibility
-fix (`docs/RETOUR_EXPERIENCE.md` FR-79):
+Prefer counting concrete fingerprint signals over comparing by eye:
 
 ```bash
 # Without stealth
@@ -867,7 +865,6 @@ Options:
 
 If 403 persists with `--stealth`: the site uses TLS fingerprinting (JA3/JA4) or advanced
 behavioural analysis (Cloudflare Enterprise). `playwright-stealth` does not bypass these protections.
-See `docs/RETOUR_EXPERIENCE.md` FR-77/FR-78/FR-79 for context.
 
 Dinoer also flags a likely block passively — see section 3e (`respect.waf_bloquants`).
 

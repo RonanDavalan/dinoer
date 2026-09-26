@@ -66,16 +66,14 @@ con lo que sus usuarios deberían ver. Esa decisión sigue siendo suya.
 
 ### Navegación respetuosa (v1.15.0)
 
-Dinoer no disfraza su identidad para evadir la detección de bots.
-`--stealth` elimina marcadores técnicos automáticos (`navigator.webdriver`)
-que bloquean navegadores headless independientemente de la intención — no
-cambia la IP del operador, su identidad, ni el hecho de que la ejecución
-esté declarada. A cambio, cada ejecución informa de su propia huella
-(`respect`: páginas visitadas, acciones ejecutadas, duración) y respeta
-retardos de cortesía configurables y límites estrictos (`dinoer.conf
-[navigation]`). El derecho a navegar y el deber de hacerlo de forma medible
-se tratan como inseparables — consulte `docs/RETOUR_EXPERIENCE.md`
-FR-77/FR-78/FR-79 para el contexto de campo que dio forma a esto.
+Dinoer no disfraza su identidad para eludir la detección de bots. `--stealth`
+elimina los marcadores técnicos automáticos (`navigator.webdriver`) que bloquean
+los navegadores headless independientemente de la intención — no cambia la IP del operador,
+su identidad, ni el hecho de que la ejecución está declarada. A cambio, cada ejecución
+informa de su propia huella (`respect`: páginas visitadas, acciones ejecutadas,
+duración) y respeta los retardos de cortesía configurables y los límites estrictos
+(`dinoer.conf [navigation]`). El derecho a navegar y el deber de navegar
+de forma medible se tratan como inseparables.
 
 **Objetivos locales — el retardo de cortesía no es una doctrina, es un valor
 por defecto (v1.19.0):** el `min_action_delay_ms: 800` de fábrica protege
@@ -139,18 +137,7 @@ en modo de solo lectura con acciones `evaluer` para extraer
 precio, stock y especificaciones de cada página, y finalmente comparar los
 resultados él mismo.
 
-**No se distribuye como escenario incluido, deliberadamente:** nombrar una
-tienda concreta en un escenario público y versionado es una decisión que le
-corresponde a usted, no un valor por defecto que este proyecto deba imponer en
-su nombre. También conlleva un riesgo real de fragilidad — un escenario
-público dirigido a un sitio comercial nombrado puede fallar meses después
-cuando la postura anti-bot de ese sitio cambie (el 39 % de los sitios
-comerciales muestreados en `docs/RETOUR_EXPERIENCE.md` FR-77 devolvieron un
-bloqueo inmediato), lo que desacredita el ejemplo más de lo que ayuda. Si
-construye usted mismo esta composición, tenga en cuenta que cualquier
-herramienta de descubrimiento de URLs con la que combines Dinoer (una
-instancia de búsqueda local u otra) no es un componente de Dinoer — es una
-pieza separada que el agente compone encima.
+**No se incluye como escenario versionado, deliberadamente:** nombrar una tienda específica en un escenario público y versionado es una decisión que le corresponde a usted, no un valor predeterminado que este proyecto deba adoptar en su nombre. También conlleva un riesgo real de fragilidad — un escenario público dirigido a un sitio comercial concreto puede fallar meses después cuando cambie la postura anti-bots de ese sitio, lo cual desacredita el ejemplo más de lo que ayuda. Si usted construye esta composición por su cuenta, tenga en cuenta que cualquier herramienta de descubrimiento de URL que usted combine con Dinoer (una instancia de búsqueda local u otra) no es un componente de Dinoer — es una pieza independiente que el agente integra por encima.
 
 ### Caso 3 — explorar y resumir documentación técnica (aplicaciones de una sola página)
 
@@ -250,12 +237,10 @@ apunta la pregunta. El primero simplemente no ofrece ninguna puerta que abrir
 desde el lado del agente, y forzarlo (rotación de IP, suplantación de huella
 TLS) queda fuera de lo que hace Dinoer.
 
-**No se distribuye como escenario incluido, y deliberadamente sin nombrar las
-plataformas implicadas** — consulte el razonamiento sobre fragilidad ante WAF
-del Caso 2: una tabla fechada de bloqueo/no bloqueo ligada a sitios
-comerciales nombrados queda obsoleta y socava su propio argumento más rápido
-de lo que lo ilustra. `docs/RETOUR_EXPERIENCE.md` FR-77 documenta el mismo
-patrón a escala de panel (tasa de bloqueo inmediato del 39 %).
+**No incluido como escenario versionado, y sin nombrar deliberadamente las
+plataformas implicadas** — véase el razonamiento sobre la fragilidad del WAF en el Caso 2: una
+tabla fechada de bloqueo/no bloqueo vinculada a sitios comerciales concretos queda obsoleta y
+socava su propio argumento más rápido de lo que lo ilustra.
 
 ---
 

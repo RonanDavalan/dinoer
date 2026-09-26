@@ -72,17 +72,14 @@ Entscheidung bleibt Ihre.
 
 ### Respektvolle Navigation (v1.15.0)
 
-Dinoer verschleiert seine Identität nicht, um Bot-Erkennung zu umgehen.
-`--stealth` entfernt automatische technische Markierungen
-(`navigator.webdriver`), die Headless-Browser unabhängig von der Absicht
-blockieren — es ändert weder die IP-Adresse noch die Identität des
-Betreibers noch die Tatsache, dass der Lauf deklariert ist. Im Gegenzug
-meldet jeder Lauf seinen eigenen Fußabdruck (`respect`: besuchte Seiten,
-ausgeführte Aktionen, Dauer) und respektiert konfigurierbare
-Höflichkeitsverzögerungen und harte Obergrenzen (`dinoer.conf
-[navigation]`). Das Recht zu navigieren und die Pflicht, dies messbar zu
-tun, werden als untrennbar behandelt — siehe `docs/RETOUR_EXPERIENCE.md`
-FR-77/FR-78/FR-79 für den Praxiskontext, der dies geprägt hat.
+Dinoer tarnt seine Identität nicht, um die Bot-Erkennung zu umgehen. `--stealth`
+entfernt automatische technische Marker (`navigator.webdriver`), die
+Headless-Browser unabhängig von der Absicht blockieren — es ändert weder die
+IP, die Identität des Betreibers noch die Tatsache, dass der Durchlauf deklariert ist. Im Gegenzug
+meldet jeder Durchlauf seinen eigenen Fußabdruck (`respect`: besuchte Seiten, ausgeführte Aktionen,
+Dauer) und hält konfigurierbare Höflichkeitsverzögerungen und harte Obergrenzen ein
+(`dinoer.conf [navigation]`). Das Recht zu navigieren und die Pflicht,
+messbar zu navigieren, werden als untrennbar behandelt.
 
 **Lokale Ziele — die Höflichkeitsverzögerung ist keine Doktrin, sondern
 ein Standardwert (v1.19.0):** Der mitgelieferte Wert
@@ -148,19 +145,15 @@ Dinoer im schreibgeschützten Modus mit `evaluer`-Aktionen nutzen, um
 Preis, Lagerbestand und Spezifikationen von jeder Seite zu extrahieren, und
 schließlich die Ergebnisse selbst vergleichen.
 
-**Bewusst nicht als eingechecktes Szenario ausgeliefert:** Einen
-bestimmten Shop in einem öffentlichen, versionierten Szenario zu nennen,
-ist eine Entscheidung, die Ihnen gehört, kein Standard, den dieses Projekt
-in Ihrem Namen treffen sollte. Es birgt auch ein reales
-Fragilitätsrisiko — ein öffentliches Szenario, das auf eine namentlich
-genannte kommerzielle Site zielt, kann Monate später scheitern, wenn sich
-deren Anti-Bot-Haltung ändert (39 % der in `docs/RETOUR_EXPERIENCE.md`
-FR-77 erfassten kommerziellen Sites gaben einen sofortigen Block zurück),
-was das Beispiel eher diskreditiert als hilft. Wenn Sie diese Komposition
-selbst aufbauen: Beachten Sie, dass jedes Werkzeug zur URL-Entdeckung, mit
-dem Sie Dinoer kombinieren (eine lokale Suchinstanz oder sonstiges), keine
-Dinoer-Komponente ist — es ist ein separates Teil, das der Agent
-obendrauf komponiert.
+**Absichtlich nicht als versioniertes Szenario mitgeliefert:** einen bestimmten
+Shop in einem öffentlichen, versionierten Szenario zu benennen, ist eine Entscheidung, die bei Ihnen liegt, nicht
+eine Voreinstellung, die dieses Projekt in Ihrem Namen treffen sollte. Es birgt zudem ein reales
+Fragilitätsrisiko — ein öffentliches Szenario, das auf eine namentlich genannte kommerzielle Website abzielt, kann
+Monate später fehlschlagen, wenn sich die Anti-Bot-Haltung dieser Website ändert, was
+dem Beispiel mehr schadet als nützt. Wenn Sie
+diese Komposition selbst erstellen, beachten Sie, dass jedes URL-Discovery-Tool, das Sie mit
+Dinoer kombinieren (eine lokale Suchinstanz oder anderweitig), keine Dinoer-
+Komponente ist — es ist ein separates Element, das der Agent darauf aufbauend einsetzt.
 
 ### Fall 3 — technische Dokumentation erkunden und zusammenfassen (Single-Page-Apps)
 
@@ -266,13 +259,10 @@ Ersteres bietet der Agentenseite schlicht keine Tür zum Öffnen, und es
 gewaltsam zu umgehen (IP-Rotation, TLS-Fingerprint-Fälschung) liegt
 außerhalb dessen, was Dinoer tut.
 
-**Bewusst nicht als eingechecktes Szenario ausgeliefert, und bewusst ohne
-Nennung der beteiligten Plattformen** — siehe die
-WAF-Fragilitätsbegründung unter Fall 2: eine datierte
-Block-/Kein-Block-Tabelle, die an namentlich genannte kommerzielle Sites
-gebunden ist, veraltet und untergräbt ihren eigenen Punkt schneller, als
-sie ihn veranschaulicht. `docs/RETOUR_EXPERIENCE.md` FR-77 dokumentiert
-dasselbe Muster im Panel-Maßstab (39 % Sofort-Block-Rate).
+**Nicht als committetes Szenario mitgeliefert, und bewusst ohne Nennung der
+beteiligten Plattformen** — siehe die WAF-Fragilitätsbegründung unter Fall 2: eine
+datierte Block-/No-Block-Tabelle, die an namentlich genannte kommerzielle Seiten gebunden ist, veraltet und
+ihre eigene Aussage schneller untergräbt, als sie sie veranschaulicht.
 
 ---
 

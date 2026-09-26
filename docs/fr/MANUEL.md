@@ -269,10 +269,7 @@ Chaque exécution renvoie `respect` (racine du JSON et dans `boussole`) :
 
 ### 3d. Repère furtivité — quantitatif (v1.17.1)
 
-Préférez compter des signaux d'empreinte concrets plutôt que comparer à
-l'œil — c'est la méthode utilisée pour vérifier le correctif de
-compatibilité d'API `playwright-stealth` de la v1.17.0
-(`docs/RETOUR_EXPERIENCE.md` FR-79) :
+Préférez compter les signaux d'empreinte concrets plutôt que comparer à l'œil :
 
 ```bash
 # Sans stealth
@@ -913,10 +910,8 @@ setter JS via `evaluer` :
   --url https://target.local/ --a11y --stealth
 ```
 
-Si le 403 persiste avec `--stealth` : le site utilise du fingerprinting TLS
-(JA3/JA4) ou une analyse comportementale avancée (Cloudflare Enterprise).
-`playwright-stealth` ne contourne pas ces protections. Voir
-`docs/RETOUR_EXPERIENCE.md` FR-77/FR-78/FR-79 pour le contexte.
+Si le 403 persiste avec `--stealth` : le site utilise du fingerprinting TLS (JA3/JA4) ou une analyse
+comportementale avancée (Cloudflare Enterprise). `playwright-stealth` ne contourne pas ces protections.
 
 Dinoer signale aussi un blocage probable de façon passive — voir la
 section 3e (`respect.waf_bloquants`).

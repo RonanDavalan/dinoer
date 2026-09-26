@@ -267,10 +267,7 @@ Cada ejecución devuelve `respect` (raíz del JSON y dentro de `boussole`):
 
 ### 3d. Benchmark de sigilo — cuantitativo (v1.17.1)
 
-Prefiere contar señales de huella digital concretas antes que comparar a
-simple vista — este es el método usado para verificar la corrección de
-compatibilidad de la API `playwright-stealth` en v1.17.0
-(`docs/RETOUR_EXPERIENCE.md` FR-79):
+Prefiera contar señales concretas de huellas dactilares en lugar de comparar a simple vista:
 
 ```bash
 # Sin stealth
@@ -907,10 +904,8 @@ Opciones:
   --url https://target.local/ --a11y --stealth
 ```
 
-Si el 403 persiste con `--stealth`: el sitio usa fingerprinting TLS
-(JA3/JA4) o análisis de comportamiento avanzado (Cloudflare Enterprise).
-`playwright-stealth` no evade estas protecciones. Consulta
-`docs/RETOUR_EXPERIENCE.md` FR-77/FR-78/FR-79 para el contexto.
+Si el 403 persiste con `--stealth`: el sitio usa huella digital TLS (JA3/JA4) o análisis
+conductual avanzado (Cloudflare Enterprise). `playwright-stealth` no evita estas protecciones.
 
 Dinoer también marca de forma pasiva un bloqueo probable — consulta la
 sección 3e (`respect.waf_bloquants`).

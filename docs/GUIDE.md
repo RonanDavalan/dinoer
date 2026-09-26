@@ -69,8 +69,7 @@ IP, identity, or the fact that the run is declared. In exchange, every run
 reports its own footprint (`respect`: pages visited, actions executed,
 duration) and respects configurable courtesy delays and hard caps
 (`dinoer.conf [navigation]`). The right to navigate and the duty to navigate
-measurably are treated as inseparable — see `docs/RETOUR_EXPERIENCE.md`
-FR-77/FR-78/FR-79 for the field context that shaped this.
+measurably are treated as inseparable.
 
 **Local targets — the courtesy delay is not a doctrine, it is a default
 (v1.19.0):** the shipped `min_action_delay_ms: 800` protects
@@ -136,9 +135,8 @@ results itself.
 shop in a public, versioned scenario is a decision that belongs to you, not
 a default this project should make on your behalf. It also carries a real
 fragility risk — a public scenario targeting a named commercial site can
-fail months later when that site's anti-bot posture changes (39% of the
-commercial sites sampled in `docs/RETOUR_EXPERIENCE.md` FR-77 returned an
-immediate block), which discredits the example more than it helps. If you
+fail months later when that site's anti-bot posture changes, which
+discredits the example more than it helps. If you
 build this composition yourself, note that any URL-discovery tool you pair
 Dinoer with (a local search instance or otherwise) is not a Dinoer
 component — it is a separate piece the agent composes on top.
@@ -239,8 +237,7 @@ does.
 **Not shipped as a committed scenario, and deliberately not naming the
 platforms involved** — see the WAF-fragility reasoning under Case 2: a
 dated block/no-block table tied to named commercial sites goes stale and
-undermines its own point faster than it illustrates it. `docs/RETOUR_EXPERIENCE.md`
-FR-77 documents the same pattern at panel scale (39% immediate block rate).
+undermines its own point faster than it illustrates it.
 
 ---
 
