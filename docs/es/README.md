@@ -27,7 +27,7 @@ texto de página depurado.
 Donde Diwall responde a «interactuar con una interfaz autenticada, de forma
 visual», Dinoer responde a una pregunta distinta: «explorar un gran número de
 fuentes públicas y compilar una señal verificable y con fuentes a partir de
-ellas» — en un hardware tan modesto como una Raspberry Pi 5.
+ellas» — y funciona en un hardware modesto: se ha instalado y ejecutado en una Raspberry Pi 4 con 8 GB.
 
 ```
 Consulta → descubrimiento vía SearXNG → recopilación HTTP ligera
@@ -124,9 +124,9 @@ Si necesita un resumen rápido y no crítico, el informe automático es adecuado
 | **Chromium** | Sin interfaz gráfica (headless), instalado vía `playwright install chromium` |
 | **SearXNG** | Una instancia accesible (local o remota), API JSON por HTTP |
 | **Ollama** | Modelo de embeddings local, apto para CPU (`nomic-embed-text`) para la caché de búsqueda — sin modelo de visión, sin GPU necesaria |
-| **OpenCode** | Backend de razonamiento delegado para la síntesis de informes (modelos de nivel gratuito por defecto) |
+| **OpenCode** | Backend de razonamiento delegado para la síntesis de informes (sin modelo por defecto: defina `DINOER_OPENCODE_MODEL`) |
 
-No se necesita GPU. El objetivo de referencia es una Raspberry Pi 5 con 8 GB de RAM.
+No se necesita GPU. El paquete se ha instalado y ejecutado en una Raspberry Pi 4 Model B con 8 GB de RAM; las campañas se han ejecutado en una máquina x86-64.
 
 ---
 
@@ -187,7 +187,8 @@ credenciales), el propio repositorio.
 ### Una campaña de investigación
 
 ```bash
-python3 /opt/dinoer/campagne.py --manifeste manifeste.json
+/opt/dinoer/venv/bin/python3 /opt/dinoer/campagne.py --manifeste manifeste.json   # Git clone
+dinoer-campaign --manifeste manifeste.json                                        # .deb package
 ```
 
 Referencia LLM completa: [`docs/GUIDE_LLM.md`](../GUIDE_LLM.md)

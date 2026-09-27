@@ -4,6 +4,13 @@ Generated from `debian/changelog` at build time — do not edit by hand.
 Edit `debian/changelog` and rebuild instead
 (`bash ~/git/Dinoer/scripts/construire-paquet.sh`).
 
+## 1.0.1 — 26 Sep 2026 14:57:38 +0200
+
+- Packaging revision: the code is 1.0.1, unchanged.
+- debian/postrm: remove no longer deletes the dinoer user and group. It keeps /etc/dinoer and /var/log/dinoer, and deleting the group left them to an orphan GID, which the next group created on the machine would inherit with their rights (2770 on the log directory). The account now goes with the data, at purge.
+- debian/postrm: purge removes /opt/dinoer whole. Python bytecode written at run time (lib/__pycache__, when Dinoer ran as root) is owned by no package and kept /opt/dinoer alive after a purge. When /opt/dinoer holds a git-clone installation made after apt remove, purge leaves it, the log directory and the account untouched.
+- docs: RETOUR_EXPERIENCE.md and ACCESS_OBSERVATIONS.md emptied of the entries that predate Dinoer; the references to them follow, in the four languages.
+
 ## 1.0.1 — 25 Sep 2026 21:08:00 +0200
 
 - searxng_url is now read from the file DINOER_CONF designates, and the dinoer-campaign wrapper exports DINOER_CONF=/etc/dinoer/dinoer.conf like dinoer-shot and dinoer-rpa: on this channel the key written in /etc/dinoer/dinoer.conf was ignored and campaigns stopped on "no SearXNG URL configured".

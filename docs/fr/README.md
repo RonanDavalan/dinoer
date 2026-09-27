@@ -25,8 +25,8 @@ nettoyé.
 
 Là où Diwall répond à « interagir avec une interface authentifiée, visuellement »,
 Dinoer répond à une question différente : « explorer un grand nombre de sources
-publiques et en compiler un signal sourcé et vérifiable » — sur un matériel aussi
-modeste qu'un Raspberry Pi 5.
+publiques et en compiler un signal sourcé et vérifiable » — et il tourne sur un
+matériel modeste : il a été installé et exécuté sur un Raspberry Pi 4 doté de 8 Go.
 
 ```
 Requête → découverte SearXNG → collecte HTTP légère
@@ -124,9 +124,9 @@ Si vous avez besoin d'un résumé rapide et non critique, le rapport automatique
 | **Chromium** | headless, installé via `playwright install chromium` |
 | **SearXNG** | une instance joignable (locale ou distante), API JSON HTTP |
 | **Ollama** | modèle d'embedding local, économe en CPU (`nomic-embed-text`) pour le cache de recherche — aucun modèle de vision, aucun GPU requis |
-| **OpenCode** | back-end de raisonnement délégué pour la synthèse de rapport (modèles gratuits par défaut) |
+| **OpenCode** | back-end de raisonnement délégué pour la synthèse de rapport (pas de modèle par défaut : définir `DINOER_OPENCODE_MODEL`) |
 
-Aucun GPU requis. La cible de référence est un Raspberry Pi 5, 8 Go de RAM.
+Aucun GPU requis. Le paquet a été installé et exécuté sur un Raspberry Pi 4 Model B doté de 8 Go de RAM ; les campagnes ont tourné sur une machine x86-64.
 
 ---
 
@@ -187,7 +187,8 @@ le dépôt lui-même.
 ### Une campagne de recherche
 
 ```bash
-python3 /opt/dinoer/campagne.py --manifeste manifeste.json
+/opt/dinoer/venv/bin/python3 /opt/dinoer/campagne.py --manifeste manifeste.json   # Git clone
+dinoer-campaign --manifeste manifeste.json                                        # .deb package
 ```
 
 Référence LLM complète : [`docs/GUIDE_LLM.md`](../GUIDE_LLM.md)

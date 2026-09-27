@@ -35,7 +35,7 @@ lesen mit `grep notice-version /opt/dinoer/docs/GUIDE_LLM.md`.
    │  shot.py / rpa.py            │   ein Prozess, ein JSON auf stdout
    │    ├─ Chromium (headless)    │
    │    ├─ A11y: Seitenstruktur   │
-   │    └─ secrets: füllt Credentials aus│   nie in der Shell, nie in einem Log
+   │    └─ secrets → Formulare    │   nie in der Shell, nie in einem Log
    └──────────────┬───────────────┘
                   │  boussole + JSON
                   ▼
@@ -113,7 +113,7 @@ Kommandozeile, Ihre History oder ein Log.
 | Element unterhalb des sichtbaren Bereichs | zuerst `defiler` |
 | Seite wird nie fertig geladen | `--wait-until load` |
 | Absenden bewirkt nichts, kein Fehler | native HTML-Validierung — Formular über `evaluer` absenden |
-| `exit 42` | verschlüsseltes Verzeichnis nicht gemountet (`bash ~/git/Dinoer/Dinoer/scripts/monter-repertoire-chiffre.sh`), oder Prüfsumme der Credentials ungültig (Credentials-Datei prüfen) — beides `SecretsFermesError` |
+| `exit 42` | verschlüsseltes Verzeichnis nicht gemountet (`dinoer-monter-secrets`, bzw. `bash /opt/dinoer/scripts/monter-repertoire-chiffre.sh` bei einer Installation per Git-Klon), oder Prüfsumme der Credentials ungültig (Credentials-Datei prüfen) — beides `SecretsFermesError` |
 | `guide_non_lu` | einmalig `--guide-version` übergeben |
 | 403 / 429 | `respect.waf_bloquants` lesen — ein Signal, keine Ausnahme |
 

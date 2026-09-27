@@ -27,8 +27,8 @@ bereinigter Seitentext.
 Wo Diwall die Frage beantwortet „mit einer authentifizierten Oberfläche
 visuell interagieren", beantwortet Dinoer eine andere Frage: „eine große
 Zahl öffentlicher Quellen erkunden und daraus ein belegtes, überprüfbares
-Signal zusammenstellen" — auf Hardware so bescheiden wie einem Raspberry
-Pi 5.
+Signal zusammenstellen" — und es läuft auf bescheidener
+Hardware: Es wurde auf einem Raspberry Pi 4 mit 8 GB installiert und ausgeführt.
 
 ```
 Anfrage → SearXNG-Entdeckung → leichte HTTP-Sammlung
@@ -125,9 +125,9 @@ Wenn Sie eine schnelle, nicht kritische Zusammenfassung benötigen, ist der auto
 | **Chromium** | Headless, installiert über `playwright install chromium` |
 | **SearXNG** | Eine erreichbare Instanz (lokal oder entfernt), HTTP-JSON-API |
 | **Ollama** | Lokales, CPU-freundliches Embedding-Modell (`nomic-embed-text`) für den Suchcache — kein Vision-Modell, keine GPU erforderlich |
-| **OpenCode** | Delegiertes Reasoning-Backend für die Berichtssynthese (standardmäßig kostenlose Modelle) |
+| **OpenCode** | Delegiertes Reasoning-Backend für die Berichtssynthese (kein Standardmodell: `DINOER_OPENCODE_MODEL` setzen) |
 
-Keine GPU erforderlich. Das Referenzziel ist ein Raspberry Pi 5 mit 8 GB RAM.
+Keine GPU erforderlich. Das Paket wurde auf einem Raspberry Pi 4 Model B mit 8 GB RAM installiert und ausgeführt; die Kampagnen liefen auf einem x86-64-Rechner.
 
 ---
 
@@ -188,7 +188,8 @@ das Repository selbst.
 ### Eine Recherchekampagne
 
 ```bash
-python3 /opt/dinoer/campagne.py --manifeste manifeste.json
+/opt/dinoer/venv/bin/python3 /opt/dinoer/campagne.py --manifeste manifeste.json   # Git clone
+dinoer-campaign --manifeste manifeste.json                                        # .deb package
 ```
 
 Vollständige LLM-Referenz: [`docs/GUIDE_LLM.md`](../GUIDE_LLM.md)

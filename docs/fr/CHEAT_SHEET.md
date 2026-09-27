@@ -34,8 +34,8 @@ Le premier appel sur une machine nécessite `--guide-version X.Y`, à lire avec
    ┌──────────────────────────────┐
    │  shot.py / rpa.py            │   un processus, un JSON sur stdout
    │    ├─ Chromium (headless)    │
-   │    ├─ A11y : structure de page│
-   │    └─ secrets : remplit les identifiants│  jamais dans le shell, jamais dans un log
+   │    ├─ A11y : structure       │
+   │    └─ secrets → formulaires  │  jamais dans le shell, jamais dans un log
    └──────────────┬───────────────┘
                   │  boussole + JSON
                   ▼
@@ -110,8 +110,8 @@ votre ligne de commande, votre historique, ni aucun journal.
 | Le clic expire, élément visuellement caché | `"force": true`, puis `"repli_js": true` |
 | Élément sous la ligne de flottaison | `defiler` d'abord |
 | La page ne finit jamais de charger | `--wait-until load` |
-| Le submit ne fait rien, aucune erreur | validation HTML native — soumettez le formulaire via `evaluer` |
-| `exit 42` | répertoire chiffré non monté (`bash ~/git/Dinoer/Dinoer/scripts/monter-repertoire-chiffre.sh`), ou somme de contrôle des identifiants invalide (vérifiez le fichier d'identifiants) — les deux relèvent de `SecretsFermesError` |
+| L'envoi ne fait rien, aucune erreur | validation HTML native — soumettez le formulaire via `evaluer` |
+| `exit 42` | répertoire chiffré non monté (`dinoer-monter-secrets`, ou `bash /opt/dinoer/scripts/monter-repertoire-chiffre.sh` sur une installation par clone Git), ou somme de contrôle des identifiants invalide (vérifiez le fichier d'identifiants) — les deux relèvent de `SecretsFermesError` |
 | `guide_non_lu` | passez `--guide-version` une fois |
 | 403 / 429 | lisez `respect.waf_bloquants` — un signal, pas une exception |
 

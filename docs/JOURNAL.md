@@ -4,6 +4,46 @@ History of decisions and discoveries by session, in reverse chronological order.
 
 ---
 
+## 2026-09-27 — The site text reread in four languages, every claim checked against the code
+
+The French home page opened on a sentence translated word for word from an
+English opener that taught nothing. The whole site was reread: the English
+corrected first, then the French, German and Spanish written directly rather
+than machine-translated. Claims were checked against version 1.0.1 of the
+code; those that did not hold were corrected or removed:
+
+- The test hardware is a Raspberry Pi 4 Model B (8 GB), not a Pi 5: the
+  package was installed, upgraded, purged and `shot.py --a11y` run on it.
+  Campaigns ran on an x86-64 machine. The supported systems are Debian 13 and
+  Ubuntu 24.04 (three `t64` dependency names), not "Debian and derivatives".
+- There is no default OpenCode model since 1.0.1.
+- A plaintext secret is refused by Dinoer itself before Chromium starts
+  (`remplir` on a sensitive-looking selector, including `otp`/`totp`/`mfa`;
+  `evaluer` with a token-like string), not by the publication check. Verified:
+  `remplir` `input[name="otp"]` with `123456` exits 1, `actions_invalides`.
+- `origines_autorisees` is required with `--secrets` only; without it, the
+  file is picked from the domain of the page actually loaded.
+- `boussole.session_derive` is an object (`url_sauvegardee`, `url_reprise`,
+  `avertissement`), present when the page reached differs from the page the
+  session was saved on.
+- `attendre_mfa_ntfy` types the code into the field; it does not submit.
+- `--wait-until` is not passed to the escalations `campagne.py` starts.
+- The accessibility tree stops at an iframe (`- iframe`, nothing below), same
+  origin or not: verified with two local origins.
+- Anecdotes from the pre-fork history, presented as Dinoer's, were removed.
+
+The cheat sheet in the four languages lost a command pointing at a private
+path, and the Spanish one moved to the formal register. The README, in the
+four languages, now states the Raspberry Pi 4, the absence of a default
+OpenCode model, and the campaign command through the virtual environment or
+`dinoer-campaign`.
+
+**Found, not fixed here:** `valider_actions_secrets()` checks `remplir` and
+`evaluer` but not `remplir_iframe`, so a plaintext value in a frame field is
+not refused. `docs/GUIDE_LLM.md`, section "Containing the reasoning backend",
+still describes `opencode.jsonc` alone; changing it means raising
+`notice-version` and the guide lock with it.
+
 ## 2026-09-25 — 1.0.1: the four audit items fixed, and what the release cycle found
 
 **1. The four items of the site audit below are fixed in 1.0.1.**

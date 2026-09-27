@@ -24,8 +24,8 @@ at a page; it reads it: DOM, accessibility tree, and cleaned page text.
 
 Where Diwall answers "interact with one authenticated interface, visually,"
 Dinoer answers a different question: "explore a large number of public
-sources and compile a sourced, verifiable signal from them" — on hardware as
-modest as a Raspberry Pi 5.
+sources and compile a sourced, verifiable signal from them" — and it runs on modest
+hardware: it has been installed and run on a Raspberry Pi 4 with 8 GB.
 
 ```
 Query → SearXNG discovery → lightweight HTTP collection
@@ -152,9 +152,9 @@ targeted, looped extraction pattern instead.
 | **Chromium** | Headless, installed via `playwright install chromium` |
 | **SearXNG** | A reachable instance (local or remote), HTTP JSON API |
 | **Ollama** | Local, CPU-friendly embedding model (`nomic-embed-text`) for the search cache — no vision model, no GPU required |
-| **OpenCode** | Delegated reasoning back-end for report synthesis (free-tier models by default) |
+| **OpenCode** | Delegated reasoning back-end for report synthesis (no default model: set `DINOER_OPENCODE_MODEL`) |
 
-No GPU is required. The reference target is a Raspberry Pi 5, 8 GB RAM.
+No GPU is required. The package has been installed and run on a Raspberry Pi 4 Model B with 8 GB of RAM; campaigns have run on an x86-64 machine.
 
 ---
 
@@ -221,7 +221,8 @@ repository itself.
 ### A research campaign
 
 ```bash
-python3 /opt/dinoer/campagne.py --manifeste manifeste.json
+/opt/dinoer/venv/bin/python3 /opt/dinoer/campagne.py --manifeste manifeste.json   # Git clone
+dinoer-campaign --manifeste manifeste.json                                        # .deb package
 ```
 
 Full LLM reference: [`docs/GUIDE_LLM.md`](docs/GUIDE_LLM.md)

@@ -35,7 +35,7 @@ First call on a machine needs `--guide-version X.Y`, read with
    │  shot.py / rpa.py            │   one process, one JSON on stdout
    │    ├─ Chromium (headless)    │
    │    ├─ A11y: page structure   │
-   │    └─ secrets: fills credentials│   never in the shell, never in a log
+   │    └─ secrets → form fields  │   never in the shell, never in a log
    └──────────────┬───────────────┘
                   │  boussole + JSON
                   ▼
@@ -110,7 +110,7 @@ or any log.
 | Element below the fold | `defiler` first |
 | Page never finishes loading | `--wait-until load` |
 | Submit does nothing, no error | native HTML validation — submit the form via `evaluer` |
-| `exit 42` | encrypted directory not mounted (`bash ~/git/Dinoer/Dinoer/scripts/monter-repertoire-chiffre.sh`), or credentials checksum invalid (inspect the credentials file) — both are `SecretsFermesError` |
+| `exit 42` | encrypted directory not mounted (`dinoer-monter-secrets`, or `bash /opt/dinoer/scripts/monter-repertoire-chiffre.sh` on a Git-clone installation), or credentials checksum invalid (inspect the credentials file) — both are `SecretsFermesError` |
 | `guide_non_lu` | pass `--guide-version` once |
 | 403 / 429 | read `respect.waf_bloquants` — a signal, not an exception |
 
